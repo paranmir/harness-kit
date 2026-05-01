@@ -243,6 +243,10 @@ Continuity, Governance — always apply and do not need self-marking.]
 - Verification or gate to add:
 - Residual risk if accepted:
 
+#### [Persona name with no concrete plan change]
+
+- PASS: no concrete plan change.
+
 ---
 
 - Revised after review: yes / no changes required

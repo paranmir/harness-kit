@@ -290,14 +290,19 @@ instead of the other review-completion evidence. The verifier treats these
 fields as parseable contract, not decorative prose.
 
 When `Review required` is `yes`, the plan must also carry a short `Separate
-Persona Review Passes` section with one block per persona and these parseable
-fields in each block:
+Persona Review Passes` section with one block per persona. Blocks with concrete
+findings must carry these parseable fields:
 
 - `Severity`
 - `Plan risk found`
 - `Required plan change`
 - `Verification or gate to add`
 - `Residual risk if accepted`
+
+Blocks where the persona found no concrete plan change may instead use compact
+PASS evidence, but the block must still name the persona and explicitly state
+that no concrete plan change was found. Compact PASS evidence is not valid for
+`must-change` or `should-change` findings.
 
 The section is evidence that persona review was run as separate passes. It is
 not a place to preserve long duplicate draft and revised plan bodies.

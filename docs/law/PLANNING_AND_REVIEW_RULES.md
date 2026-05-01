@@ -93,6 +93,12 @@ Passes` section. Each persona pass must record concrete findings using the
 review-method fields: severity, plan risk found, required plan change,
 verification or gate to add, and residual risk if accepted.
 
+When a persona completes its pass and finds no concrete plan change, the plan
+may record compact no-finding evidence instead of the full five-field finding
+shape. Compact evidence must still name the persona and state that the pass
+found no concrete plan change. Compact evidence is not valid for `must-change`
+or `should-change` findings.
+
 The plan may include short review notes when useful, but the evidence fields
 and the separate persona-pass section are the parseable contract that proves
 the plan was not treated as ready before review. An agent must not mark
@@ -168,6 +174,10 @@ The `plan_discipline_reminder` returned by `agentlaw_session_restore` and
   Transitional Exemption
 - `section_revision_rereview_obligation`: when a plan is revised after
   review, only the personas whose mapped sections changed are re-invoked
+- `before_action_authority_check`: before substantive action, identify and
+  consult the governing law, protocol, tool, plan, or contract when the action
+  can change files, plans, memory, governance, runtime behavior, verification,
+  release state, or other durable/external state
 
 Runtime surfaces the reminder; the agent remains responsible for judging
 whether planning is required and applying the workflow.

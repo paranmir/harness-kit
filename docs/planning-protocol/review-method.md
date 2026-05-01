@@ -70,6 +70,18 @@ Review-required plans must also include a short section:
 - Residual risk if accepted: <remaining risk>
 ```
 
+When a persona completes its pass and finds no concrete plan change, use the
+compact PASS shape instead of the detailed five-field shape:
+
+```text
+### <Persona name>
+
+- PASS: no concrete plan change.
+```
+
+Compact PASS is valid only for no-finding persona passes. Use the detailed
+five-field shape for every `must-change` or `should-change` finding.
+
 For trivial plans, the only required persona pass is the Trigger Coverage
 Verifier:
 
