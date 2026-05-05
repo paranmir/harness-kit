@@ -273,6 +273,8 @@ For active plans that govern non-trivial or high-risk implementation work, the p
 - rollback, repair, or recovery path
 - explicit non-goals
 - new reference or law files proposed, if any, each with a justification for why the content does not fit in an existing artifact under its defined role
+- work breakdown
+- execution gates
 
 Plans for trivial cleanup may stay smaller, but they must not hide public-contract, runtime, package, configuration, schema, or cross-component impact.
 
@@ -284,6 +286,8 @@ Active plans must also carry compact review evidence fields:
 - `Plan reviewed`
 - `Personas applied`
 - `Revised after review`
+- `Deep Review Selection` for non-trivial plans, or an explicit not-applicable
+  marker for trivial plans
 
 When `Review required` is `no`, the plan must carry `Review exemption reason`
 instead of the other review-completion evidence. The verifier treats these
@@ -303,6 +307,13 @@ Blocks where the persona found no concrete plan change may instead use compact
 PASS evidence, but the block must still name the persona and explicitly state
 that no concrete plan change was found. Compact PASS evidence is not valid for
 `must-change` or `should-change` findings.
+
+New plans should use the stricter review-lint shape for every persona block:
+`Status`, `Severity`, `Inspected sections`, `Evidence`, `Plan risk found`,
+`Required plan change`, `Verification or gate to add`, and
+`Residual risk if accepted`. `PASS` and `N/A` are invalid when they carry no
+evidence or no inspected sections. Legacy compact PASS remains accepted for
+plans authored before the stricter shape lands until those plans are migrated.
 
 The section is evidence that persona review was run as separate passes. It is
 not a place to preserve long duplicate draft and revised plan bodies.

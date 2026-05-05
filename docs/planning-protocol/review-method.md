@@ -13,26 +13,34 @@ create an endless review loop.
 Use this sequence when `task-classification.md` says planning is required:
 
 1. Classify the request and identify task class(es).
-2. Determine importance/risk by checking against
+2. Run the Clarification Gate from `task-classification.md`. Ask the user only
+   for missing answers that materially change scope, safety, permission,
+   irreversible action, public contract, cost, or the intended outcome. Record
+   the result in the plan's `Execution Gates`.
+3. Determine importance/risk by checking against
    `task-classification.md` § Non-Trivial Triggers. Cite each matched
    trigger.
-3. Draft the plan using `plan-template.md`. For non-trivial work, self-mark
+4. Draft the plan using `plan-template.md`. For non-trivial work, self-mark
    the applicable conditional domains in the Domain Coverage section.
-4. Select the persona deck per § Selection Rule below.
-5. Run **one persona review at a time, sequentially**. Each persona is
-   invoked in its own turn so that lens injection from one persona does not
-   cross-contaminate the next persona's review. Within a single turn, the
-   persona produces concrete findings against the plan as written. The
-   **Trigger Coverage Verifier persona always runs first**; it validates
-   the trigger marking and the Domain Coverage self-mark against the plan
-   content.
-6. Consolidate findings.
-7. Revise the plan. **Section-based re-review**: when revisions affect a
+5. Run plan-lint checks. Until a standalone `plan-lint` command exists, the
+   active-plan checks in `agentlaw verify` are the repository's mechanical
+   enforcement surface.
+6. Run the **Trigger Coverage Verifier** first in an isolated review pass. It
+   validates the trigger marking and the Domain Coverage self-mark against the
+   plan content.
+7. For non-trivial work, run the **Deep Review Selector** and then run selected
+   deep-review personas one at a time, sequentially. Each selected persona is
+   invoked in its own turn so lens injection from one persona does not
+   cross-contaminate the next persona's review.
+8. Run review-lint checks over review outputs.
+9. Consolidate findings.
+10. Revise the plan. **Section-based re-review**: when revisions affect a
    specific subset of plan sections, re-invoke only the personas whose
    primary or optional sections (per `persona-section-map.md`) include the
    revised sections. Personas whose sections were not revised do not need
    re-invocation.
-8. Execute the revised plan or ask for user approval when required.
+11. Execute the revised plan or ask for user approval when required by
+    `Execution Gates`.
 
 For trivial plan-required work, only step 5's Trigger Coverage Verifier
 runs. If it confirms the trivial classification, no further personas
@@ -50,10 +58,12 @@ Required review evidence fields for review-required plans:
 Risk triggers matched: <list of cited triggers from § Non-Trivial Triggers>
 Importance/Risk: trivial / non-trivial
 Domain self-mark: <conditional domain checklist; non-trivial only>
+Deep Review Selection: <selected/skipped review summary; non-trivial only>
 Review required: yes
 Plan reviewed: yes
 Personas applied: <non-empty persona list>
 Revised after review: yes
+Execution Gates: <approval and stop-condition summary>
 ```
 
 Review-required plans must also include a short section:
@@ -63,15 +73,18 @@ Review-required plans must also include a short section:
 
 ### <Persona name>
 
+- Status: PASS / FAIL / N/A
 - Severity: must-change / should-change / note
+- Inspected sections: <plan sections read>
+- Evidence: <specific plan text or absence that supports the finding>
 - Plan risk found: <concrete risk>
 - Required plan change: <specific plan edit>
 - Verification or gate to add: <test, check, approval, or explicit none>
 - Residual risk if accepted: <remaining risk>
 ```
 
-When a persona completes its pass and finds no concrete plan change, use the
-compact PASS shape instead of the detailed five-field shape:
+When a legacy plan's persona pass predates the strict review-lint fields, a
+compact PASS shape remains accepted for compatibility:
 
 ```text
 ### <Persona name>
@@ -79,8 +92,10 @@ compact PASS shape instead of the detailed five-field shape:
 - PASS: no concrete plan change.
 ```
 
-Compact PASS is valid only for no-finding persona passes. Use the detailed
-five-field shape for every `must-change` or `should-change` finding.
+Compact PASS is valid only for no-finding persona passes. New plans should use
+the detailed shape with `Status`, `Inspected sections`, and `Evidence` so a
+PASS or N/A cannot be treated as review evidence without a basis. Use the
+detailed shape for every `must-change` or `should-change` finding.
 
 For trivial plans, the only required persona pass is the Trigger Coverage
 Verifier:
@@ -150,22 +165,61 @@ Residual risk if accepted:
 1. Run the classification gate.
 2. If planning is not required, do not run persona review.
 3. For trivial plan-required work, run only the Trigger Coverage Verifier
-   persona.
+   persona and the minimum plan-lint profile.
 4. For non-trivial plan-required work:
    a. Run the Trigger Coverage Verifier first.
-   b. Then run the universal bench personas sequentially.
-   c. Then run substance-triggered personas sequentially. A substance-
-      triggered persona is invoked only if its substance is marked as
-      applicable in the plan's Domain Coverage section, or if the Trigger
-      Coverage Verifier flagged a missing mark that should have been set.
+   b. Run the Deep Review Selector.
+   c. Run selected universal deep-review personas sequentially.
+   d. Run selected substance-triggered personas sequentially. A substance-
+      triggered persona is invoked if its substance is marked as applicable in
+      the plan's Domain Coverage section, if plan-lint flagged a mapped
+      section, if Trigger Coverage Verifier flagged a missing mark, or if Deep
+      Review Selector selects it with a concrete reason.
+   e. Run selected sensitive-domain field personas sequentially.
+   f. Run review-lint over all review outputs.
 5. If a plan-exempt class escalates, treat it as non-trivial plan-required
    and apply step 4.
 6. If the class is conditional, use the corresponding deck per the
    triggers in `task-classification.md`.
 7. If a task has multiple classes, union the substance-triggered personas
    and remove duplicate roles. Run sequentially.
-8. Prefer fewer strong personas over many shallow personas. Never add a
+8. Universal concerns are always checked. They are not always executed as
+   separate isolated persona turns.
+9. Always run isolated reviewers for trust boundary, permission, sensitive
+   data, state migration, external contract, irreversible action, rollback,
+   governance/rule-system change, or high-impact legal/financial/medical
+   decision when the plan touches that concern.
+10. If more than eight deep-review personas are selected, the Integrator must
+   decide whether the task is too broad. Default action is to split the task
+   unless a concrete reason justifies expanded review.
+11. Prefer fewer strong personas over many shallow personas. Never add a
    persona that cannot produce a concrete plan change.
+
+## Deep Review Selection
+
+For non-trivial plans, add a compact `Deep Review Selection` section or field
+before separate persona passes:
+
+```text
+Universal concerns checked by plan-lint:
+Isolated universal reviewers selected:
+Specialized reviewers selected:
+Sensitive-domain reviewers selected:
+Reviewers not run with N/A reason:
+Persona count:
+Split-task warning: yes / no
+```
+
+Selection budget:
+
+- trivial plan-required: Trigger Coverage Verifier only
+- ordinary non-trivial: 2-5 isolated reviewers
+- high-stakes non-trivial: 5-8 isolated reviewers
+- more than 8: split-task review required
+
+The selector must not use "not run" to hide a triggered high-risk concern.
+Skipped reviewers need an N/A reason such as trigger absent, section not
+touched, or lint passed.
 
 ## Consolidation
 

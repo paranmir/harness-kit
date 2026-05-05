@@ -33,6 +33,29 @@ grouped by domain for navigation; **within and across domain groups, order
 of execution does not matter** (each persona runs in its own turn — see
 § Sequential Application Contract above).
 
+## Execution Modes
+
+Universal concerns are always checked, but not every universal persona is
+always run as an isolated deep-review turn.
+
+- **Always isolated**: Trigger Coverage Verifier.
+- **Usually linted; isolated if flagged**: Intent Statement Reviewer,
+  Underlying-Need Reviewer, Artifact Shape Reviewer, Acceptance Criteria
+  Reviewer, Temporal Scope Reviewer, Confidence Label Reviewer, Undecided Item
+  Reviewer, Internal Continuity Reviewer, and Rule-on-Self Reviewer when no
+  rule-system artifact is modified.
+- **Judgment reviewers; trigger-selected isolated**: Affected Surface Reviewer,
+  Stakeholder Map Reviewer, Downstream Impact Reviewer, Indirect Effect
+  Reviewer, Premise & Source Reviewer, Assumption-Path Reviewer, Prerequisite
+  Chain Reviewer, Prior Art Reviewer, Risk Classification Reviewer, User Gate
+  Reviewer, Rollback Path Reviewer, Fallback Plan Reviewer, Verification
+  Reviewer, and Governance & Compliance Reviewer.
+
+Any usually-linted persona is promoted to isolated review when plan-lint flags
+its mapped section, the plan changes governance, introduces irreversible action,
+touches external/public artifacts, supports a high-impact decision, or Trigger
+Coverage Verifier explicitly requests it.
+
 ### Classification Gatekeeper (runs first)
 
 | Persona | Plan-improvement mandate |
@@ -111,9 +134,12 @@ of execution does not matter** (each persona runs in its own turn — see
 
 - **Trivial plan-required work**: only Trigger Coverage Verifier runs. The
   remaining 23 universal personas are skipped.
-- **Non-trivial plan-required work**: all 24 universal personas run, plus
-  any substance-triggered personas marked applicable in the plan's Domain
-  Coverage section. Per `persona-decks-specialized.md`.
+- **Non-trivial plan-required work**: Trigger Coverage Verifier always runs
+  isolated first. The remaining universal personas are checked by plan-lint,
+  review-lint, and Deep Review Selection; only selected deep-review personas
+  run as isolated turns. Substance-triggered personas run when selected by
+  Domain Coverage, lint findings, Trigger Coverage Verifier, or Deep Review
+  Selector per `persona-decks-specialized.md`.
 
 Never add a persona that cannot produce a concrete plan change. A persona
 that always returns "no findings" for a given class of plan should be

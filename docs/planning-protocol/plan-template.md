@@ -23,6 +23,9 @@ When using this template:
   per `docs/law/PLANNING_AND_REVIEW_RULES.md` § Trivial Work Boundary.
 - Which personas review the plan is decided by `review-method.md`
   § Selection Rule.
+- Whether to ask the user follow-up questions is decided by
+  `task-classification.md` § Clarification Gate and recorded in
+  `Execution Gates`.
 
 ## Section-Fill Profile
 
@@ -108,6 +111,22 @@ Continuity, Governance — always apply and do not need self-marking.]
 - Temporal scope: one-time / ongoing / time-bounded
 - Explicit non-goals: [out-of-scope list]
 
+## Work Breakdown
+
+- Data affected: [DB tables, files, persistent records, schemas, financial
+  data, source records, or N/A]
+- User/interface surface: [UI, API, CLI, document, message, report, decision
+  artifact, or N/A]
+- Control/API boundary: [API route, command, workflow step, external
+  interface, advisory boundary, or N/A]
+- Permission/authority rule: [who may do what; N/A only with reason]
+- Failure cases: [normal failure, missing input, invalid input, unavailable
+  dependency]
+- Negative/adversarial cases: [misuse, abuse, boundary violation, hostile
+  input, downside scenario]
+- Test/check cases: [how each important behavior or claim will be verified]
+- Execution order: [ordered steps; name dependencies]
+
 ## Premise
 
 - Facts: [each with verification artifact reference]
@@ -141,11 +160,91 @@ Continuity, Governance — always apply and do not need self-marking.]
 - Rollback / recovery path: [per non-reversible step]
 - Counterfactual fallbacks: [if X fails, then Y; cascade if Y fails]
 
+## Execution Gates
+
+- May execute without user approval: yes / no
+- User approval required before:
+  - file mutation:
+  - dependency addition:
+  - DB/schema migration:
+  - public API/contract change:
+  - deployment/release:
+  - account/payment/message/external action:
+  - financial/legal/medical consequential recommendation:
+- Stop conditions:
+  - classification mismatch found
+  - new non-trivial trigger appears
+  - required source/check unavailable
+  - test/lint/build failure
+  - plan-lint failure
+  - review-lint failure
+  - scope expands beyond approved plan
+- Agent permission boundary:
+  - read-only:
+  - edit allowed:
+  - command execution allowed:
+  - network/external action allowed:
+
 ## Verification
 
 - Pre-action checks: [what to verify before execution]
 - Post-action checks: [what to verify after]
 - Verification strategy: [tests/oracles/adversarial cases matching risk]
+- Required negative cases:
+- Required regression checks:
+- Required adversarial checks:
+- Commands/tools to run:
+- Evidence expected:
+- Tests/checks not run:
+- Reason if not run:
+
+## Domain Exception Inventory
+
+- Domain:
+- Domain-specific rules:
+- Common edge cases:
+- Data consistency risks:
+- Permission/authority risks:
+- Operational risks:
+- User/reputation/legal/financial risks:
+- Cases intentionally out of scope:
+
+## (Conditional) Code Architecture & Implementation Control
+
+[Fill if the plan includes coding, debugging, refactoring, repository edits,
+tests, dependencies, build, deployment, or generated code.]
+
+- Responsibility location:
+  - UI:
+  - API/controller:
+  - service/use-case:
+  - domain/business rule:
+  - repository/data access:
+  - infrastructure/adapter:
+- Architecture boundary:
+  - Existing abstraction/interface to use:
+  - New boundary crossing introduced:
+  - Forbidden shortcut/patch to avoid:
+  - Smallest architecture-preserving change:
+- Contract/schema:
+  - Request type/schema:
+  - Response type/schema:
+  - Error contract:
+  - DB schema/migration:
+  - Public API compatibility:
+- Technical risk:
+  - N+1/query risk:
+  - transaction/consistency need:
+  - index/unique constraint need:
+  - cache/CORS/network risk:
+  - time complexity/resource risk:
+- Test plan:
+  - unit:
+  - integration/API:
+  - DB/migration:
+  - E2E:
+  - regression:
+  - permission/security:
 
 ## (Conditional) Security & Trust Boundaries
 
@@ -200,6 +299,12 @@ Continuity, Governance — always apply and do not need self-marking.]
 ## Continuity
 
 - Internal continuity (handoff state + decisions): [what next session needs]
+- Decisions made:
+- Rationale:
+- ADR required: yes / no
+- ADR title if required:
+- Records to update:
+- Future revisit condition:
 
 [Conditional under Continuity — fill if relevant:]
 
@@ -227,6 +332,8 @@ Continuity, Governance — always apply and do not need self-marking.]
 
 - Review required: yes / no
 - Review exemption reason: [if no]
+- Deep Review Selection: [non-trivial plans; selected/skipped reviewers and
+  reasons, or N/A for trivial]
 - Personas considered: [list per deck source]
 - Persona deck sources: [paths]
 
@@ -237,7 +344,10 @@ Continuity, Governance — always apply and do not need self-marking.]
 
 #### [Persona name]
 
+- Status: PASS / FAIL / N/A
 - Severity: must-change / should-change / note
+- Inspected sections:
+- Evidence:
 - Plan risk found:
 - Required plan change:
 - Verification or gate to add:
@@ -245,7 +355,14 @@ Continuity, Governance — always apply and do not need self-marking.]
 
 #### [Persona name with no concrete plan change]
 
-- PASS: no concrete plan change.
+- Status: PASS
+- Severity: none
+- Inspected sections:
+- Evidence:
+- Plan risk found: none
+- Required plan change: none
+- Verification or gate to add: none
+- Residual risk if accepted:
 
 ---
 

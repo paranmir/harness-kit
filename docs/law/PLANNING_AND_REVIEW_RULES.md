@@ -31,6 +31,16 @@ state-changing, high-risk, externally consequential, freshness-sensitive,
 governance-affecting, release/deploy oriented, or likely to require verification
 through tests, citations, calculations, previews, dry-runs, or other evidence.
 
+Before drafting or executing a plan, the agent must run a **Clarification
+Gate**. The agent should proceed without asking the user only when all
+material execution choices are either stated, safely inferable from repository
+authority, or reversible within the approved plan. The agent must ask the user
+a focused follow-up question before execution when a missing answer would
+change the deliverable, scope, safety boundary, public contract, release state,
+cost, data handling, or user-facing recommendation. Clarification questions
+must be limited to the smallest set needed to unblock the decision; they must
+not be used as a delay tactic for ordinary discoverable facts.
+
 For plan-required work, the agent must further classify the task as **trivial**
 or **non-trivial** by checking the structural triggers listed in
 `docs/planning-protocol/task-classification.md` § Non-Trivial Triggers. Trivial
@@ -44,32 +54,45 @@ When planning is required, the agent must follow this workflow before executing
 the plan:
 
 1. Classify the request and identify task class(es).
-2. Determine importance/risk by checking against non-trivial triggers (per
+2. Run the Clarification Gate and ask the user only for missing answers that
+   materially change the plan, permission boundary, output contract, or safety
+   posture. Record any user gate in the plan's `Execution Gates` section.
+3. Determine importance/risk by checking against non-trivial triggers (per
    `docs/planning-protocol/task-classification.md` § Non-Trivial Triggers).
-3. Draft the plan using the structure in
+4. Draft the plan using the structure in
    `docs/planning-protocol/plan-template.md`. Cite each matched trigger in the
    plan's preflight fields.
-4. For non-trivial plans:
+5. Run plan-lint checks. Until a standalone `plan-lint` command exists,
+   `agentlaw verify` is the canonical mechanical enforcement surface for
+   parseable plan structure.
+6. For non-trivial plans:
    a. Self-mark the applicable conditional domains in the template's Domain
       Coverage section.
-   b. Run the persona review per `docs/planning-protocol/review-method.md`,
-      one persona at a time, sequentially. Each persona is invoked in its own
-      turn so that lens injection from one persona does not cross-contaminate
-      the next.
-   c. The Trigger Coverage Verifier persona always runs first; it validates
+   b. Run the Trigger Coverage Verifier first in an isolated review pass; it validates
       the plan's trigger marking and Domain Coverage self-mark against the
       plan content.
-   d. Consolidate findings.
-   e. Revise the plan once. When revisions affect a specific subset of plan
+   c. Run the Deep Review Selector per `docs/planning-protocol/review-method.md`.
+      Universal concerns are always checked, but not every universal persona
+      is always run as an isolated deep-review turn.
+   d. Run only the selected deep-review personas in isolated passes. Mandatory
+      isolated reviewers still run when their concern is triggered: trust
+      boundary, permission, sensitive data, state migration, external contract,
+      irreversible action, rollback/user gate, governance/rule-system change,
+      or high-impact legal/financial/medical decision.
+   e. Run review-lint checks against the recorded review evidence.
+   f. Consolidate findings.
+   g. Revise the plan once. When revisions affect a specific subset of plan
       sections, re-invoke only the personas whose primary or optional
       sections (per `docs/planning-protocol/persona-section-map.md`) include
       the revised sections.
-5. For trivial plans:
+7. For trivial plans:
    a. Run only the Trigger Coverage Verifier persona to confirm the trivial
       classification is correct.
-   b. If the verifier finds a trigger that was missed, reclassify as
+   b. Run the minimum plan-lint profile.
+   c. If the verifier finds a trigger that was missed, reclassify as
       non-trivial and restart from step 4.
-6. Execute the revised plan or ask for user approval when required.
+8. Execute the revised plan or ask for user approval when required by
+   `Execution Gates`.
 
 The revised plan is the execution plan. Persona review comments are not the
 goal; they are inputs for improving the plan.
@@ -85,13 +108,18 @@ Instead, review-required plans must record compact review evidence fields:
 - `Plan reviewed`
 - `Personas applied`
 - `Revised after review`
+- `Deep Review Selection` (non-trivial only, unless explicitly not applicable)
+- `Execution Gates`
 
 When review is not required, the plan must record `Review exemption reason`.
 
 Review-required plans must also include a short `Separate Persona Review
-Passes` section. Each persona pass must record concrete findings using the
-review-method fields: severity, plan risk found, required plan change,
-verification or gate to add, and residual risk if accepted.
+Passes` section. Each persona pass should use the review-method fields:
+status, severity, inspected sections, evidence, plan risk found, required plan
+change, verification or gate to add, and residual risk if accepted. Legacy
+plans that were authored before these strict fields landed may use the prior
+five-field shape or compact PASS shape until migrated, but new plans should not
+record evidence-free PASS/N/A.
 
 When a persona completes its pass and finds no concrete plan change, the plan
 may record compact no-finding evidence instead of the full five-field finding
@@ -104,6 +132,13 @@ and the separate persona-pass section are the parseable contract that proves
 the plan was not treated as ready before review. An agent must not mark
 `Plan reviewed: yes` before those persona passes are actually performed and
 recorded.
+
+`Execution Gates` are the parseable contract for user re-questioning and
+approval. A plan must name whether execution can proceed without user approval,
+which actions require approval, and stop conditions that force reclassification
+or re-questioning. Agents must not ask follow-up questions for every ordinary
+unknown; they must ask when the missing fact materially changes safety,
+contract, scope, cost, irreversible action, or the user's intended outcome.
 
 If the agent discovers during implementation that:
 
@@ -129,7 +164,7 @@ The canonical operational planning sources are:
   planning is required, identifying task class(es), and determining trivial
   vs non-trivial via structural triggers
 - `docs/planning-protocol/review-method.md` for the plan review and
-  consolidation procedure
+  consolidation procedure, including Deep Review Selection
 - `docs/planning-protocol/persona-decks-core.md` for the universal review
   bench
 - `docs/planning-protocol/persona-decks-specialized.md` for substance- and
@@ -161,6 +196,10 @@ The `plan_discipline_reminder` returned by `agentlaw_session_restore` and
   plus the `Separate Persona Review Passes` evidence section name (which now
   includes `Risk triggers matched`, `Importance/Risk`, and `Domain self-mark`
   in addition to the prior fields)
+- `clarification_gate`: ask the user before execution only when a missing
+  answer materially changes scope, safety, contract, irreversible action, cost,
+  or the intended outcome
+- `execution_gates_source`: `docs/planning-protocol/plan-template.md`
 - `non_trivial_triggers_obligation`: every plan-required task is classified
   as trivial or non-trivial by checking the structural triggers in
   `task-classification.md`; matched triggers must be cited
@@ -174,6 +213,10 @@ The `plan_discipline_reminder` returned by `agentlaw_session_restore` and
   Transitional Exemption
 - `section_revision_rereview_obligation`: when a plan is revised after
   review, only the personas whose mapped sections changed are re-invoked
+- `selected_deep_review_obligation`: universal concerns are always checked by
+  plan-lint / review-lint / selector reasoning, but isolated persona turns are
+  selected by triggers, lint findings, high-stakes concerns, or selector
+  reasons
 - `before_action_authority_check`: before substantive action, identify and
   consult the governing law, protocol, tool, plan, or contract when the action
   can change files, plans, memory, governance, runtime behavior, verification,

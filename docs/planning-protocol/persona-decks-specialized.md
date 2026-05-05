@@ -14,8 +14,10 @@ are invoked **only when the relevant substance is present in the plan**:
   legal-financial-medical/etc.). Field-specific by design; do not absorb
   into structural domains.
 
-All specialized personas run **sequentially in their own review turns** per
-`review-method.md` § Workflow.
+Selected specialized personas run **sequentially in their own review turns** per
+`review-method.md` § Workflow. If more than six specialized personas are
+selected, the Integrator must decide whether to split the task. More reviewers
+should not be used to compensate for an over-broad task.
 
 ## Substance-Triggered Personas (21)
 
@@ -36,6 +38,17 @@ All specialized personas run **sequentially in their own review turns** per
 | **Permission Boundary Reviewer** | plan grants, scopes, or revokes permissions or authorization | Verify the granted authority is the minimum required. Reject over-broad, perpetual, or unscoped grants. |
 | **Adversarial Path Reviewer** | plan introduces a surface that could be exercised by malicious or accidental misuse | Enumerate adversarial scenarios (system-side threat model + user-side abuse cases). Require concrete plan changes for each non-trivial scenario. |
 | **Supply Chain Reviewer** | plan introduces or upgrades external dependencies | Verify provenance, integrity, and trust assumptions of each new external dependency. |
+
+Security-related findings must include:
+
+- Vulnerability:
+- Attack condition:
+- Reproduction path:
+- Affected asset:
+- Impact:
+- Fix:
+- False-positive possibility:
+- Required test/check:
 
 ### Domain 7 (Data Stewardship) — 2
 
