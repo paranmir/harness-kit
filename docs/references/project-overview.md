@@ -33,6 +33,7 @@ Because `agentlaw` is the project that builds the harness itself, this repositor
 | --- | --- | --- | --- |
 | `AGENTLAW_CONSTITUTION.md`, `HARNESS_*_TOOL.md`, `AGENTS.md` (root) | Local authoring copies; mirrored from `publish-repo/` | No (publish-repo holds the canonical version) | Yes (via publish-repo unpack) |
 | `docs/law/*` | Local authoring law (may diverge from publish-repo seed) | No (publish-repo holds the generalized version) | Yes (publish-repo seed unpacks) |
+| `docs/planning-protocol/*` | Operational planning protocol — task classification (with non-trivial triggers), review method, persona decks (universal + specialized), plan template, persona-section map | No (publish-repo holds the generalized version) | Yes (publish-repo seed unpacks) |
 | `publish-repo/*` | Canonical distribution scaffold; bundled into pip package | Yes (this directory is the seed) | Yes (entire contents unpack into target root) |
 | `src/agentlaw/` | Python source for the pip package itself (CLI, MCP server, schema, scaffold-bundling) | **Yes — never appears in target repos** | No |
 | `plans/active/`, `plans/completed/`, `plans/tech-debt-tracker.md` | Local authoring workflow state | Yes (publish-repo's plans/ is empty starter) | No |
@@ -56,6 +57,30 @@ _Obligation: see `docs/law/CODE_AUTHORSHIP_AND_STEWARDSHIP_RULES.md` "Code Archi
 This map also serves as the freshness anchor for the verifier's Layer 2 enforcement (`_test_project_overview_map_scope_freshness` in `verify_cmd.py`): the check compares each scoped file's most recent git commit timestamp against this file's most recent commit timestamp, so any structural change within `Map scope:` should be committed alongside the diagram update it implies. An acknowledgment fast-path PASSes when this file has uncommitted local modifications, so the developer's pre-commit retouch workflow (edit scoped file → edit overview → verify → commit) stays available without weakening the post-commit constraint.
 
 A sibling verifier subsystem `_test_plan_coverage_for_changes` enforces plan coverage at the same baseline (`pyproject.toml` version-bump SHA): every non-trivial-surface file modified since the bump must be listed as a backticked path inside the indented children of an active or recently-completed plan's `- **Affected surfaces**:` bullet (parseable format defined in `docs/law/REPOSITORY_ARTIFACT_RULES.md` § Active Plan Preflight Fields). The parser stops at the first sibling top-level bullet (`- **Public contract impact**:` and the like), so backticks mentioned in other preflight fields do not silently confer coverage. The check shares the freshness layer's git-baseline machinery and runs alongside it inside `run_verify`.
+
+The active-plan verifier also checks planning-review evidence: review-required
+active plans must carry compact readiness fields, classification fields when
+declared (`Importance/Risk`, `Risk triggers matched`, `Domain self-mark`), and
+a `Separate Persona Review Passes` section. Persona blocks with concrete
+findings must carry the detailed evidence keys; no-finding persona blocks may
+use compact PASS evidence. Trivial plans must include `Trigger Coverage
+Verifier` in `Personas applied`; non-trivial plans must include either a
+`Domain self-mark` field or a `## Domain Coverage` section. Plans without
+`Importance/Risk` bypass the classification-specific checks under the bootstrap
+transitional exemption from `docs/law/PLANNING_AND_REVIEW_RULES.md` § Bootstrap
+Transitional Exemption. This is an artifact-shape check for false or compressed
+review completion; it does not prove reasoning quality.
+
+The runtime authority reminder surface includes the plan-discipline packet used
+by session restore/save. That packet points to the planning protocol, warns
+against false `Plan reviewed: yes` readiness, and includes a before-action
+authority check for substantive actions that can affect durable or external
+state.
+
+The publish-seed planning-protocol verifier treats `README.md`,
+`task-classification.md`, `review-method.md`, `persona-decks-core.md`,
+`persona-decks-specialized.md`, `plan-template.md`, and
+`persona-section-map.md` as the complete shared protocol file set.
 
 The `agent_setup` package remains represented as one module-dependency node because host-specific registration planners still collaborate only through `runner.py` and shared setup models. Adapter-internal command-shape changes, such as Codex cwd-based MCP registration, do not add a new cross-module dependency or a new entry-point flow.
 
@@ -193,6 +218,7 @@ graph TD
     harness_pair["_test_harness_content_oracle_pairing"]
     behavioral["_test_behavioral_oracle_exists"]
     mcp_cov["_test_contract_mcp_tool_coverage"]
+    active_plan["_test_active_plan_preflight_fields"]
     map_fresh["_test_project_overview_map_scope_freshness"]
   end
 
