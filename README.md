@@ -14,11 +14,24 @@ A law-first governance kit for AI coding agents — install governance structure
 pipx install agentlaw
 ```
 
+Default install is lightweight. For semantic embeddings and model download
+support, install the optional extra:
+
+```bash
+pipx install "agentlaw[embeddings]"
+```
+
+For an existing pipx install:
+
+```bash
+pipx inject agentlaw sentence-transformers huggingface_hub
+```
+
 ### Quick Start
 
 ```bash
 # 1. Place agentlaw governance into your project
-agentlaw init <your-project-dir>
+agentlaw init <your-project-dir> --skip-model
 
 # 2. Register the agentlaw-memory MCP server with your AI agent host.
 #    The default `--setup-agents prompt` mode emits LLM-actionable
@@ -54,7 +67,7 @@ The agent calls `agentlaw_session_save` with the working frame, and the save too
 
 ### Multi-project usage
 
-Install `agentlaw` once with `pipx install agentlaw`, then bootstrap each project independently with `agentlaw init <dir> --setup-agents prompt`. Each initialized project gets its own `<dir>/.harness/index/meta.db`; the memory index is not shared across projects.
+Install `agentlaw` once with `pipx install agentlaw`, then bootstrap each project independently with `agentlaw init <dir> --skip-model --setup-agents prompt` for the lightweight FTS-only path. Use `pipx install "agentlaw[embeddings]"` or inject the embedding dependencies first if you want `agentlaw init` to download the semantic model. Each initialized project gets its own `<dir>/.harness/index/meta.db`; the memory index is not shared across projects.
 
 Host registration scope differs by agent host:
 
@@ -78,8 +91,8 @@ Host registration scope differs by agent host:
 
 - **Python** 3.11 or newer.
 - **Operating systems**: Windows, Ubuntu, and macOS supported.
-- **Disk**: the embedding model occupies roughly 500 MB once downloaded (cached under `<your-project>/.harness/models/`).
-- **Runtime dependencies** are installed automatically by `pipx install agentlaw` and declared in `pyproject.toml`.
+- **Disk**: the optional embedding model occupies roughly 500 MB once downloaded (cached under `<your-project>/.harness/models/`).
+- **Runtime dependencies** are installed automatically by `pipx install agentlaw` and declared in `pyproject.toml`. Optional semantic embedding dependencies are installed only with the `embeddings` extra or an explicit `pipx inject`.
 
 ### What You Get After `agentlaw init`
 
@@ -115,8 +128,8 @@ This section is the agent-facing reading order for first-time entry into a proje
 
 When the user asks you to set up agentlaw in a project:
 
-1. Install agentlaw: `pipx install agentlaw`.
-2. Run `agentlaw init <target-project> --setup-agents prompt` in the target. The `prompt` default emits LLM-actionable instructions for registering the `agentlaw-memory` MCP server in your host config; read those instructions and edit your host config rather than letting init auto-write to user-level config (that requires `--setup-agents auto --yes`).
+1. Install agentlaw: `pipx install agentlaw`. Use `pipx install "agentlaw[embeddings]"` only when you want local semantic embeddings.
+2. Run `agentlaw init <target-project> --skip-model --setup-agents prompt` in the target for the lightweight path. Omit `--skip-model` only after installing the embedding extra. The `prompt` default emits LLM-actionable instructions for registering the `agentlaw-memory` MCP server in your host config; read those instructions and edit your host config rather than letting init auto-write to user-level config (that requires `--setup-agents auto --yes`).
 3. Restart your host after the config edit so the new MCP registration is picked up.
 4. On the next agent session, call `agentlaw_session_restore` (MCP) or `agentlaw session-restore --target . --json` (CLI fallback) and follow the §Canonical Restore Route Mandatory Tier in the response.
 5. If the MCP server is not visible in a new session despite restart, run `agentlaw mcp-recover --target . --client auto --json` to diagnose runtime + registration state.
