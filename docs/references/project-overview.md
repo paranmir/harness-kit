@@ -60,12 +60,15 @@ A sibling verifier subsystem `_test_plan_coverage_for_changes` enforces plan cov
 
 The active-plan verifier also checks planning-review evidence: review-required
 active plans must carry compact readiness fields, classification fields when
-declared (`Importance/Risk`, `Risk triggers matched`, `Domain self-mark`), and
-a `Separate Persona Review Passes` section. Persona blocks with concrete
-findings must carry the detailed evidence keys; no-finding persona blocks may
-use compact PASS evidence. Trivial plans must include `Trigger Coverage
-Verifier` in `Personas applied`; non-trivial plans must include either a
-`Domain self-mark` field or a `## Domain Coverage` section. Plans without
+declared (`Importance/Risk`, `Risk triggers matched`, `Domain self-mark`),
+Deep Review Selection / Execution Gates evidence when present, and a
+`Separate Persona Review Passes` section. Legacy persona blocks with concrete
+findings must carry the detailed five evidence keys; strict review-lint blocks
+also carry `Status`, `Inspected sections`, and `Evidence`, and the verifier
+rejects PASS / N/A strict blocks with empty evidence. No-finding legacy blocks
+may still use compact PASS evidence. Trivial plans must include `Trigger
+Coverage Verifier` in `Personas applied`; non-trivial plans must include either
+a `Domain self-mark` field or a `## Domain Coverage` section. Plans without
 `Importance/Risk` bypass the classification-specific checks under the bootstrap
 transitional exemption from `docs/law/PLANNING_AND_REVIEW_RULES.md` § Bootstrap
 Transitional Exemption. This is an artifact-shape check for false or compressed
@@ -73,9 +76,10 @@ review completion; it does not prove reasoning quality.
 
 The runtime authority reminder surface includes the plan-discipline packet used
 by session restore/save. That packet points to the planning protocol, warns
-against false `Plan reviewed: yes` readiness, and includes a before-action
-authority check for substantive actions that can affect durable or external
-state.
+against false `Plan reviewed: yes` readiness, includes the Clarification Gate,
+Execution Gates source, selected deep-review obligation, strict review evidence
+field names, and a before-action authority check for substantive actions that
+can affect durable or external state.
 
 The publish-seed planning-protocol verifier treats `README.md`,
 `task-classification.md`, `review-method.md`, `persona-decks-core.md`,
@@ -251,7 +255,7 @@ graph TD
   conflicts["init_cmd.detect_conflicts"]
   copy_step["unpack files into target"]
   migrate["db.apply_migrations<br/>(create target/.harness/index/meta.db)"]
-  embed_ready["embeddings.ensure_model<br/>(download model if missing)"]
+  embed_ready["embeddings.ensure_model<br/>(download model if missing;<br/>requires optional embeddings extra)"]
   agents_plan["agent_setup.runner.create_agent_setup_plans"]
   agents_apply["agent_setup.runner.run_agent_setup"]
 
