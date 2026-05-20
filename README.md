@@ -47,6 +47,9 @@ agentlaw init <your-project-dir>
   review coverage, and acceptance-criterion oracles for non-trivial work.
 - **Verification** — `agentlaw verify` checks scaffold integrity and drift; the
   runtime also exposes plan-review and memory verification flows through MCP.
+- **Host hooks and Agent Skills** — `agentlaw init` installs routing files,
+  reminder skills, and additive user-prompt hooks so Claude Code and Codex see
+  the same governance entry points.
 - **Agent setup** — host-specific setup guidance for Claude Code, Codex, Gemini
   CLI, and other MCP-capable agents without requiring every project to invent
   its own bootstrap instructions.
@@ -114,6 +117,12 @@ layout that `agentlaw init` places into a governed target project.
   update workflow.
 - `docs/planning-protocol/*` — task classification, plan template, review
   method, persona decks, and persona-to-section map.
+- `.agents/skills/*` and `.claude/skills/*` — Agent Skills for Codex-compatible
+  and Claude-compatible hosts. They remind the agent to read the governing
+  fix/init/update and plan-authoring procedures at the right time.
+- `AGENTS.md` and `CLAUDE.md` — routing-only entry maps for agent hosts. They
+  point to the law and root control documents; they are not parallel rule
+  stores.
 - `memory/*` — starter continuity files. In your own project these become the
   local working set, logs, rules, known facts, and preferences.
 - `plans/*` — starter plan directories and the tech-debt tracker used by the
@@ -122,6 +131,41 @@ layout that `agentlaw init` places into a governed target project.
 This repository is not an authoring workspace dump. It should not carry local
 runtime databases, generated index state, local operation logs, or
 machine-specific paths.
+
+### Hooks, Skills, and Memory Layout
+
+After `agentlaw init`, a target project has three agent-visible reminder
+channels:
+
+- **User prompt hook** — supported hosts get an additive `UserPromptSubmit`
+  hook that runs `agentlaw user-prompt-hook`. Claude Code stores this in
+  `.claude/settings.json`; Codex stores it in `.codex/config.toml`. Existing
+  hooks are preserved.
+- **Agent Skills** — `.agents/skills/agentlaw-governance/` and
+  `.claude/skills/agentlaw-governance/` route fix/init/update/governance work
+  to `AGENTLAW_FIX_TOOL.md`, `AGENTLAW_INIT_TOOL.md`, or
+  `AGENTLAW_UPDATE_TOOL.md`. The matching `agentlaw-plan-authoring` skills
+  route plan creation, review, execution, oracle, and archive work to
+  `docs/planning-protocol/*`.
+- **Routing files** — `AGENTS.md` and `CLAUDE.md` tell the host where the
+  governing documents live. They stay short by design.
+
+The canonical memory layout is Markdown:
+
+- `memory/working-set.md` — current goal, next actions, open questions, and
+  handoff state.
+- `memory/LOOKUP_RULES.md` — when to use memory tools versus current repository
+  reads.
+- `memory/known-facts/` — durable facts about the target project.
+- `memory/logs/` — append-only decisions, corrections, session saves, and
+  verification notes.
+- `memory/rules/` — durable behavioral rules that do not belong in law.
+- `memory/preferences.md` — user or maintainer preferences.
+
+`.harness/` is runtime state. Its SQLite index at `.harness/index/meta.db`,
+downloaded embedding model, and generated search state are rebuildable; they
+should not be copied into this public seed or treated as source-of-truth
+documentation.
 
 ### Requirements
 
@@ -139,6 +183,9 @@ machine-specific paths.
 ├── AGENTLAW_UPDATE_TOOL.md          # update flow
 ├── AGENTLAW_FIX_TOOL.md             # gap-fix flow
 ├── AGENTS.md                       # routing-only entry map for agents
+├── CLAUDE.md                       # routing-only entry map for Claude Code
+├── .agents/skills/                 # Codex-compatible Agent Skills
+├── .claude/skills/                 # Claude-compatible Agent Skills
 ├── docs/
 │   ├── law/                        # law layer
 │   ├── contracts/                  # boundary contracts
@@ -178,6 +225,9 @@ When the user asks you to set up agentlaw in a project:
 
 - **`AGENTLAW_CONSTITUTION.md`** — highest authority; structural invariants. Rare changes; never violate.
 - **Root control tools** (`AGENTLAW_INIT_TOOL.md`, `AGENTLAW_UPDATE_TOOL.md`, `AGENTLAW_FIX_TOOL.md`) — agent-facing procedure documents. Init bootstraps a fresh project, Update incorporates kit upgrades into an existing target, Fix runs the gap-resolution protocol.
+- **Agent Skills** (`.agents/skills/*`, `.claude/skills/*`) — host-visible
+  reminders that route governance and plan-authoring work back to the root
+  control tools and planning protocol.
 - **`docs/law/*` (law layer)** — rules every session reads: memory and continuity, artifact rules, oracle and judgment, code authorship and stewardship, failure taxonomy, mechanical enforcement policy, starter specialization rules, scope, input/output contract.
 - **`docs/contracts/*`** — boundary surfaces shared with the kit (MCP tool surface, shared baseline, update workflow).
 - **`docs/references/*`** — research-and-context references; not authoritative.
