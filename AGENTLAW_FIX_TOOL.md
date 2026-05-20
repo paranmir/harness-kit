@@ -7,7 +7,8 @@ This document helps you:
 - describe the problem clearly
 - decide whether it is already governed
 - choose the right target document
-- add the smallest correct correction
+- define what would make the failure class sufficiently closed
+- choose the least correction that satisfies that sufficiency contract
 
 It does not replace the constitution, the law layer, operational artifacts, or execution-entry documents.
 
@@ -25,6 +26,8 @@ Use this document when one or more of the following is true:
 
 Do not use this document as a substitute for normal project work when no current governance problem exists.
 
+For distribution or setup-related fixes, use the current public distribution model as the starting fact: install and upgrade come from the PyPI package `agentlaw` (`pipx install agentlaw`, `pipx upgrade agentlaw`), while `https://github.com/paranmir/agentlaw` is the public seed repository for inspecting target-facing starter content. Do not route target users to a local development workspace or a removed publish repository.
+
 ## Required Inputs
 Before using this document, read:
 - `AGENTLAW_CONSTITUTION.md`
@@ -39,8 +42,12 @@ The quick flow is a map; Steps 1 through 7 are the executable sequence.
 ## Completion Checks
 A fix-analysis run is complete only when:
 - the observed problem is described with evidence
+- the failure class and likely recurrence surfaces are named
+- the sufficiency contract is defined before choosing a correction
 - the owning layer is explicit
-- the smallest sufficient correction was chosen
+- correction candidates were compared against the sufficiency contract
+- the chosen correction survived adversarial review for under-fix and over-fix
+- the correction type is labeled honestly
 - tracker and enforcement follow-up were considered
 - related synchronization targets were checked when structure changed
 
@@ -50,15 +57,21 @@ Treat the result as incomplete when:
 - a higher-order rule is changed before checking lower-order corrections
 - a new rule is added without checking merge, simplification, narrowing, or deletion alternatives
 - repeated or mechanically detectable problems are left prose-only without a real reason
+- "smallest" is treated as the smallest text or code diff rather than the least correction that satisfies a defined sufficiency contract
+- cleanup, workaround, or tracker-only treatment is presented as a fix without closing the failure class
+- no rejected alternatives or adversarial review are recorded for a non-trivial fix
 
 ## Quick Use Flow
 1. Record the problem in plain terms.
-2. Classify what kind of problem it is.
-3. Check whether the problem is important enough for law or tracker handling.
+2. Classify and generalize the failure class.
+3. Check whether the discrepancy is important enough for law, tracker, or enforcement handling.
 4. Check existing rules first.
-5. Choose the owning layer.
-6. Apply the smallest sufficient correction.
-7. Verify that references, tracker entries, and enforcement follow-up were not missed.
+5. Define the sufficiency contract.
+6. Choose the owning layer or abstraction.
+7. Generate and score correction candidates.
+8. Choose the least sufficient candidate and run adversarial review.
+9. Apply the correction and label its type honestly.
+10. Verify that references, tracker entries, synchronization targets, and enforcement follow-up were not missed.
 
 ## Step 1. Record The Problem
 Write down:
@@ -70,7 +83,7 @@ Write down:
 
 Do not begin by inventing a rule name. Begin by describing the observed problem.
 
-## Step 2. Classify The Problem
+## Step 2. Classify And Generalize The Failure Class
 Classify the current problem as one or more of:
 - `structure problem`
 - `scope problem`
@@ -93,6 +106,15 @@ Then decide which of these best describes the gap:
 - `genericization gap`
 
 Use this step to understand the problem before deciding where to write anything.
+
+Then generalize the observed problem into a failure class:
+
+- Is this a single local incident, or a class of failures?
+- Where else can the same class recur?
+- Which neighboring cases would make the same mistake likely?
+- Does the class involve false readiness, missing authority, misplaced ownership, weak oracle, abstraction drift, enforcement absence, or only residue cleanup?
+
+Do not choose a correction until the failure class and recurrence surfaces are visible. If the issue is only residue cleanup, label it as cleanup rather than fix.
 
 ## Step 3. Check Whether The Discrepancy Is Important
 Do not assume every discrepancy belongs in the law layer.
@@ -127,7 +149,23 @@ Ask:
 
 Default to amendment of existing text rather than creating parallel meaning.
 
-## Step 5. Choose The Owning Layer
+## Step 5. Define The Sufficiency Contract
+Before choosing a correction, define what would make the fix sufficient.
+
+A sufficiency contract answers:
+
+1. What failure class is being corrected?
+2. Which recurrence paths must be closed within the owning scope?
+3. Which recurrence paths are intentionally left open, and why?
+4. What abstraction, rule, tool, or artifact boundary must remain coherent after the correction?
+5. What oracle, negative test, verifier check, review evidence, or explicit infeasibility rationale will prove the correction?
+6. What extension path must remain open so future work does not need to undo this correction before improving the system?
+
+For code, verifier, CLI, MCP, schema, installer, or runtime changes, the sufficiency contract must respect `docs/law/CODE_AUTHORSHIP_AND_STEWARDSHIP_RULES.md`: maintainability and testability are part of correctness. "Smallest" does not authorize one-off branching, responsibility mixing, missing tests, or avoidable technical debt.
+
+If the chosen correction does not satisfy the sufficiency contract, it is not a fix. It is a workaround, cleanup, tracker-only record, or partial fix.
+
+## Step 6. Choose The Owning Layer Or Abstraction
 Use this ownership map:
 - constitutional structure and invariant starter protections -> `AGENTLAW_CONSTITUTION.md`
 - starter carry-forward and project-instance preservation rules -> `docs/law/STARTER_SPECIALIZATION_RULES.md`
@@ -148,8 +186,49 @@ Use this ownership map:
 
 Do not move a local project problem into the constitution unless it exposes a genuinely shared structural gap.
 
-## Step 6. Apply The Smallest Sufficient Correction
-Use this ladder:
+## Step 7. Generate And Score Correction Candidates
+Generate at least two plausible correction candidates for non-trivial fix-analysis runs, unless only one candidate is structurally possible.
+
+Typical candidates include:
+
+- cleanup only
+- tracker-only record
+- local prose clarification
+- amendment of an existing rule or protocol
+- runtime reminder or prompt support
+- verifier, test, lint, or CI enforcement
+- enabling refactor before behavior change
+- broader redesign or new artifact, only when existing abstractions cannot own the failure class
+
+Score each candidate briefly against:
+
+- recurrence closure: how much of the failure class it closes
+- abstraction fit: whether it belongs at the owning layer or boundary
+- oracle strength: whether the result is executable, mechanically checkable, or otherwise verifiable
+- extension safety: whether future work can extend it without undoing the correction
+- cost and reversibility: whether the scope is proportionate and recoverable
+
+Reject candidates that win only because they are smaller while failing the sufficiency contract. Also reject candidates that satisfy the contract only by overbuilding a new abstraction, broad rewrite, or policy layer when a narrower owned correction would work.
+
+## Step 8. Choose The Least Sufficient Candidate And Run Adversarial Review
+Choose the least costly candidate that satisfies the sufficiency contract.
+
+Then attack the chosen candidate before applying it:
+
+1. Does it close the failure class, or only remove the current symptom?
+2. Can the same failure recur in a neighboring case the correction does not cover?
+3. Does it bypass the owning abstraction with a special case?
+4. Will future extension need to undo this correction first?
+5. Is the oracle missing, too weak, or normal-case-only?
+6. Was there a lower-cost candidate that satisfied the same contract?
+7. Is this over-designed relative to the observed failure and recurrence risk?
+
+If the adversarial review finds under-closure, bad abstraction fit, missing oracle, or over-design, revise the candidate or the sufficiency contract before applying a correction.
+
+Record rejected alternatives for non-trivial runs. The record may be short, but it must explain why cleanup-only, prose-only, enforcement, or redesign was accepted or rejected when those options are relevant.
+
+## Step 9. Apply The Correction And Label Its Type
+Use this ladder after the sufficiency contract and candidate review:
 1. no rule addition
 2. tracker entry only
 3. local law amendment
@@ -173,9 +252,24 @@ For existing-project bootstrap failures:
 - use at least `local law amendment` when concrete repository facts are visible but law text remains generic
 - use at least `tracker entry only` when important discrepancies exist but remain untracked
 
-## Step 7. Verify Completion
+Label the correction honestly:
+
+- `fix`: closes the named failure class within the owning scope
+- `partial fix`: closes some recurrence paths and names the remaining paths
+- `workaround`: mitigates the current symptom without closing recurrence
+- `cleanup`: removes residue without changing recurrence risk
+- `tracker-only`: records a known gap without correcting it yet
+- `enforcement`: mechanically rejects recurrence through tests, verifier, lint, CI, schema validation, or equivalent checks
+
+Do not call a cleanup, workaround, or tracker-only record a fix. It can still be the right action, but its label must preserve the residual risk.
+
+**Owning-layer presence enforcement.** When applying FIX_TOOL, output lands in the owning layer per the Step 9 ladder above — tracker entry, local law amendment, AGENTS.md guardrail, constitutional amendment, or mechanical enforcement. Output MUST NOT land in agent-local memory (host-private feedback files, conversation-only notes, scratch files outside `docs/` / `src/` / `tests/`). Lighter-alternative output channels bypass the ladder's owning-layer escalation and are an instance of the false-readiness meta-family (form-correct "fix-tool applied" with substance-incomplete output channel). See `docs/law/MECHANICAL_ENFORCEMENT_POLICY.md` §"form-vs-substance detection check" for the mechanical check.
+
+## Step 10. Verify Completion
 After making the correction, check:
 - does the new text address the actual problem
+- does it satisfy the sufficiency contract
+- did adversarial review leave any unresolved under-fix or over-fix risk
 - is it placed at the correct layer
 - did it preserve existing protections
 - did it avoid unnecessary escalation
@@ -209,11 +303,22 @@ When writing up the result of this process, make these explicit:
 - `problem`
 - `evidence`
 - `analysis`
+- `failure class`
+- `recurrence surfaces`
+- `sufficiency contract`
 - `repetition status`
 - `existing rule check result`
 - `merge, simplify, narrow, or delete alternative check result`
 - `owning layer`
+- `correction candidates`
+- `candidate scoring`
+- `chosen correction`
+- `adversarial review`
+- `rejected alternatives`
+- `correction type label`
 - `chosen target`
+- `oracle / negative test / verifier`
+- `residual risk`
 - `whether tracker follow-up is needed`
 - `whether enforcement follow-up is needed`
 
