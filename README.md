@@ -4,6 +4,11 @@ A law-first governance kit for AI coding agents — install governance structure
 
 `agentlaw` gives any repository a governed starting structure that AI coding agents can read, follow, and maintain. It works for brand-new repositories and already-existing codebases alike. Drop it in, run the bootstrap, and the agent knows what the rules are before it writes a single line.
 
+In practical terms, agentlaw gives your project a stable agreement layer:
+law-first governance documents, memory and continuity records, planning and
+review rules, verification gates, and agent setup instructions that make those
+rules visible to the coding agent at the start of each session.
+
 ---
 
 ## For Humans
@@ -29,6 +34,25 @@ agentlaw init <your-project-dir>
 #       Restore the session
 #    The agent loads the harness context and you can start work.
 ```
+
+### What agentlaw Provides
+
+- **Law-first governance** — a constitution, root control procedures, and a
+  law layer under `docs/law/*` that establish what the agent must read before
+  implementation.
+- **Memory and continuity** — `memory/*` plus the `agentlaw-memory` MCP server,
+  so new sessions can restore the current goal, active plans, durable rules,
+  preferences, and recent handoff state.
+- **Planning and review** — plan templates, task classification, persona decks,
+  review coverage, and acceptance-criterion oracles for non-trivial work.
+- **Verification** — `agentlaw verify` checks scaffold integrity and drift; the
+  runtime also exposes plan-review and memory verification flows through MCP.
+- **Agent setup** — host-specific setup guidance for Claude Code, Codex, Gemini
+  CLI, and other MCP-capable agents without requiring every project to invent
+  its own bootstrap instructions.
+- **Bootstrap/update/fix flows** — `AGENTLAW_INIT_TOOL.md`,
+  `AGENTLAW_UPDATE_TOOL.md`, and `AGENTLAW_FIX_TOOL.md` give agents concrete
+  procedures for setup, kit upgrades, and governance-gap repair.
 
 ### Using agentlaw in Your AI Coding Session
 
@@ -74,12 +98,37 @@ Host registration scope differs by agent host:
 
 **Recursive improvement.** The kit develops by using itself. Every plan that lands in the source repository goes through the same `AGENTLAW_INIT_TOOL.md` / `AGENTLAW_UPDATE_TOOL.md` / `AGENTLAW_FIX_TOOL.md` rules the kit ships. Every law change is mirrored to the public seed (this repository) and to the bundled package scaffold. The same `agentlaw verify` you run against your project also runs against the kit itself.
 
+### What This Repository Contains
+
+This public repository is the public seed and reader-facing reference for the
+agentlaw harness. Install the package from PyPI; use this repository to inspect
+the scaffold, law documents, contracts, planning protocol, and starter memory
+layout that `agentlaw init` places into a governed target project.
+
+- `AGENTLAW_CONSTITUTION.md` and `AGENTLAW_*_TOOL.md` — the top-level
+  governance documents agents are expected to consult.
+- `docs/law/*` — the core law layer: scope, input/output contract, memory,
+  artifact, planning, oracle, stewardship, failure taxonomy, and enforcement
+  rules.
+- `docs/contracts/*` — shared contracts, including the MCP tool surface and
+  update workflow.
+- `docs/planning-protocol/*` — task classification, plan template, review
+  method, persona decks, and persona-to-section map.
+- `memory/*` — starter continuity files. In your own project these become the
+  local working set, logs, rules, known facts, and preferences.
+- `plans/*` — starter plan directories and the tech-debt tracker used by the
+  harness structure.
+
+This repository is not an authoring workspace dump. It should not carry local
+runtime databases, generated index state, local operation logs, or
+machine-specific paths.
+
 ### Requirements
 
 - **Python** 3.11 or newer.
 - **Operating systems**: Windows, Ubuntu, and macOS supported.
 - **Disk**: the embedding model occupies roughly 500 MB once downloaded (cached under `<your-project>/.harness/models/`).
-- **Runtime dependencies** are installed automatically by `pipx install agentlaw` and declared in `pyproject.toml`.
+- **Runtime dependencies** are installed automatically by `pipx install agentlaw` from the PyPI package metadata.
 
 ### What You Get After `agentlaw init`
 
@@ -91,19 +140,23 @@ Host registration scope differs by agent host:
 ├── AGENTLAW_FIX_TOOL.md             # gap-fix flow
 ├── AGENTS.md                       # routing-only entry map for agents
 ├── docs/
-│   ├── harness/                    # law layer
+│   ├── law/                        # law layer
 │   ├── contracts/                  # boundary contracts
+│   ├── planning-protocol/          # plan/review method and personas
 │   └── references/                 # local references
 ├── memory/                         # working-set, logs, rules, preferences
-├── docs/plans/                     # plans (initially empty)
+├── plans/                          # active/completed plans and tracker
 └── .harness/                       # runtime tree (DB, embedding model)
 ```
 
-The agent reads law and routing on every session restore; you do not maintain a separate CLAUDE.md / AGENTS.md / .cursorrules.
+The agent reads law, routing, active plans, and memory on every session restore;
+you do not maintain a separate CLAUDE.md / AGENTS.md / .cursorrules as a
+parallel rule store.
 
 ### Links
 
-- **PyPI**: https://pypi.org/project/agentlaw/ — for source repository and issue tracker, follow the links on the PyPI project page.
+- **PyPI**: https://pypi.org/project/agentlaw/
+- **Repository**: https://github.com/paranmir/agentlaw
 
 ---
 
@@ -129,7 +182,7 @@ When the user asks you to set up agentlaw in a project:
 - **`docs/contracts/*`** — boundary surfaces shared with the kit (MCP tool surface, shared baseline, update workflow).
 - **`docs/references/*`** — research-and-context references; not authoritative.
 - **`memory/*`** — derived continuity (working-set, logs, rules, preferences, lookup rules). Below law in authority.
-- **`docs/plans/active/*` and `docs/plans/completed/*`** — work-in-flight and historical work. Active plans are read-on-restore.
+- **`plans/active/*` and `plans/completed/*`** — work-in-flight and historical work. Active plans are read-on-restore.
 
 ### Governing hierarchy
 
