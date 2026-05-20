@@ -20,7 +20,7 @@ Do not use this document when:
 
 The full update cycle has three steps. Steps 1 and 3 are user-driven (terminal commands). Step 2 is LLM-driven and is the substance of this document.
 
-1. **Infrastructure update (terminal)**: `pipx upgrade agentlaw`. Replaces the PyPI package code (CLI, MCP server, schema files), brings the new bundled shared kit into the package's `scaffold/` directory, and automatically applies any pending schema migrations to `.harness/index/meta.db`. The public seed repository at `https://github.com/paranmir/agentlaw` is a readable distribution view of the shared starter tree; it is not the package source a target project upgrades from.
+1. **Infrastructure update (terminal)**: `pipx upgrade agentlaw`. Replaces the PyPI package code (CLI, MCP server, schema files), brings the new bundled shared kit into the package's `scaffold/` directory, and automatically applies any pending schema migrations to `.harness/index/meta.db`. The public seed repository at `https://github.com/paranmir/agentlaw` is a readable distribution view of the shared starter tree; it is not the package source a target project upgrades from. Immediately after the upgrade, run `agentlaw setup-status --target . --after-update` and surface any `not installed`, `not activated`, or `unknown` entries before claiming the updated harness is ready.
 2. **Governance content merge (LLM-driven)**: invoke an LLM with this document. The LLM follows the Direct Procedure below — read the recorded baseline, compare new shared kit against it, replace root mirrors, merge new requirements into local law without losing local facts, refresh the baseline record.
 3. **Verification (terminal)**: `agentlaw verify`. Confirms root mirrors match the new shared kit, local facts and behavioral oracle content were preserved, new shared requirements are present, and the shared baseline record matches.
 
@@ -37,7 +37,7 @@ Before using this document, read:
 ## Direct Procedure
 Use this document as a direct procedure even if no prompt block is reused.
 
-0. Run `pipx upgrade agentlaw` first when the project is using the PyPI package distribution. This step (a) replaces the package code (CLI, MCP server, schema files), (b) brings the new bundled shared kit into the package's `scaffold/` directory, and (c) automatically applies any pending schema migrations to `.harness/index/meta.db`. The public seed repository is `https://github.com/paranmir/agentlaw`; use it to inspect the shared starter content, not as a substitute for upgrading the installed package. After this completes, proceed with the LLM-driven steps below. Skip step 0 only when the project does not use the pip package and the shared kit is delivered through another channel (git clone, manual copy).
+0. Run `pipx upgrade agentlaw` first when the project is using the PyPI package distribution. This step (a) replaces the package code (CLI, MCP server, schema files), (b) brings the new bundled shared kit into the package's `scaffold/` directory, and (c) automatically applies any pending schema migrations to `.harness/index/meta.db`. The public seed repository is `https://github.com/paranmir/agentlaw`; use it to inspect the shared starter content, not as a substitute for upgrading the installed package. Then run `agentlaw setup-status --target . --after-update` and explicitly report what was not installed, what is not activated, what could not be inspected, and the next actions. After this completes, proceed with the LLM-driven steps below. Skip step 0 only when the project does not use the pip package and the shared kit is delivered through another channel (git clone, manual copy).
 1. Read the recorded shared baseline if available.
 2. Identify shared-kit changes relative to the prior baseline, or fall back to law-gap comparison if no precise baseline exists.
 3. Replace root mirror files with the new shared versions.
@@ -46,6 +46,7 @@ Use this document as a direct procedure even if no prompt block is reused.
 6. Refresh the shared baseline record to the shared version now reflected in the project.
 7. Update `AGENTS.md` routing if the read path changed.
 8. Verify that every new shared requirement is traceable in the resulting localized law.
+9. Re-run `agentlaw setup-status --target .` before handoff and report remaining gaps. Use `--after-update` only immediately after the terminal package upgrade and before the LLM-driven merge; after the merge, the normal status command is the readiness check. If MCP registration, runtime context restore, schema, or optional embedding state still appears in `not activated`, `not installed`, or `unknown`, name that state and the next action instead of presenting the update as fully active.
 
 ## Completion Checks
 An update run is complete only when:
@@ -55,6 +56,7 @@ An update run is complete only when:
 - existing localized law documents were checked for genericization gaps — starter placeholder sections that remain unfilled despite concrete project facts being available
 - the shared baseline record matches the shared version now reflected in the project
 - routing and tracker follow-up were reviewed when affected
+- post-update setup status was reported, including any inactive governance merge, MCP registration, runtime context restore, schema, or optional embedding state
 
 ## Failure Conditions
 Treat the update as failed or incomplete when:

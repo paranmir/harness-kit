@@ -166,6 +166,10 @@ Logs are historical records and are not default vector-search targets in v1. Res
 - `memory.invalid_params` for an empty query, unknown mode, invalid filter value, invalid limit, or malformed cursor.
 - `memory.runtime_unavailable` when `mode="vector"` requires the embedding/vector runtime and it cannot load, encode, or query.
 - In `mode="hybrid"`, vector runtime failures degrade to FTS-only results with a `degraded` note.
+- When the current filters leave no searchable memory item chunks, `memory_search`
+  does not load the embedding model. `mode="hybrid"` returns FTS results plus
+  `degraded=["vector_skipped: no_searchable_item_chunks"]`; `mode="vector"`
+  returns an empty `hits` list without `memory.runtime_unavailable`.
 
 ---
 

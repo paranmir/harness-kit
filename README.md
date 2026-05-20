@@ -38,6 +38,8 @@ agentlaw init . --merge --skip-model
 # Register, inspect, or repair agent host integration
 agentlaw agent-setup --client auto --target . --verify
 agentlaw agent-setup --client codex --target . --apply --yes
+agentlaw setup-status --target .
+agentlaw setup-status --target . --after-update
 agentlaw mcp-recover --target . --client auto --json
 
 # Restore, verify, and operate this project
@@ -48,6 +50,11 @@ agentlaw verify .
 agentlaw run-mcp --target .
 agentlaw now --json
 ```
+
+After `agentlaw init` or `pipx upgrade agentlaw`, run `agentlaw setup-status`
+and report the result before claiming the harness is ready. The status report
+names optional pieces that were not installed, host/MCP pieces that are not
+activated yet, and the concrete next action for each gap.
 
 ## Harness Workflow
 
@@ -74,6 +81,7 @@ The normal non-trivial path is plan first, implementation second, oracle last. A
 First ask the agent to restore context again. If MCP or host integration still looks wrong, run:
 
 ```bash
+agentlaw setup-status --target . --client auto
 agentlaw session-restore --target . --json
 agentlaw mcp-recover --target . --client auto --json
 agentlaw memory-runtime-check --target . --json

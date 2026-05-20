@@ -50,6 +50,14 @@ This single command:
 
 If the schema migration fails, the pip package surfaces a clear error and the workflow halts. Step 2 must not proceed until step 1 completes cleanly.
 
+After the upgrade, run:
+
+```bash
+agentlaw setup-status --target . --after-update
+```
+
+The LLM must report any `not installed`, `not activated`, or `unknown` entry before claiming the harness is ready. In particular, package upgrade alone does not prove that the local governance content merge, MCP registration, runtime context restore, optional embedding model, or schema state is active.
+
 ### Step 2 — Governance content merge (LLM-driven)
 
 Invoke the LLM with [`AGENTLAW_UPDATE_TOOL.md`](../AGENTLAW_UPDATE_TOOL.md). Typical prompt: "Run the harness update procedure in AGENTLAW_UPDATE_TOOL.md."
@@ -64,6 +72,7 @@ The LLM follows the procedure in that document:
 6. Refreshes `references/shared-agentlaw-baseline.md` with the new baseline.
 7. Updates `AGENTS.md` routing if the read path changed.
 8. Verifies that every new shared requirement is traceable in the local law.
+9. Re-runs `agentlaw setup-status --target .` and reports remaining readiness gaps before handoff. The `--after-update` form is reserved for the immediate post-`pipx upgrade` / pre-merge checkpoint.
 
 The LLM is not allowed to skip these steps or to treat the operation as a fresh bootstrap.
 
@@ -75,6 +84,7 @@ Run the workspace verification command supplied by the project. Confirm:
 - local facts and behavioral oracle content were preserved.
 - new shared requirements are present in local law.
 - the shared baseline record matches the upgraded package's bundled version.
+- setup status reports no unacknowledged install or activation gaps, or the remaining gaps are explicitly reported with next actions.
 
 If verification fails, treat the update as incomplete and resolve the gap before continuing other work.
 
@@ -86,6 +96,7 @@ If verification fails, treat the update as incomplete and resolve the gap before
 | Binary schema migration on `.harness/index/meta.db` | Pip package startup hook | Runs migration scripts in lexical order |
 | Bundled new shared kit delivery | `pipx upgrade agentlaw` | Updates `scaffold/` inside the package |
 | Local governance content merge | LLM via [`AGENTLAW_UPDATE_TOOL.md`](../AGENTLAW_UPDATE_TOOL.md) | Incremental merge, preserves local facts |
+| Post-update readiness report | CLI + LLM | CLI detects install/activation gaps; LLM reports them with next actions |
 | Final integrity verification | User via verify command | Confirms the update produced a valid state |
 
 ## Failure Modes
