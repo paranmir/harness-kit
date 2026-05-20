@@ -106,7 +106,7 @@ The declared item types are exactly three: `fact`, `preference`, and `rule`. Eac
 `memory/LOOKUP_RULES.md` stores retrieval policy. It tells agents and tools how to choose memory sources; it does not create higher authority than the memory layer.
 
 ## Local Rule Memory Type
-Rules are project-local governance items: persistent policy that applies within the repository's own authoring workflow without rising to shared-law authority. The framework defined here is general and ships to every target project via `publish-repo/`; rule content is project-specific and must never leak into the distribution seed.
+Rules are project-local governance items: persistent policy that applies within the repository's own authoring workflow without rising to shared-law authority. The framework defined here is general and ships to every target project via the bundled scaffold; rule content is project-specific and must never leak into the distribution seed.
 
 ### Purpose And Distinction From Facts
 - A known fact is a remembered observation about current state (for example, "the current active plan is X"). It loses to new observation.
@@ -173,7 +173,7 @@ Rules are created, updated, and lifecycled through the same MCP tools that handl
 Direct file edits under `memory/rules/` are subject to the same Write-Path Boundary as other memory layers: they are governance drift unless paired with an explicit `memory_runtime_repair` invocation in the same change.
 
 ### Distribution Boundary
-`publish-repo/memory/rules/` must not contain this authoring workspace's local rule content. Target projects that install via the `agentlaw` pip package or `agentlaw init` inherit an empty rules directory (with at most a one-paragraph starter README explaining the directory's purpose). They populate their own rules locally. The `agentlaw verify` publish-seed leak detector scans this path for authoring-specific marker phrases and fails closed on leaks.
+The bundled scaffold's `memory/rules/` directory must not contain local project-specific rule content. Target projects that install via the `agentlaw` pip package or `agentlaw init` inherit an empty rules directory (with at most a one-paragraph starter README explaining the directory's purpose). They populate their own rules locally. The public-surface leak detector scans the scaffold for source-project marker phrases and fails closed on leaks.
 
 ### Schema Storage Note
 The `memory_items.type` column in `.harness/index/meta.db` is constrained by a CHECK that admits `fact`, `preference`, `rule`, and `working_set_entry`. The runtime tool layer accepts only the first three; calls to `memory_save_item(type="working_set_entry")` are rejected with `memory.invalid_params` before they reach the DB, and the working-set file is rewritten in full by `agentlaw_session_save` rather than addressed at item-level. The CHECK retains the fourth value so that databases written by older binaries continue to read; rows of that type are dormant and not produced by any current write path.
@@ -371,36 +371,34 @@ The working set is current-context state, not a long-term changelog. It should b
 
 #### Working Set Field Discipline
 
-The fields written through `agentlaw_session_save` (`current_goal`, `active_plans`, `current_decisions`, `open_questions`, `next_actions`, `authority_warnings`) carry the **current snapshot only**. Each field is a short list. Each entry is one or two short lines describing a current state: a standing decision, an open question, a next action. The substantive narrative of what happened in this session — Finding / Evidence / Resolution prose, decision rationale, change history, file paths exhibited, evidence cited — does **not** belong in working-set fields.
+The fields written through `agentlaw_session_save` (`current_goal`,
+`active_plans`, `current_decisions`, `open_questions`, `next_actions`,
+`authority_warnings`) carry the **current snapshot only**. Each field is a
+short list. Each entry is one or two short lines describing current state: a
+standing decision, an open question, a next action, or a live warning.
 
-That narrative belongs in the optional `log_entry` argument to `agentlaw_session_save`. The argument is appended to `memory/logs/YYYY-MM/YYYY-MM-DD.md` and indexed for full-text and vector retrieval. Future agents searching for "what happened on 2026-04-26" or "why was Slice 7.5 added" use `memory_search` or `memory_recent_logs` against the log layer; they do not search the working-set, and the working-set is not indexed.
+Session narrative does **not** belong in working-set fields. Finding /
+Evidence / Resolution prose, decision rationale, change history, file paths
+exhibited, and verification detail belong in the optional `log_entry` argument
+to `agentlaw_session_save`; that entry is appended to
+`memory/logs/YYYY-MM/YYYY-MM-DD.md` and indexed for retrieval.
 
-Concrete pattern:
+Compact working-set entry shape:
 
-- **`current_decisions` field, good shape**:
-  ```
-  - "Slice 7.5 added (Bootstrap & Update Architecture Cleanup)."
-  - "working_set_entry dropped from declared types entirely (Path Drop)."
-  - "Reminder fields renamed _review → _reminder for naming accuracy."
-  ```
-  Each entry: one short sentence, current standing decision, no rationale prose.
+```text
+- "Next: run Subplan 4 code split plan review."
+- "Decision: distributed starter docs mirror shared law through the approved sync path."
+```
 
-- **`current_decisions` field, anti-pattern**:
-  ```
-  - "Slice 7.5 added on 2026-04-26 after the user noticed the
-     post-init Memory Intent reminder gap; tracing the gap led to a
-     deeper finding that two parallel bootstrap routes coexist; the
-     workflow reference is mostly only useful to the authoring repo
-     developer; this slice retires the workflow reference pattern,
-     consolidates the cycle inside the root tools, and inserts the
-     Memory Intent reminder routing at the right point in the
-     bootstrap flow ..."
-  ```
-  Multi-paragraph entry with full rationale belongs in the matching `log_entry.body`, not here. Every entry like this bloats the working-set by an order of magnitude.
+Not allowed in working-set fields: multi-sentence rationale, dated change
+history, implementation narrative, or quoted evidence. If the entry needs
+words like "after", "because", "evidence", "this slice", or more than two
+short lines, put the narrative in `log_entry.body` and keep only the current
+state summary in the working set.
 
-The same discipline applies to every other working-set field. When in doubt: if the entry is longer than two short lines or contains words like "after", "because", "this slice", "evidence", it belongs in the `log_entry.body` and a one-line summary belongs in the working-set field.
-
-This discipline matters because the working set is read at every `agentlaw_session_restore`, the response packet's token cost scales with every additional character, and bloated fields slow every session start. The log layer absorbs as much narrative as needed without any of those costs because logs are indexed and retrievable, not always-loaded.
+This discipline matters because the working set is read at every
+`agentlaw_session_restore`. The response packet's token cost scales with every
+additional character, while logs are searchable and not always loaded.
 
 ## `LOOKUP_RULES.md` Syntax
 `memory/LOOKUP_RULES.md` defines retrieval policy with predictable Markdown sections.
@@ -801,6 +799,97 @@ The full tool surface is exposed as default capabilities. The signature referenc
 - If you need a list filtered by metadata → `memory_list`.
 - If you need recent activity → `memory_recent_logs`.
 - If you would otherwise read a memory file by hand → use the appropriate tool instead. Direct file reads are allowed only as the documented degradation path when the MCP server is unavailable.
+
+## Pruning Policy
+
+Memory accumulation must be bounded. Two prune families operate over
+the persistent state:
+
+1. **Plan-review session pruning** (`agentlaw_plan_review_session_prune_proposal`
+   then `agentlaw_plan_review_session_prune_confirm`) targets archived
+   `plan_review_session` rows whose `archived_at` predates the
+   threshold (default 90 days) AND whose plan file no longer lives in
+   `docs/plans/draft/active/completed/`.
+2. **Memory pruning** (`memory_prune_proposal` then `memory_prune_confirm`)
+   targets `memory_items` rows whose `status` is in
+   `{superseded, stale, suppressed}` and `memory_logs` rows whose
+   `recorded_at` predates the threshold (default 180 days). Live items
+   (`status=active`, `tentative`) are excluded from proposal so the
+   read-only tool cannot suggest deleting an in-use entry.
+
+Both families enforce four invariants:
+
+- **Soft-delete by default.** Mode `soft` sets `pruned_at` /
+  `pruned_reason` (sessions) or `status='suppressed'` / a `pruned`
+  tag (memory) and preserves the row body. Reversible.
+- **Hard-delete is reversible only via git history.** Mode `hard`
+  DELETEs the row and its derived chunks / tags; the tool requires a
+  non-empty `irreversibility_ack` parameter that the host must
+  explicitly compose. Hard-deleted rows are not recoverable from the
+  runtime state.
+- **Cross-reference cascade-only protection.** Before any deletion the
+  prune tools scan every plan body in draft/active/completed and every
+  memory_logs / memory_items body for substring mentions of each
+  candidate id. If any candidate is cited, the prune is refused
+  unless the caller passes `cascade_authorization='cascade'`. The
+  refusal payload enumerates the full reference chain so the host
+  can decide whether to authorize the chain or back off. Partial-
+  cascade authorization is not accepted — the entire chain must be
+  authorized in one decision.
+- **Audit trail.** Every successful prune writes one `memory_logs`
+  row (kind=`prune`, tags=`prune` + family + mode) recording the
+  operation, mode, candidate ids, cascade chain, the
+  user_authorization_note, and (for hard mode) the
+  irreversibility_ack text. The trail allows post-hoc inspection
+  even when the pruned rows themselves are gone. The `prune` kind
+  value was added to the `memory_logs.kind` CHECK enum in v009
+  (`src/agentlaw/schema/v009_memory_logs_prune_kind.sql`); prior to
+  v009 the same audit row was written as `kind='correction'` with an
+  inline note. v009 also backfills historical rows that match the
+  prune-workaround predicate (body contains `'Pruned ids:'` OR tag
+  `'prune'`) to the corrected `kind='prune'`.
+
+### Threshold Rationale
+
+The two default age thresholds live as module constants so changes
+go through code review rather than scattered magic numbers:
+
+- `MEMORY_LOG_PRUNE_DEFAULT_DAYS = 180` in `src/agentlaw/server/
+  tools/write.py` — six months of memory log retention before a row
+  becomes a prune candidate. The bound balances "long enough to
+  recover decisions made early in a quarterly cycle" against "short
+  enough to keep the working set bounded for read latency".
+- `PLAN_REVIEW_SESSION_PRUNE_DEFAULT_DAYS = 90` in `src/agentlaw/
+  server/tools/plan_review.py` — three months of finalized session
+  retention before the row becomes a prune candidate (and only after
+  the plan file has moved out of `draft/active/completed/`). Shorter
+  than the memory threshold because session rows are largely
+  superseded by the archived plan body itself.
+
+Both thresholds remain caller-overridable on the `_prune_proposal`
+tools; the constants name the default behavior and the law text
+records the rationale.
+
+### Cascade Authorization (D3)
+
+The cross-reference cascade-only protection above is the runtime
+mechanism that closes the soft-delete-with-references concern. The
+prune tools (`memory_prune_confirm` at `src/agentlaw/server/tools/
+write.py` and `agentlaw_plan_review_session_prune_confirm` at
+`src/agentlaw/server/tools/plan_review.py`) refuse any prune whose
+candidate ids are cited in plan bodies or memory entries unless the
+caller passes `cascade_authorization='cascade'`. The refusal payload
+enumerates the full reference chain so the host (and ultimately the
+user) can decide whether to authorize the cascade or back off.
+Partial-cascade authorization is rejected to prevent dangling
+references; the entire chain must be authorized in one decision.
+
+User gate: `hard` mode requires the user's explicit acknowledgement
+*per invocation*, not just a policy-level acceptance — the host
+composes the acknowledgement text fresh each time. Plans that
+introduce automated pruning (e.g., a scheduled background prune)
+must record this user gate in their `## Execution Gates` section
+with the same wording.
 
 ## Evaluation Boundary
 Evaluation methodology, benchmark fixtures, recall metrics, and token-efficiency experiments belong to recursive improvement and quality verification, not to the default shared distribution contract.

@@ -2,27 +2,19 @@
 
 ## Purpose
 
-This document is the canonical structural skeleton for repository-tracked plans.
-The agent copies this template and fills its sections when authoring a plan.
-
-The template carries **structure only**. Rules about classification, review
-obligations, persona selection, and skip conditions live in
-`docs/law/PLANNING_AND_REVIEW_RULES.md` and the other operational files under
-`docs/planning-protocol/`. Cross-references in the template point to those
-authorities; the template itself does not encode rule semantics.
+This is the canonical structural skeleton for repository-tracked plans. The
+template carries **structure only**; classification, review obligations,
+persona selection, and skip conditions live in
+`docs/law/PLANNING_AND_REVIEW_RULES.md` and operational files under
+`docs/planning-protocol/`.
 
 ## Layered Authority
 
-When using this template:
-
-- Whether a plan is needed at all is decided by `task-classification.md`
-  § Quick Gate.
-- Whether the plan is trivial or non-trivial is decided by
-  `task-classification.md` § Non-Trivial Triggers.
-- Which sections must be filled depends on the trivial/non-trivial decision
-  per `docs/law/PLANNING_AND_REVIEW_RULES.md` § Trivial Work Boundary.
-- Which personas review the plan is decided by `review-method.md`
-  § Selection Rule.
+Use this template after routing through the authority files:
+`task-classification.md` decides whether a plan is needed and whether it is
+trivial or non-trivial; `PLANNING_AND_REVIEW_RULES.md` decides required fill
+depth; `review-method.md` selects personas; `Execution Gates` records material
+follow-up questions and approval boundaries.
 
 ## Section-Fill Profile
 
@@ -35,9 +27,7 @@ When using this template:
   `Bootstrap Transitional Declaration` section per
   `docs/law/PLANNING_AND_REVIEW_RULES.md` § Bootstrap Transitional Exemption.
 
-The template below uses block comments to indicate which sections are
-universal, conditional, or evidence-only. Comments are removed from the
-final plan body.
+Remove instructional bracket text from final plans unless it is being filled.
 
 ---
 
@@ -50,7 +40,11 @@ Copy from here downward into a new plan file under `docs/plans/active/`.
 
 ## Status
 
-- Status: draft / active / completed
+- Status: draft / active / completed.
+  Use `draft (review skipped per user request, not executable)` when
+  the user explicitly asked for draft-only output (see
+  `docs/law/PLANNING_AND_REVIEW_RULES.md` § Plan Request Default).
+  This label signals the plan is non-executable until reviewed.
 - Date authored: YYYY-MM-DD
 - Author/agent context: [optional, free-form]
 
@@ -86,16 +80,82 @@ Trivial plans may omit this section.]
 - [ ] Cost, Resource & Performance
 - [ ] Long-term Care
 - [ ] Self-Application (rule/tooling-introducing plans)
+- [ ] Conversation Memory & Continuity (plans touching memory_logs / memory_items)
 
-[Universal domains — Intent, Scope, Premise, Risk, Verification, Confidence,
-Continuity, Governance — always apply and do not need self-marking.]
+Universal domains — Intent, Scope, Premise, Risk, Verification, Confidence,
+Continuity, Governance — always apply and do not need self-marking.
+
+Declare substance-deck markers only when the plan actually binds that
+substance. `agentlaw_substance_deck_list` lists registered markers and the
+deck file carries command defaults and thresholds.
+
+```text
+- substance: code   # binds the code substance deck (pytest, mutmut, hypothesis)
+```
+
+## Clarification Gate
+
+Fill before drafting begins. Non-trivial plans require the gate; trivial plans
+may use a one-line no-question record.
+
+- Gate run: yes / deferred (with reason)
+- Source of clarified requirements: [conversation, prior plan, memory log]
+- Pre-confirmed requirements: [bulleted list of constraints the user has
+  already stated explicitly; each item attributable to a specific source
+  so a future reviewer can verify the attribution]
+- Reason for proceeding without further user questions: [why the
+  remaining unknowns do not materially change scope, safety, contract,
+  cost, irreversible action, or intended outcome]
+- TBDs deferred to implementation: [items that will be resolved during
+  execution, with a stop condition naming when each TBD must escalate
+  back to user]
+- Stop conditions if a TBD turns into a hard requirement: [pause-and-ask
+  triggers]
+
+## Clarification Policy
+
+[First-class field per `docs/law/USER_INTENT_ALIGNMENT.md` §Clarification
+Rule. It records when to ask vs when to assume, both at the gate and during
+execution.]
+
+- **ask_now**: [questions whose missing answer changes correctness, safety,
+  user-visible result, cost/time burden, legal/security/governance risk, or
+  reversibility; name the trigger.]
+- **proceed_with_assumption**: [low-risk, reversible, or inferable assumptions;
+  name the rationale and escalation trigger.]
+
+For full plans, this section is recorded by the Clarification Gate. For
+lightweight plans, it is the required clarification artifact.
 
 ## Intent
 
 - Restated ask: [in the author's own words; user-confirmable form]
 - Underlying need: [if literal ask might mask a deeper goal]
 - Output artifact shape: [specific form, format, length]
-- Acceptance criteria: [concrete verification action; no vague phrases]
+- Acceptance criteria: [concrete verification action; no vague phrases.
+  When a criterion asserts specific code behavior (named module, function,
+  symbol, code path, or test name), the criterion body must carry a
+  `Verification trace: <file:line | test:<test_name> | unverified-hypothesis>`
+  token per `docs/law/PLANNING_AND_REVIEW_RULES.md` § Code-Fact Claim
+  Verification Trace; the Code-Fact Claim Verifier persona enforces this at
+  plan-review time. Each criterion is written as `crit-N` with an `Oracle:`
+  marker (see § Oracle Marker Selection below).]
+
+### Oracle Marker Selection
+
+Every `crit-*` carries an `Oracle:` marker for
+`agentlaw_plan_review_oracle_check`.
+
+- **Runnable Oracle**: the `runnable Oracle` path is required for mechanically
+  checkable criteria such as
+  verifier sub-checks, pytest, grep, diff, byte-equality, exit-code probes, or
+  count comparisons. If the test exists, wire the Oracle to it. If the test
+  must be added, Work Breakdown must include that step and the Oracle names the
+  future test path.
+- **`user_confirms`**: only for genuine human judgment: subjective quality,
+  semantic accuracy, aesthetic match, taste, or corpus completeness a tool
+  cannot scan. Mechanically-checkable criteria using `user_confirms` trigger an
+  oracle_check WARN and Acceptance Criteria Reviewer scrutiny.
 
 ## Scope
 
@@ -108,14 +168,35 @@ Continuity, Governance — always apply and do not need self-marking.]
 - Temporal scope: one-time / ongoing / time-bounded
 - Explicit non-goals: [out-of-scope list]
 
+## Work Breakdown
+
+- Data affected: [DB tables, files, persistent records, schemas, financial
+  data, source records, or N/A]
+- User/interface surface: [UI, API, CLI, document, message, report, decision
+  artifact, or N/A]
+- Control/API boundary: [API route, command, workflow step, external
+  interface, advisory boundary, or N/A]
+- Permission/authority rule: [who may do what; N/A only with reason]
+- Failure cases: [normal failure, missing input, invalid input, unavailable
+  dependency]
+- Negative/adversarial cases: [misuse, abuse, boundary violation, hostile
+  input, downside scenario]
+- Test/check cases: [how each important behavior or claim will be verified]
+- Execution order: [ordered steps; name dependencies]
+
 ## Premise
 
-- Facts: [each with verification artifact reference]
+- Facts: [each with verification artifact reference. Code-behavior claims must
+  carry `Verification trace: <file:line | test:<test_name> |
+  unverified-hypothesis>` per `PLANNING_AND_REVIEW_RULES.md` § Code-Fact Claim
+  Verification Trace.]
 - Sources: [each with specific identifier + freshness threshold]
 - Assumptions: [each with verification path — what would convert it to
   verified]
 - Prerequisites: [tree of conditions that must hold for the plan to apply]
 - Prior art: [search trace; what already exists]
+- Drift suspicion sites: [code-behavior suspicions also need the Verification
+  trace token.]
 
 [Conditional under Premise — fill only if relevant:]
 
@@ -141,11 +222,115 @@ Continuity, Governance — always apply and do not need self-marking.]
 - Rollback / recovery path: [per non-reversible step]
 - Counterfactual fallbacks: [if X fails, then Y; cascade if Y fails]
 
+## Execution Gates
+
+- May execute without user approval: yes / no
+- User approval required before:
+  - file mutation:
+  - dependency addition:
+  - DB/schema migration:
+  - public API/contract change:
+  - deployment/release:
+  - account/payment/message/external action:
+  - financial/legal/medical consequential recommendation:
+- Stop conditions:
+  - classification mismatch found
+  - new non-trivial trigger appears
+  - required source/check unavailable
+  - test/lint/build failure
+  - plan-lint failure
+  - review-lint failure
+  - scope expands beyond approved plan
+- Agent permission boundary:
+  - read-only:
+  - edit allowed:
+  - command execution allowed:
+  - network/external action allowed:
+
 ## Verification
 
 - Pre-action checks: [what to verify before execution]
 - Post-action checks: [what to verify after]
 - Verification strategy: [tests/oracles/adversarial cases matching risk]
+- Required negative cases:
+- Required regression checks:
+- Required adversarial checks:
+- Commands/tools to run:
+- Evidence expected:
+- Tests/checks not run:
+- Reason if not run:
+
+## Review Coverage Matrix
+
+[Required for plans authored after the Review Coverage Matrix rule lands and
+for any earlier plan that explicitly opts in with
+`Review Coverage Matrix required: yes`. The matrix records review completeness,
+not implementation status. Unknowns must not be silently converted into
+assumptions.]
+
+- Review Coverage Matrix required: yes / no
+
+| ID | Axis | Status | Evidence | Covered by |
+| --- | --- | --- | --- | --- |
+| rcm-1 | user intent | covered / not_applicable / needs_user_answer / accepted_risk / out_of_scope | <user quote, file:line, test:name, doc:path, MCP result, or rationale> | crit-N / out_of_scope |
+
+Status rules:
+
+- `covered`: evidence is required, and `Covered by` must name at least one
+  `crit-*`.
+- `not_applicable`: rationale is required.
+- `needs_user_answer`: review cannot finalize; ask the user and update the row.
+- `accepted_risk`: user authorization or explicit risk rationale is required,
+  and `Covered by` must name at least one `crit-*`.
+- `out_of_scope`: rationale is required.
+
+## Domain Exception Inventory
+
+- Domain:
+- Domain-specific rules:
+- Common edge cases:
+- Data consistency risks:
+- Permission/authority risks:
+- Operational risks:
+- User/reputation/legal/financial risks:
+- Cases intentionally out of scope:
+
+## (Conditional) Code Architecture & Implementation Control
+
+[Fill if the plan includes coding, debugging, refactoring, repository edits,
+tests, dependencies, build, deployment, or generated code.]
+
+- Responsibility location:
+  - UI:
+  - API/controller:
+  - service/use-case:
+  - domain/business rule:
+  - repository/data access:
+  - infrastructure/adapter:
+- Architecture boundary:
+  - Existing abstraction/interface to use:
+  - New boundary crossing introduced:
+  - Forbidden shortcut/patch to avoid:
+  - Smallest architecture-preserving change:
+- Contract/schema:
+  - Request type/schema:
+  - Response type/schema:
+  - Error contract:
+  - DB schema/migration:
+  - Public API compatibility:
+- Technical risk:
+  - N+1/query risk:
+  - transaction/consistency need:
+  - index/unique constraint need:
+  - cache/CORS/network risk:
+  - time complexity/resource risk:
+- Test plan:
+  - unit:
+  - integration/API:
+  - DB/migration:
+  - E2E:
+  - regression:
+  - permission/security:
 
 ## (Conditional) Security & Trust Boundaries
 
@@ -200,6 +385,12 @@ Continuity, Governance — always apply and do not need self-marking.]
 ## Continuity
 
 - Internal continuity (handoff state + decisions): [what next session needs]
+- Decisions made:
+- Rationale:
+- ADR required: yes / no
+- ADR title if required:
+- Records to update:
+- Future revisit condition:
 
 [Conditional under Continuity — fill if relevant:]
 
@@ -227,6 +418,9 @@ Continuity, Governance — always apply and do not need self-marking.]
 
 - Review required: yes / no
 - Review exemption reason: [if no]
+- Plan contract hash: [filled by agentlaw_plan_review_session_finalize]
+- Deep Review Selection: [non-trivial plans; selected/skipped reviewers and
+  reasons, or N/A for trivial]
 - Personas considered: [list per deck source]
 - Persona deck sources: [paths]
 
@@ -237,15 +431,98 @@ Continuity, Governance — always apply and do not need self-marking.]
 
 #### [Persona name]
 
+- Status: PASS / FAIL / N/A
 - Severity: must-change / should-change / note
+- Mandate quote: [verbatim text from the persona deck row, with inline
+  Markdown preserved; required when the persona-review-loop tools were
+  used]
+- Inspected sections:
+- Plan line citations: [list of `{ line, quote }` pairs the finding
+  refers to; required when the persona-review-loop tools were used so
+  the verifier can match line numbers byte-for-byte against the plan
+  body]
+- Evidence:
 - Plan risk found:
 - Required plan change:
 - Verification or gate to add:
 - Residual risk if accepted:
 
+#### [Persona name with no concrete plan change]
+
+- Status: PASS
+- Severity: none
+- Mandate quote: [verbatim text from the persona deck row, when the
+  loop tools were used]
+- Inspected sections:
+- Evidence:
+- Plan risk found: none
+- Required plan change: none
+- Verification or gate to add: none
+- Residual risk if accepted:
+
 ---
 
 - Revised after review: yes / no changes required
+```
+
+## Plan Amendment Authorizations
+
+[Two-diamond completion plan addition. Required for plans whose body
+is amended after Plan reviewed: yes — every Q7=c amendment is recorded
+here; verifier checks plan-body amendment provenance against this
+section.]
+
+```text
+### Authorization YYYY-MM-DD-<letter> — <short title>
+
+- Authorizer: user (<user-name>), session of YYYY-MM-DD.
+- Authorization gate: Q7=c (plan-body amendment requires explicit user
+  gate). User instruction verbatim: "<quoted text>".
+- Scope of authorized changes:
+  1. <change 1>
+  2. <change 2>
+- Authorization rationale: <why the amendment is in scope>.
+- Phasing: <single coherent commit / staged into multiple commits / etc.>
+```
+
+## Plan Oracle Evidence
+
+[Two-diamond completion plan addition. Populated during the
+oracle_evaluation phase by the agentlaw_plan_review_oracle_check tool;
+the verifier compares this section against plan_review_session.oracle_results
+and FAILs verify on mismatch.]
+
+```text
+- Last oracle run: YYYY-MM-DDThh:mm:ss.fffZ
+- Mutmut module list: <comma-separated paths passed to --paths-to-mutate>
+- Mutmut score: <surviving>/<total> = <ratio> (threshold: 0.40)
+- Hypothesis max_examples: <integer>
+- Per-criterion results:
+  - crit-<id>: pass / fail / user_confirmed / pending
+    - Oracle command: `<argv>`
+    - Exit code: <integer>
+    - Started at / Finished at: <iso timestamps>
+    - User confirmation note: <when status=user_confirmed>
+```
+
+## Implementation Deviation Records
+
+[Mutable post-review execution record. Use this section when implementation
+must differ from the reviewed plan contract for a concrete reason. Do not
+rewrite reviewed contract sections to make the plan look as if it always
+said the implemented thing; record the reason, affected work step, and
+verification here. Contract changes still require explicit amendment
+authorization and re-review.]
+
+```text
+### Deviation YYYY-MM-DD-<letter> — <short title>
+
+- Planned contract reference: <section / step / criterion>.
+- Implemented behavior:
+- Reason implementation differs:
+- User authorization or governing authority:
+- Verification:
+- Residual risk:
 ```
 
 ## Notes

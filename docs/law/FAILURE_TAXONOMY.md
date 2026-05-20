@@ -181,6 +181,40 @@ The project should also classify these as governance failures when growth makes 
 - `enforcement gap`: a repeated invariant remains prose-only after it is known to be drift-prone
 - `agents overload`: `AGENTS.md` accumulates durable knowledge that should have moved into structured artifacts
 
+## LLM-Behavior-Level Failure Tags (cross-reference)
+
+`docs/law/USER_INTENT_ALIGNMENT.md` introduces a behavior-level
+failure-tag vocabulary that names *what the LLM did wrong in the
+last turn*, distinct from the structural categories above (which
+name *which layer the system failed at*). The two systems are
+complementary: a single incident usually carries one behavior tag
+and one (or more) structural category. The mapping below names
+the natural primary-category anchor for each behavior tag so
+incidents can be filed against both.
+
+| Behavior tag | Anchored structural category | Notes |
+| --- | --- | --- |
+| `requirement_miss` | Contract Failure | User-stated requirement absent from output → contract gap |
+| `constraint_violation` | Scope Failure / Contract Failure | Acted against user-stated or law-stated constraint |
+| `over_questioning` | Execution Drift | Asked when proceed-with-assumption sufficed; cost burden imposed |
+| `under_questioning` | Contract Failure / Oracle Failure | Proceeded with assumption when missing info materially changed correctness or safety |
+| `plan_drift` | Execution Drift | Execution diverged from operational contract without updating it |
+| `fake_verification` | Oracle Failure | Claimed verification without evidence trace |
+| `verification_skip` | Oracle Failure | Acted on load-bearing claim without running available verification |
+| `unsafe_action` | Execution Drift | Destructive or irreversible action without proper gate |
+| `tool_misuse` | Execution Drift / Contract Failure | Invoked tool outside its documented contract |
+| `source_hallucination` | Oracle Failure | Cited a source / location / fact that does not exist |
+| `memory_conflict` | Memory Authority Failure | Two memory entries contradict; not reconciled |
+| `persona_bloat` | Recursive Promotion Failure | Persona review added bulk without raising substantive quality |
+| `cost_bloat` | Execution Drift | Work expanded beyond contract for marginal benefit |
+
+This mapping is a routing aid, not a constraint. A single incident
+may anchor to multiple categories (e.g., a `fake_verification` on
+a contract-shipping deliverable anchors to both Oracle Failure and
+Contract Failure). When filing a recurring-failure entry in
+`docs/plans/tech-debt-tracker.md`, record both the behavior tag(s)
+and the structural category for full taxonomy coverage.
+
 ## Next Update Trigger
 Update this document when:
 - a new recurring failure pattern appears

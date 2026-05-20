@@ -8,9 +8,9 @@ seed_reference: true
 
 ## Authority
 This document is a contract document. It is the source of truth
-for the update procedure propagating upstream harness changes into target projects, shared with target projects via `publish-repo/`,
+for the update procedure propagating upstream harness changes into target projects, shared with target projects via the bundled scaffold,
 and its consistency with `AGENTLAW_UPDATE_TOOL.md` procedural alignment is mechanically enforced
-by `agentlaw verify` (`_test_publish_seed_contract_finite_set`).
+by `agentlaw verify` (`_test_package_data_in_sync`).
 
 Governing law: `docs/law/REPOSITORY_ARTIFACT_RULES.md`. Amendments land
 through a plan that updates this file and any dependent law
@@ -56,12 +56,12 @@ Invoke the LLM with [`AGENTLAW_UPDATE_TOOL.md`](../AGENTLAW_UPDATE_TOOL.md). Typ
 
 The LLM follows the procedure in that document:
 
-1. Reads `references/SHARED_HARNESS_BASELINE.md` to identify the prior baseline.
+1. Reads `references/shared-agentlaw-baseline.md` to identify the prior baseline.
 2. Compares the new shared kit against the baseline.
 3. Replaces root mirror files with the new versions.
 4. Merges new shared requirements into the local `docs/law/*` layer without losing local facts.
 5. Reviews tracker and enforcement implications.
-6. Refreshes `references/SHARED_HARNESS_BASELINE.md` with the new baseline.
+6. Refreshes `references/shared-agentlaw-baseline.md` with the new baseline.
 7. Updates `AGENTS.md` routing if the read path changed.
 8. Verifies that every new shared requirement is traceable in the local law.
 
@@ -96,18 +96,9 @@ If verification fails, treat the update as incomplete and resolve the gap before
 - **Step 2 reverted local facts to generic starter wording** — treated as failure per `AGENTLAW_UPDATE_TOOL.md`. Roll back the changes and retry, paying attention to the "preserve local facts" constraint.
 - **Verification (step 3) flags new shared requirements absent from local law** — step 2 was incomplete. Re-invoke `AGENTLAW_UPDATE_TOOL.md` focusing on the missing requirements.
 
-## Non-Pip Distribution
-
-When the project does not use the pip-package distribution (the shared kit was delivered through git clone, archive download, or manual copy), step 1 changes:
-
-- Replace `pipx upgrade agentlaw` with whatever pulls in the new shared kit (e.g., `git pull`, manual file replacement).
-- Schema migrations must be applied by another mechanism documented at the project level. The LLM still does not perform binary DB ALTER directly.
-
-The LLM-driven step 2 (`AGENTLAW_UPDATE_TOOL.md` procedure) and the verification step 3 are unchanged.
-
 ## Related
 
 - [`AGENTLAW_UPDATE_TOOL.md`](../AGENTLAW_UPDATE_TOOL.md) — governing procedure for step 2.
 - [`AGENTLAW_INIT_TOOL.md`](../AGENTLAW_INIT_TOOL.md) — first-time setup; not for updates.
 - [`AGENTLAW_FIX_TOOL.md`](../AGENTLAW_FIX_TOOL.md) — for fixing local drift, not for upstream updates.
-- [`references/SHARED_HARNESS_BASELINE.md`](SHARED_HARNESS_BASELINE.md) — baseline record consulted in step 2.
+- [`references/shared-agentlaw-baseline.md`](shared-agentlaw-baseline.md) — baseline record consulted in step 2.

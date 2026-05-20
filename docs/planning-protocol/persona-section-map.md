@@ -50,6 +50,9 @@ not trigger re-invocation.
 | Confidence Label Reviewer | universal | Confidence | Premise |
 | Undecided Item Reviewer | universal | Confidence | Continuity |
 | Rule-on-Self Reviewer | universal | Self-Application | Classification, Governance |
+| Form-vs-Substance Auditor | universal | Premise, Status, Acceptance Criteria | All sections (audits each in turn) |
+| Cross-Section Coherence Reviewer | universal | Verification, Work Breakdown, Acceptance Criteria | Intent, Scope, Risk |
+| Code-Fact Claim Verifier | universal | Premise, Intent (Acceptance Criteria) | Confidence, Status |
 
 ## Substance-Triggered Personas
 

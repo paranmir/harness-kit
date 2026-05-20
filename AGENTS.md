@@ -1,43 +1,33 @@
 # Repository Guidelines
 
-## Purpose
-This document is a short execution-entry map for a project using the Harness kit. The source of truth is not `AGENTS.md`, but the constitution-root-control-law-operational-artifact-execution-entry system.
-
-Any coding agent working in this repository must follow the read-first order and governing hierarchy below.
+This file is a routing map only. Governing content belongs in `docs/law/*`.
 
 ## What This Repository Is
-This repository starts from the Harness kit.
+This repository is governed by the agentlaw kit — a law-first governance harness for AI coding agents.
 
-- Purpose of `AGENTS.md`: act as a short execution-entry map for the current project
-- Purpose of the law layer: store the real working criteria under `docs/law/*`
-- Purpose of `AGENTLAW_INIT_TOOL.md`: provide a shared bootstrap entry point for empty, near-empty, or already-existing target repositories
-- Purpose of the root control layer: provide starter-level bootstrap and corrective-governance guidance before detailed law work
+## Governance Reminder
+
+Before starting fix / init / upgrade / governance work (tracker-policy violation, repeated mistake, rule bypass, new project setup, kit upgrade), read the matching root control document first: `AGENTLAW_FIX_TOOL.md` for fix-class work, `AGENTLAW_INIT_TOOL.md` for init, `AGENTLAW_UPDATE_TOOL.md` for kit upgrades. The `.claude/skills/agentlaw-governance/SKILL.md` and `.agents/skills/agentlaw-governance/SKILL.md` skills (Agent Skills open standard) carry the same reminder for Claude Code and Codex respectively.
 
 ## Source of Truth
 Document priority is:
 
 1. `AGENTLAW_CONSTITUTION.md`
-2. root control documents
+2. Root control documents:
+   - `AGENTLAW_INIT_TOOL.md`
+   - `AGENTLAW_UPDATE_TOOL.md`
+   - `AGENTLAW_FIX_TOOL.md`
 3. `docs/law/*`
-4. approved structured repository artifacts such as `plans/*`, `references/*`, and stable generated facts when they exist
-5. approved continuity or memory records
-6. `AGENTS.md` and other execution-entry documents
-
-Important:
-- Project-specific rules belong in `docs/law/*`.
-- Continuity or memory records are derived context below file-based governance.
-- `AGENTS.md` is not a rule store. It only tells agents what to read first and how to enter the work.
-- `RULES.md` is not used.
+4. Approved structured repository artifacts such as `docs/plans/*`, `docs/references/*`, and stable generated facts when they exist
+5. Approved continuity or memory records
+6. `AGENTS.md` (this file)
 
 ## Read First
 Check the current agreement in this order:
 
 1. `AGENTLAW_CONSTITUTION.md`
-2. Root control tools, in this order when relevant:
-   - `AGENTLAW_INIT_TOOL.md` for initialization or rebuild
-   - `AGENTLAW_UPDATE_TOOL.md` for incorporating upstream harness changes into an existing project
-   - `AGENTLAW_FIX_TOOL.md` for current problems, harness escape, or repeated rule failure
-3. Law layer, in this order when relevant:
+2. Root control tools when relevant
+3. Workspace law layer:
    - `docs/law/SCOPE.md`
    - `docs/law/INPUT_OUTPUT_CONTRACT.md`
    - `docs/law/ORACLE_AND_JUDGMENT.md`
@@ -48,41 +38,40 @@ Check the current agreement in this order:
    - `docs/law/MEMORY_AND_CONTINUITY_RULES.md`
    - `docs/law/STARTER_SPECIALIZATION_RULES.md`
    - `docs/law/MECHANICAL_ENFORCEMENT_POLICY.md`
-4. `AGENTS.md`
+   - `docs/law/USER_INTENT_ALIGNMENT.md`
+4. This file (`AGENTS.md`)
 
-If the project grows in complexity, also read these when they exist and are relevant:
+For session recovery, also read:
 - `memory/working-set.md`
 - `memory/LOOKUP_RULES.md`
-- `plans/active/*`
-- `plans/completed/*`
-- `plans/tech-debt-tracker.md`
-- `references/*`
+- `docs/references/project-overview.md`
 
-Prefer them in this order:
-1. `memory/working-set.md` and `memory/LOOKUP_RULES.md` for session continuity
-2. `plans/active/*` for current execution-driving work
-3. `references/*` for repository-local reference context
-4. `plans/tech-debt-tracker.md` for repeated drift or promotion candidates
-4. `plans/completed/*` only when historical decisions or finished work need to be consulted
+## Worktree Map
 
-Create or update them when:
-- a multi-step change is too large or long-lived to track safely in `AGENTS.md`
-- a decision path needs durable progress tracking across sessions
-- reference material would otherwise need to be re-derived or re-read repeatedly
-- repeated drift or review failures need tracking for later promotion into stronger enforcement
+Routing only — see referenced documents for governing content.
 
-Move a plan from `plans/active/*` to `plans/completed/*` when:
-- the governed work is complete for its current scope
-- the main decisions and outcome are recorded clearly enough for later review
-- the plan no longer needs to drive current execution
+- `README.md` — installation, usage, and project description.
+- `LICENSE` — license.
+- `docs/law/*` — workspace law (constitution-derived governance). Read order in §Read First above.
+- `docs/contracts/*` — MCP tool surface (`agentlaw-mcp-tools.md`), shared baseline, update workflow.
+- `docs/planning-protocol/*` — review-method, task-classification, persona decks (core + specialized), persona-section map, plan template.
+- `docs/references/*` — orientation and design notes; `project-overview.md` is the worktree-at-a-glance entry for this project.
+- `docs/plans/draft/*` — in-development plans pre-review.
+- `docs/plans/active/*` — plans past review, in implementation.
+- `docs/plans/completed/*` — archived plans.
+- `docs/plans/tech-debt-tracker.md` — open and resolved tech-debt entries (#NN format).
+- `src/{your-project}/` — this project's source code (governed by `docs/law/CODE_AUTHORSHIP_AND_STEWARDSHIP_RULES.md`). Path varies by project.
+- `tests/` — this project's test suite (when present).
+- `references/*` — this project's local reference files (notes, design drafts, PDFs).
+- `memory/` — canonical markdown memory layer (source-of-truth): `working-set.md`, `LOOKUP_RULES.md`, `preferences.md`, `known-facts/*.md`, `logs/YYYY-MM/*.md`, `rules/*.md`.
+- `.harness/` — derived runtime/index state (rebuildable from `memory/*`). `.harness/index/meta.db` holds SQLite + FTS5 + sqlite-vec.
+
+MCP tool surface routing: `docs/contracts/agentlaw-mcp-tools.md` (tool descriptions, parameters, error contracts, §Tool Description Format).
+
+Code architecture and module connections: `docs/references/project-overview.md` § Code architecture map (when this project documents one).
 
 ## Current Priority
-The current core work order is fixed:
-
-1. Clarify the law layer before implementation
-2. Keep `AGENTS.md` aligned as a short execution entry map only
-3. Make unresolved items explicit instead of hiding them
-4. Update `docs/law/*` when project meaning changes
-
-## Working Rules
-This file is a routing map only. Governing rules live in the constitution and `docs/law/*`. Read those before acting.
+1. Keep this project's law, references, plans, and memory aligned with actual
+   practice.
+2. Keep project-specific facts in the approved project artifacts named above.
+3. Run the matching root control document before fix, init, or update work.

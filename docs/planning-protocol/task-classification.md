@@ -41,6 +41,32 @@ Use the planning workflow when any of these are true:
   dry-runs, or external confirmation.
 - The task has ambiguous requirements where wrong assumptions would be costly.
 
+## Clarification Gate
+
+Before drafting or executing a plan, decide whether a user follow-up question is
+materially required.
+
+Ask the user only when the missing answer would change at least one of:
+
+- the deliverable or success criteria
+- the affected scope or excluded work
+- the permission boundary or user approval requirement
+- irreversible, external, account, payment, message, release, or deployment
+  action
+- public API, CLI, document, contract, or downstream compatibility
+- data handling, privacy, retention, migration, or safety boundary
+- cost, schedule, risk tolerance, or high-impact recommendation
+
+Do not ask the user for facts that are discoverable from repository files,
+available tools, or current authoritative sources. Do not ask broad multi-part
+questions when one narrow question unblocks the plan. If the task can proceed
+safely with a documented assumption and a reversible check, record the
+assumption in the plan instead of stopping for a question.
+
+Use `Execution Gates` in the plan to record what may proceed without further
+approval, what needs explicit user approval, and what stop condition forces
+reclassification or re-questioning.
+
 ## Plan-Exempt Classes
 
 These classes normally skip the full planning workflow when small and low-risk.
@@ -114,6 +140,17 @@ record using the minimum sections of `plan-template.md` and skips the full
 persona review per `docs/law/PLANNING_AND_REVIEW_RULES.md` § Required Planning
 Workflow. The Trigger Coverage Verifier persona is the only required review
 pass for trivial plans, to confirm the classification is correct.
+
+**Lightweight plan path (non-trivial but not plan-required)**: when the work
+is *non-trivial in correctness or safety implication* but does not match any
+§Non-Trivial Trigger above (e.g., it is plan-exempt per §Plan-Exempt Classes
+yet still carries meaningful acceptance criteria), use
+`docs/planning-protocol/lightweight-plan-template.md`. The lightweight plan
+records the operational contract per `docs/law/USER_INTENT_ALIGNMENT.md`
+§Application Scope mode 2 — seven required fields (user_goal, deliverable,
+explicit_requirements, non_goals, acceptance_checks, clarification_policy,
+law_bindings) — without running through the persona-review session. If
+during execution any §Non-Trivial Trigger fires, escalate to a full plan.
 
 The triggers are deliberately phrased to apply across project domains (software,
 governance, research, content, advisory, legal, etc.). Each is followed by

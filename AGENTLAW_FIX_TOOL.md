@@ -22,7 +22,8 @@ Use this document when one or more of the following is true:
 - installer, memory, or continuity state appears to be bypassing file-based governance
 - the MCP memory tool surface is being bypassed (raw SQL against `.harness/index/meta.db`, direct file reads where a memory tool exists, or hand-rolled walks where `agentlaw_session_restore` / `agentlaw_session_save` should be used)
 - the canonical Markdown layer under `memory/*` and the index under `.harness/index/meta.db` have drifted apart
-- you need to decide whether the response belongs in law, tracker, `AGENTS.md`, or enforcement
+- a post-task retrospective identifies a reusable agent behavior correction and the owning layer is unclear
+- you need to decide whether the response belongs in law, tracker, `AGENTS.md`, an agent skill, or enforcement
 
 Do not use this document as a substitute for normal project work when no current governance problem exists.
 
@@ -180,6 +181,7 @@ Use this ownership map:
 - memory authority, installer judgment, and recursive promotion judgment -> `docs/law/ORACLE_AND_JUDGMENT.md`
 - installer drift, memory authority failure, and recursive promotion failure classes -> `docs/law/FAILURE_TAXONOMY.md`
 - short read-first routing and short entry guardrails -> `AGENTS.md`
+- reusable agent procedure reminders or workflow execution guidance -> agent skill (`.agents/skills/*` / `.claude/skills/*`) when the correction teaches agents how to perform a recurring action without changing law, public contract, verifier behavior, or project state
 - repeated debt, unresolved drift, promotion candidates -> `plans/tech-debt-tracker.md`
 - multi-step active corrective work -> `plans/active/*`
 - durable non-authoritative supporting context -> `references/*`
@@ -196,6 +198,7 @@ Typical candidates include:
 - local prose clarification
 - amendment of an existing rule or protocol
 - runtime reminder or prompt support
+- skill creation or skill update
 - verifier, test, lint, or CI enforcement
 - enabling refactor before behavior change
 - broader redesign or new artifact, only when existing abstractions cannot own the failure class
@@ -233,14 +236,18 @@ Use this ladder after the sufficiency contract and candidate review:
 2. tracker entry only
 3. local law amendment
 4. short `AGENTS.md` guardrail addition
-5. constitutional amendment
-6. enforcement follow-up under `docs/law/MECHANICAL_ENFORCEMENT_POLICY.md`
+5. agent skill creation or update
+6. constitutional amendment
+7. enforcement follow-up under `docs/law/MECHANICAL_ENFORCEMENT_POLICY.md`
 
 Use:
 - `tracker only` when the issue is real but not stable enough for a governing rule
 - `local law amendment` when the meaning clearly belongs to a law document
 - `AGENTS.md` only for short entry-order corrections
+- `agent skill creation or update` when the correction is reusable agent-facing procedure support, such as how to perform a recurring workflow, choose review inputs, or remember to consult a root control tool
 - `constitutional amendment` only for shared structural gaps or starter invariants
+
+Do not use a skill when the failure belongs to the constitution, root control documents, `docs/law/*`, tests, verifier, lint, CI, public setup documentation, release metadata, or a tracker. A skill may remind an agent to follow those authorities, but it must not become a lower-authority substitute for them. A post-task retrospective can recommend a skill only when the observed failure is a reusable agent-action pattern rather than a one-time chat correction or a higher-authority governance gap.
 
 Before choosing any rule-adding option, explicitly check whether the better correction is:
 - merging overlapping rules
@@ -263,7 +270,7 @@ Label the correction honestly:
 
 Do not call a cleanup, workaround, or tracker-only record a fix. It can still be the right action, but its label must preserve the residual risk.
 
-**Owning-layer presence enforcement.** When applying FIX_TOOL, output lands in the owning layer per the Step 9 ladder above — tracker entry, local law amendment, AGENTS.md guardrail, constitutional amendment, or mechanical enforcement. Output MUST NOT land in agent-local memory (host-private feedback files, conversation-only notes, scratch files outside `docs/` / `src/` / `tests/`). Lighter-alternative output channels bypass the ladder's owning-layer escalation and are an instance of the false-readiness meta-family (form-correct "fix-tool applied" with substance-incomplete output channel). See `docs/law/MECHANICAL_ENFORCEMENT_POLICY.md` §"form-vs-substance detection check" for the mechanical check.
+**Owning-layer presence enforcement.** When applying FIX_TOOL, output lands in the owning layer per the Step 9 ladder above — tracker entry, local law amendment, AGENTS.md guardrail, agent skill, constitutional amendment, or mechanical enforcement. Output MUST NOT land in agent-local memory (host-private feedback files, conversation-only notes, scratch files outside `docs/` / `src/` / `tests/`). Lighter-alternative output channels bypass the ladder's owning-layer escalation and are an instance of the false-readiness meta-family (form-correct "fix-tool applied" with substance-incomplete output channel). See `docs/law/MECHANICAL_ENFORCEMENT_POLICY.md` §"form-vs-substance detection check" for the mechanical check.
 
 ## Step 10. Verify Completion
 After making the correction, check:

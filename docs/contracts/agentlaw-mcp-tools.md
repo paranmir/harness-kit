@@ -8,9 +8,9 @@ scope: repository
 
 ## Authority
 This document is a contract document. It is the source of truth
-for the MCP tool surface exposed by the agentlaw-memory server, shared with target projects via `publish-repo/`,
+for the MCP tool surface exposed by the agentlaw-memory server, shared with target projects via the bundled scaffold,
 and its consistency with `src/agentlaw/server/tools/` is mechanically enforced
-by `agentlaw verify` (`_test_publish_seed_contract_finite_set` and tool-coverage check).
+by `agentlaw verify` (package-data sync and tool-coverage checks).
 
 Governing law: `docs/law/MEMORY_AND_CONTINUITY_RULES.md`. Amendments land
 through a plan that updates this file and any dependent law
@@ -20,6 +20,49 @@ clause in the same change.
 Implementation reference for the MCP tools exposed by the `agentlaw` pip package's bundled MCP server. This document defines the *signature* of each tool: name, parameters, return shape, error semantics. The *when and why* for each tool is governed by [`docs/law/MEMORY_AND_CONTINUITY_RULES.md`](../harness/MEMORY_AND_CONTINUITY_RULES.md) ("Memory Tool Surface (MCP)" section).
 
 This is a draft and lives in `docs/contracts/`. Once stable it moves to `docs/law/` as a governed protocol document.
+
+## Tool Description Format
+
+Every MCP tool description in this server carries five axes:
+
+1. **Actionable first line** — a single sentence stating what the tool does, in imperative voice, so the host knows immediately whether to dispatch.
+2. **Negative spec** — when NOT to use this tool. Names the closest sibling tool the host might confuse it with, and the discriminator.
+3. **Timing** — when in a session/plan/workflow this tool fits. Names the upstream and downstream tools or phases.
+4. **Use-case example** — a one-line concrete example that grounds the abstract description (parameter values, returned shape, or sample invocation context).
+5. **BEFORE-CALL prerequisite reading list** — a short list of `docs/`-relative paths the host should consult before invoking. Universal: `docs/contracts/agentlaw-mcp-tools.md` (this file). Tool-family-specific:
+   - Memory tools: `memory/LOOKUP_RULES.md`, `docs/law/MEMORY_AND_CONTINUITY_RULES.md`.
+   - Session tools: `docs/law/MEMORY_AND_CONTINUITY_RULES.md` §Canonical Save/Restore Route.
+   - Plan-review tools: `docs/planning-protocol/review-method.md`, `docs/law/PLANNING_AND_REVIEW_RULES.md`, this file's plan-review surface section.
+   - For tools with code-defined valid input values (e.g., `clarity_scores` keys for `agentlaw_plan_review_interview_answer_submit`), axis 5 also names the source-code location of valid values (e.g., `src/agentlaw/server/tools/plan_review.py CLARITY_WEIGHTS_*`) so consumers do not need to grep source code for valid keys.
+
+Rationale: inline preference reminders and per-session prompts get ignored at MCP tool dispatch; the description surface is the layer the host parses at every dispatch, so encoding prereq-consultation into the description is the lever that survives client-locked filters and the repo/publish boundary.
+
+Enforcement: future tool additions or modifications must adhere to this 5-axis form. The `docs/law/MECHANICAL_ENFORCEMENT_POLICY.md` form-vs-substance detection check applies — a description missing axis 5 (BEFORE-CALL list) on a load-bearing tool triggers the verifier sub-check at `src/agentlaw/form_vs_substance_detection.py`. The persona-review-loop's Form-vs-Substance Auditor (Domain 17 of `docs/planning-protocol/persona-decks-core.md`) flags reviews whose tool-description deltas omit axis 5.
+
+## Governance Reminder Skill (agentlaw-governance)
+
+`agentlaw init` deploys a cross-platform Agent Skills open standard SKILL.md to both `.claude/skills/agentlaw-governance/` (Claude Code) and `.agents/skills/agentlaw-governance/` (Codex). The skill description matches when the agent's current work involves fix / init / upgrade / governance keywords (`fix this`, `고치자`, `rule was violated`, `governance gap`, `init project`, `upgrade kit`, `초기화`, `업그레이드`, etc.) and surfaces the matching root-control document (`AGENTLAW_FIX_TOOL.md` / `AGENTLAW_INIT_TOOL.md` / `AGENTLAW_UPDATE_TOOL.md`) before plan-spawning or other action-consequential steps. Both deployment paths receive identical SKILL.md content (byte-equal); directory difference is platform convention. `agentlaw init --merge` refreshes the skill files additively (no overwrite of existing customization).
+
+Scaffold root also receives `AGENTS.md` and `CLAUDE.md` reminder lines (universal config files that Codex and Claude Code respectively auto-load every session), pointing at the same skill and root-control documents. The 3-layer hybrid (Skill primary + AGENTS/CLAUDE.md secondary + MCP tool description tertiary) is research-grounded — see `docs/plans/completed/2026-05-12-root-control-document-trigger-consultation-plan.md` for evidence (Anthropic + OpenAI Codex official guidance; AGENTIF benchmark on tool-description follow-rate).
+
+## Plan Authoring Reminder Skill (agentlaw-plan-authoring)
+
+`agentlaw init` also deploys a cross-platform Agent Skills open standard
+SKILL.md to both `.claude/skills/agentlaw-plan-authoring/` (Claude Code) and
+`.agents/skills/agentlaw-plan-authoring/` (Codex). The skill description
+matches when the agent is creating, reviewing, revising, executing, or
+archiving an agentlaw execution plan and routes the agent to
+`docs/planning-protocol/plan-template.md`,
+`docs/planning-protocol/review-method.md`,
+`docs/planning-protocol/task-classification.md`,
+`docs/planning-protocol/persona-decks-core.md`,
+`docs/planning-protocol/persona-decks-specialized.md`, and
+`docs/planning-protocol/persona-section-map.md`.
+
+The skill is a procedural reminder only. It must not introduce a new plan
+format, duplicate the planning protocol, or override `docs/law/*`. Both
+deployment paths receive identical SKILL.md content (byte-equal); directory
+difference is platform convention.
 
 ## Tool Operations Authority
 
@@ -32,7 +75,7 @@ This is a draft and lives in `docs/contracts/`. Once stable it moves to `docs/la
 
 - All timestamps are ISO 8601 UTC unless stated otherwise.
 - All ids are stable slugs persisted in markdown front matter (see schema reference).
-- All tools return a `runtime_status` field reporting whether the index, vector store, and embedding model are available.
+- All tools return a `runtime_status` field reporting whether the index, vector store, and embedding model are available. The `runtime_status` block contains: `mcp_server`, `meta_db`, `fts_index`, `vector_index`, `memory_items_index` (added 2026-05-14 — `ready` when the items table matches on-disk Markdown under `memory/{known-facts,rules}/`, `stale_relative_to_disk` when on-disk count exceeds items table count; `agentlaw_session_restore` triggers items-only auto-rebuild on stale before assembling the packet so the returned packet reflects post-rebuild state), `embedding_model`, `embedding_model_on_disk`, `schema_version`, `kit_version`, and `embedding_runtime`.
 - When a tool cannot complete due to missing runtime, it returns a structured `degraded` result rather than raising; the caller decides how to fall back.
 - Closed-set parameters (`type`, `scope`, `status`, `to_status`, `kind`, `mode`, `order_by`, `target_kind`) advertise their permitted values via JSON Schema `enum` constraints. MCP hosts may reject invalid values at the schema layer before the tool is invoked. The server still validates every closed-set parameter at runtime — schema enforcement is advisory; the server remains authoritative.
 
@@ -259,7 +302,7 @@ Append-only log entry for session-spanning findings, decisions, and corrections.
 Writes canonical Markdown first to today's log file, then updates derived log/chunk/tag rows. V1 does not create log vector rows.
 
 **Parameters**
-- `kind` (string, required) — `decision` / `correction` / `session_save` / `verification`.
+- `kind` (string, required) — `decision` / `correction` / `prune` / `session_save` / `verification`.
 - `scope` (string, required) — `repository` / `session` / `global`.
 - `title` (string, required).
 - `body` (string, required).
@@ -550,6 +593,612 @@ Report runtime status.
 - `embedding_runtime` — object containing `model_id`, `dimension`, `status`, `last_rebuild_at`, and `last_error` for the active vector-index contract.
 
 **Offline inference by design**: the MCP server sets `HF_HUB_OFFLINE=1`, `TRANSFORMERS_OFFLINE=1`, `HF_HUB_DOWNLOAD_TIMEOUT=5`, and `HF_HUB_DISABLE_TELEMETRY=1` at entry-point top and passes `local_files_only=True` to the embedding loader, so no Hugging Face Hub contact occurs while serving requests. The initial model download is a separate path handled by `agentlaw init`. If a manual rebuild against Hub is ever needed, set these env vars externally before invoking `run-mcp`.
+
+---
+
+### `agentlaw_authority_lookup`
+Return the authority sources an agent should consult before a named action class. Distinguishes memory recall from law/protocol/contract recall: memory is lower authority and is referenced via `memory_lookup` guidance; the binding sources for the action live in `repository_authority_sources`.
+
+**Parameters**
+- `action` (string, required) — action class such as `planning`, `plan_review`, `fix`, `commit`, `release`, `memory_read`, `memory_write`, or `general`.
+- `detail` (string, optional) — free-form note from the host describing the specific situation; preserved in the response but does not change routing.
+
+**Returns**
+- `matched_action` — canonical action key the lookup resolved to.
+- `unknown_action` (boolean) — `true` when the requested action did not match a known class and the response fell back to the `general` defaults; `false` otherwise.
+- `memory_lookup` — guidance object describing the recommended `memory_search` queries plus an `authority_warning` reminding the agent that memory is below law/protocol/contract.
+- `repository_authority_sources` — array of `{ path, authority_level, reason }` entries naming the binding sources to read.
+- `runtime_selects_final_authority` (boolean) — always `false`; the agent decides which sources to actually open.
+- `warnings` — array of advisory strings; populated when the host should be cautious (for example unknown action classes).
+
+**Errors**
+- None at the tool boundary; an unknown action returns the `general` defaults plus `unknown_action: true` rather than an error.
+
+---
+
+### `agentlaw_plan_review_session_start`
+Open a persona-review-loop session for a plan in `docs/plans/active/` or `docs/plans/draft/`. Creates a row in `plan_review_session` and returns the first interview question plus the ambiguity threshold the host must beat before persona review begins.
+
+**Parameters**
+- `plan_path` (string, required) — repo-relative POSIX path to the plan markdown file.
+- `intent_text` (string, required) — short restatement of the user's ask. Recorded for the session but does not gate any transition.
+- `selected_personas` (array of strings, optional) — explicit persona list. When omitted, defaults to a deck-driven list of universal personas only (Trigger Coverage Verifier first; specialized 3-column-trigger personas are NOT included by default — they activate via `agentlaw_plan_review_selected_personas_extend` after the universal → specialized transition_payload from `agentlaw_plan_review_finding_submit`). This default keeps the deep-review path opt-in rather than flowing every persona in by default.
+- `round_cap` (integer, optional, default 20) — maximum number of rounds before the session is forced into `stalled`.
+
+**Returns**
+- `session_id` — opaque id of the form `session/plan-review/<uuid4>`.
+- `phase` — always `interview` on success.
+- `round_number` — always `0` on success.
+- `selected_personas` — the list resolved for the session.
+- `domain_coverage_marks` (Step 8 addition) — array of identifiers parsed from the plan body's `## Domain Coverage` section: bracketed-checked names (`[x] Security & Trust Boundaries` → `Security & Trust Boundaries`) and substance markers (`- substance: code` → `substance:code`). Used by `agentlaw_plan_review_finding_submit` to build the universal → specialized transition_payload.
+- `ambiguity_threshold` — the value persona-review entry will compare against (default `0.2`).
+- `first_interview_question` — a starter prompt the host can use; the host may substitute its own wording in the conversation.
+- `round_cap` — echoes the round cap that will gate the loop.
+
+**Errors**
+- `plan_outside_active_or_draft` when the path is not under `docs/plans/active/` or `docs/plans/draft/`.
+- `plan_not_found` when the file does not exist on disk.
+- `active_session_exists` when a non-archived session already exists for this `plan_path`.
+
+---
+
+### `agentlaw_plan_review_interview_answer_submit`
+Submit one interview turn: the user's answer text, the host's clarity scores per dimension, and a one-line opposite scenario describing how the scoring could be wrong. Transitions phase to `interview_self_verify`.
+
+**Parameters**
+- `session_id` (string, required).
+- `user_answer` (string, required, non-empty after stripping whitespace).
+- `clarity_scores` (object, required) — keys among `goal`, `constraint`, `success`, `context`. Values must be in `[0, 1]`. Presence of `context` triggers brownfield weighting; otherwise greenfield weights apply.
+- `opposite_scenario` (string, required, non-empty after stripping whitespace) — host's own counterfactual describing how the scoring could be wrong.
+- `user_answer_memory_log_entry_id` (string, optional) — id of a `memory_logs` row that contains the user's answer. When supplied, the tool resolves the id via `memory_get`, requires the entry's body to contain `user_answer` verbatim, and requires the entry's `recorded_at` to be at least 5 seconds AFTER the plan's authoring timestamp (the plan body's `- Date authored:` line, with git first-commit fallback when absent or unparseable) as anti-self-fabrication friction. Supplying it earns the `memory-log` source marker on the interview turn; omitting it records the `llm-self-submitted` marker that the verifier surfaces as a warning during consistency checks.
+
+**Returns**
+- `session_id`, `phase` (always `interview_self_verify` on success).
+- `ambiguity` — computed from the submitted scores using greenfield or brownfield weights.
+- `ambiguity_threshold` — echoed for convenience.
+- `next_action_message` — short instruction telling the host what to do next.
+
+**Errors**
+- `wrong_phase` when the session is not in `interview`.
+- `user_answer_too_short` for a blank answer.
+- `opposite_scenario_too_short` for a blank opposite scenario.
+- `scores_out_of_range` when any clarity dimension is outside `[0, 1]` or non-numeric.
+- `session_not_found` when the id does not match any row.
+- `user_answer_memory_log_entry_not_found` when the supplied id resolves to no `memory_logs` row.
+- `user_answer_not_in_memory_log_body` when the resolved entry's body does not contain `user_answer` verbatim (case-sensitive substring).
+- `user_answer_memory_log_timestamp_unparseable` when the entry's `recorded_at` is not ISO 8601 parseable.
+- `user_answer_memory_log_not_old_enough` when the entry's `recorded_at` is less than 5 seconds after the plan's authoring timestamp (including the entry-predates-plan case where the gap is negative). Carries `gap_seconds`, `required_gap_seconds`, `recorded_at`, and `plan_authoring_timestamp` for diagnostics.
+- `plan_authoring_timestamp_not_derivable` when neither the plan body's `- Date authored:` line nor the git first-commit fallback yields a parseable timestamp. Carries `plan_path` and a `detail` message.
+
+---
+
+### `agentlaw_plan_review_interview_self_verify_submit`
+Confirm or reject the host's own clarity scoring. `verdict='pass'` plus ambiguity at or below the threshold advances to persona review; `re-score` or pass-with-high-ambiguity returns to `interview` for another question round.
+
+**Parameters**
+- `session_id` (string, required).
+- `verdict` (string, required) — `pass` or `re-score`.
+- `reason` (string, required, non-empty after stripping whitespace) — short justification for the verdict.
+
+**Returns**
+- `session_id`, `phase` (`persona_review` on advance, `interview` otherwise).
+- `round_number` — `1` when persona review begins.
+- `current_persona` — first selected persona on advance, otherwise null.
+- `ambiguity` — last recorded ambiguity for the session.
+- `ambiguity_threshold` — echoed when the verdict bounces back to interview.
+- `next_action_message` — set when the session returns to interview.
+
+**Errors**
+- `wrong_phase` when the session is not in `interview_self_verify`.
+- `invalid_verdict` for any value other than `pass` or `re-score`.
+- `reason_too_short` for a blank reason.
+- `session_not_found` when the id does not match any row.
+
+---
+
+### `agentlaw_plan_review_finding_submit`
+Submit one persona's finding. Verifies the persona matches the current slot, the mandate quote matches the deck verbatim, the line citations match the plan body byte-for-byte, and the severity is allowed. Advances `current_persona` or transitions to `persona_review_round_check` after the last persona of the round.
+
+**Parameters**
+- `session_id` (string, required).
+- `persona` (string, required) — must equal the session's `current_persona`.
+- `mandate_quote` (string, required) — verbatim mandate text from `docs/planning-protocol/persona-decks-core.md` or `persona-decks-specialized.md`. Whitespace runs are canonicalized to a single space before comparison; inline Markdown is preserved.
+- `finding_text` (string, required, non-empty after stripping whitespace). Must satisfy the Substance Enforcement shape (§Substance Enforcement (mechanical) in `docs/planning-protocol/review-method.md`): `severity=must-change|should-change` requires ≥3 sentences in each of `Evidence`, `Plan risk`, `Required plan change`, `Verification`; `severity=note` requires the literal `PASS` token and ≥3 sentences overall.
+- `plan_line_citations` (array of objects, required) — each `{ line: integer (1-indexed), quote: string }` must match the plan body exactly after CRLF→LF normalization.
+- `severity` (string, required) — `must-change`, `should-change`, or `note`.
+- `amend_proposal` (array of objects, optional) — each op `{ type: "insert_after" | "replace" | "delete", target: { section_header: string, line_offset_in_section: integer }, content: string, rationale: string }`. Required content (`content` non-blank) for `insert_after` / `replace`. Missing on must-change / should-change yields a non-blocking `amend_proposal_missing_legacy_warning` field in the success payload (Phase 1).
+
+**Returns**
+- `session_id`, `phase` (`persona_review` while personas remain, `persona_review_round_check` after the last persona).
+- `round_number`, `current_persona` (next persona in the round, null at round boundary).
+- `next_action_message` — set when the round boundary is reached.
+- `transition_payload` (Step 8 addition; emitted at-most-once per session by `finding_submit`) — present when the session has Domain Coverage marks recorded by `agentlaw_plan_review_session_start` and the universal → specialized transition has not yet been emitted. The payload carries `domain_coverage_marks` (the recorded marks), `candidates` (each `{name, deck_source, trigger, mandate, activation_reason}` for an unselected specialized persona whose trigger token-substring-matches one of the marks), and `guidance` (operator hint pointing at `agentlaw_plan_review_selected_personas_extend`). The `finding_submit` emission is the first-look surface; `round_check` re-surfaces the same context at round-end via `extend_prompt` when candidates remain unaddressed.
+
+**Errors**
+- `wrong_phase` when the session is not in `persona_review`.
+- `persona_mismatch` when the submitted persona is not the current slot. The response includes the expected and submitted names.
+- `persona_not_in_deck` when the persona name is not parseable from the deck files.
+- `mandate_not_in_deck` when the canonicalized quote does not match the deck mandate. The response includes the deck paths and the deck mandate text.
+- `line_out_of_range` and `line_quote_mismatch` for citation errors. The response carries a `details` array listing every citation failure.
+- `invalid_severity` when severity is not in the allowed set.
+- `finding_text_too_short` for a blank finding.
+- `finding_text_below_prescriptive_mandate` when the Substance Enforcement shape is unmet. Response carries `details` (the missing fields or under-threshold sentence counts) and a `hint` pointing at the Substance Enforcement section.
+- `amend_proposal_invalid` when the amend op list is malformed. Response carries `details` enumerating each invalid op.
+- `state: "plan_body_changed"` when the plan file's hash differs from the session's recorded hash. Response carries `current_hash`, `stored_hash`, and `next_actions` pointing to `agentlaw_plan_review_session_invalidate` and `agentlaw_plan_review_session_reconcile`.
+- `session_not_found` when the id does not match any row.
+
+**Success-payload additions**
+- `transparency_echo` — `[round R / Persona / severity / first 80 chars of finding_text / amend_ops=N]` line for inline display in the user-facing channel.
+- `amend_proposal_missing_legacy_warning` — present when severity is must-change / should-change and `amend_proposal` was omitted; Phase 1 (this release) records the warning without rejecting. Phase 2 will promote it to a hard error.
+
+---
+
+### `agentlaw_plan_review_round_check`
+Evaluate the just-completed round. Convergence (two consecutive zero-finding rounds at round 2 or later) runs the Review Quality Gate before finalization; below-threshold review quality restarts review from round 1. Stagnation (same persona citing a shared plan line across two consecutive rounds) or hitting the round cap stalls; otherwise the next round opens with `current_persona` reset to the first selected persona.
+
+**Parameters**
+- `session_id` (string, required).
+
+**Returns**
+- `session_id`, `phase` (`finalized`, `stalled`, or `persona_review` for the next round).
+- `round_number`, `current_persona` (first selected persona on advance).
+- `convergence` — set to `two_consecutive_zero_findings` on finalize.
+- `review_quality_gate` — present on would-finalize convergence. Shape: `{ score, threshold, decision, status, completed_round, components, weights, reasons }`. The default `threshold` is `0.80`; `decision` is `pass` or `restart`. When `decision="restart"`, the session remains in `persona_review`, `round_number` resets to `1`, `current_persona` resets to the first selected persona, current-attempt findings are cleared, and `convergence_state.review_quality_restarts` stores the rejected-attempt summary.
+- `stagnation` — array of `{ persona, shared_lines, round_pair }` entries when stagnation triggered.
+- `round_cap_reached` (boolean) — set when the round cap forced the stalled transition.
+- `extend_prompt` (object, optional; advance path only) — present when the universal → specialized `transition_payload` was previously emitted, the host did NOT call `agentlaw_plan_review_selected_personas_extend` during the just-completed round, and specialized candidates still match the session's Domain Coverage marks. Shape: `{ should_consider_extend: true, remaining_candidate_count: integer, guidance: string }`. The prompt is an information channel — it does not block convergence; the host may proceed to the next round, call `selected_personas_extend`, or ignore the prompt. Absent (not in the response dict) when any of the three conditions fails (no transition_payload yet, extend was called this round, or no remaining candidates).
+
+**Errors**
+- `personas_pending` when called from `persona_review` while a `current_persona` is still set (host must submit findings or invalidate first).
+- `wrong_phase` when called outside `persona_review` and `persona_review_round_check`.
+- `plan_file_missing_for_amend_apply` when the plan file is unreadable during batch-apply.
+- `session_not_found` when the id does not match any row.
+
+**Success-payload additions**
+- `pending_conflicts` — array of `{ section, persona_a, persona_b, offset_a, offset_b, op_type_a, op_type_b }` entries when two personas' amend ops target the same section. Phase advance is blocked until cleared via `agentlaw_plan_review_resolve_amend_conflict`.
+- `amend_apply_summary` — `{ ops_applied, applied_markers, new_plan_content_hash }` when batch-apply succeeded on the round.
+
+---
+
+### `agentlaw_plan_review_resolve_amend_conflict`
+Resolve an amend-op conflict surfaced by `round_check`. Strips the conflicting op(s) from the chosen finding(s) and clears the `pending_conflicts` marker; the host then re-calls `round_check` to attempt the batch apply.
+
+**Parameters**
+- `session_id` (string, required).
+- `section` (string, required) — the section header the conflict targets.
+- `persona_a`, `persona_b` (string, required) — the two personas whose ops conflicted.
+- `resolution` (string, required) — `keep_a` (drop persona_b's op), `keep_b` (drop persona_a's op), or `drop_both`.
+
+**Returns**
+- `session_id`, `resolution`, `section`, `next_action_message`.
+
+**Errors**
+- `invalid_resolution` when the resolution value is not in the allowed set.
+- `session_not_found` when the id does not match any row.
+
+---
+
+### `agentlaw_plan_review_self_challenge_submit`
+Record the Self-Challenge response that `session_finalize` requires. The response is path A (single weakest finding + one strengthening amend op) OR path B (full justification covering every persisted must-change / should-change finding).
+
+**Parameters**
+- `session_id` (string, required).
+- `response` (object, required) — path A: `{ type: "weakest_with_amend", weakest_finding_id: string, weakness_sentence: string, strengthening_amend_op: { type, target, content, rationale } }`. Path B: `{ type: "full_justification", entries: [{ finding_id: string, plan_body_citation: string, justification: string }] }`. The plain string `"none"` is rejected.
+
+**Returns**
+- `session_id`, `self_challenge_recorded: true`, `next_action_message`.
+
+**Errors**
+- `self_challenge_invalid` with a `details` list naming each missing or invalid field. Subcodes: `self_challenge_missing`, `self_challenge_invalid:plain_none`, `self_challenge_invalid:unknown_type:*`, `path_a_missing_*`, `path_b_entries_not_a_list`, `path_b_entry_*_missing_*`, `path_b_entry_*_justification_below_three_sentences`, `path_b_incomplete_coverage:*`.
+- `session_not_found` when the id does not match any row.
+
+---
+
+### `agentlaw_plan_review_session_finalize`
+Mark the session finalized and write the `Plan reviewed: yes` and `Plan contract hash` fields into the plan body. Rejects when the plan body has changed since the last hash record so the host explicitly chooses between invalidate and reconcile. Also rejects opted-in/prospective plans whose `## Review Coverage Matrix` is not closed, so unresolved unknowns require a user-question/update step before review can complete.
+
+Before writing the reviewed block, finalize re-validates the stored Self-Challenge response against the current persisted findings list. If a path-B response no longer covers every current must-change / should-change finding, finalize returns `self_challenge_stale_after_new_finding` and the host must re-submit Self-Challenge.
+
+**Parameters**
+- `session_id` (string, required).
+
+**Returns**
+- `session_id`, `phase` (`finalized`).
+- `plan_content_hash` — refreshed hash after the body write.
+- `plan_contract_hash` — SHA-256 hash of the reviewed contract sections. The contract hash excludes only explicit mutable evidence/status sections: `Status`, `Plan Review Evidence`, `Separate Persona Review Passes`, `Plan Amendment Authorizations`, `Plan Oracle Evidence`, and `Implementation Deviation Records`.
+
+**Errors**
+- `wrong_phase` when the session is not in `finalized`.
+- `self_challenge_required` when no Self-Challenge response has been recorded for the session. Response carries a `hint` pointing at `agentlaw_plan_review_self_challenge_submit`.
+- `self_challenge_stale_after_new_finding` when the recorded Self-Challenge response fails validation against the current findings list. Response carries `details` from Self-Challenge validation and `next_action_message` telling the host to re-submit Self-Challenge.
+- `review_coverage_matrix_open` when the plan's Review Coverage Matrix is missing, has invalid statuses, contains `needs_user_answer`, lacks required evidence/rationale, or lacks required `crit-*` linkage. Response carries `details` plus `next_action_message` instructing the host to ask the user for unresolved unknowns and update the plan before retrying.
+- `state: "plan_body_changed"` when the plan body's current hash differs from the stored hash.
+- `state: "plan_not_found"` when the plan file is missing on disk.
+- `session_not_found` when the id does not match any row.
+
+---
+
+### `agentlaw_plan_review_session_invalidate`
+Archive the current session without persisting findings to the plan. Used when the host decides to start fresh after a plan-body change or a process error. After invalidate, `agentlaw_plan_review_session_start` can open a new session for the same plan path.
+
+**Parameters**
+- `session_id` (string, required).
+
+**Returns**
+- `session_id`, `phase` (`archived`).
+
+**Errors**
+- `already_archived` when the session is already in the archived state.
+- `session_not_found` when the id does not match any row.
+
+---
+
+### `agentlaw_plan_review_session_reconcile`
+Update the session's `plan_content_hash` to match the current plan body without discarding accumulated findings. Used when the host has re-read a plan body that was edited externally and wants to continue the in-flight review against the new body. For finalized or `oracle_evaluation` sessions that carry `plan_contract_hash`, reconcile rejects reviewed contract-section changes and allows only mutable evidence/status section changes.
+
+**Parameters**
+- `session_id` (string, required).
+
+**Returns**
+- `session_id`, `phase` (unchanged), `round_number`, `current_persona`.
+- `plan_content_hash` — refreshed value.
+- `plan_contract_hash` — stored contract hash when present.
+- `findings` — preserved finding list.
+
+**Errors**
+- `plan_contract_changed` when a finalized or `oracle_evaluation` session carries `plan_contract_hash` and the current plan body's reviewed contract sections no longer match it. Response carries `current_contract_hash`, `stored_contract_hash`, and `next_actions`.
+- `already_archived` when the session is in the archived state.
+- `plan_not_found` when the plan file is missing on disk.
+- `session_not_found` when the id does not match any row.
+
+---
+
+### `agentlaw_plan_review_session_resume`
+Resume a stalled session after the user has resolved the stagnation or round-cap condition. Begins a fresh round with `current_persona` reset to the first selected persona and `stagnation_signal` cleared.
+
+**Parameters**
+- `session_id` (string, required).
+- `user_intervention_note` (string, required, non-empty after stripping whitespace) — short note describing what the user changed before resuming.
+
+**Returns**
+- `session_id`, `phase` (`persona_review`).
+- `round_number` — the new round (previous + 1).
+- `current_persona` — first selected persona, or null when the session has an empty selected list.
+
+**Errors**
+- `wrong_phase` when the session is not in `stalled`.
+- `user_intervention_note_too_short` for a blank note.
+- `session_not_found` when the id does not match any row.
+
+---
+
+### `agentlaw_plan_review_session_abandon`
+Archive a stalled session without moving the plan file. Used when the host gives up on the current review attempt but wants to keep the plan in active or draft state for later.
+
+**Parameters**
+- `session_id` (string, required).
+
+**Returns**
+- `session_id`, `phase` (`archived`).
+
+**Errors**
+- `wrong_phase` when the session is not in `stalled`.
+- `session_not_found` when the id does not match any row.
+
+---
+
+### `agentlaw_plan_review_session_enter_oracle_phase`
+Transition a finalized plan-review session into `oracle_evaluation` phase — the second diamond of the persona-review loop ("verified delivery"). After this transition, `agentlaw_plan_review_oracle_check` may be called to execute every runnable acceptance-criterion oracle, and `agentlaw_plan_review_oracle_user_confirm` may be called to mark manual-verification criteria as confirmed. `agentlaw_plan_archive` enforces the all-or-nothing gate (Q6=a) on sessions in `oracle_evaluation`: every criterion in `oracle_results` must resolve to `pass` or `user_confirmed` before the move into `docs/plans/completed/` is permitted.
+
+**Parameters**
+- `session_id` (string, required).
+
+**Returns**
+- `session_id`, `phase` (`oracle_evaluation`), `next_action_message` (operator hint).
+
+**Errors**
+- `wrong_phase` when the session is not in `finalized`.
+- `session_not_found` when the id does not match any row.
+
+---
+
+### `agentlaw_plan_review_oracle_check`
+Parse the plan body's acceptance criteria (every backticked `crit-*` identifier whose bullet block carries an `Oracle:` marker), execute every runnable oracle command via the safe-subprocess runner, and store per-criterion outcomes in `plan_review_session.oracle_results`. Every safe-subprocess invocation is also appended to `oracle_runs` as an audit trail row.
+
+The safe-subprocess runner enforces six trust-boundary mitigations: (1) the executable's basename must be on the `ORACLE_ALLOWED_EXECUTABLES` allowlist (`pytest`, `python`, `mutmut`, `hypothesis`, `agentlaw`); (2) the working directory is pinned to the workspace target and resolved with `Path.resolve()` so symlink / `..` tricks are neutralized at invocation; (3) `shell=False` so shell metacharacters in the oracle text are not interpreted; (4) per-command timeout (default 60 seconds, caller-overridable) kills runaway processes; (5) per-stream output cap (default 1 MiB, caller-overridable) truncates oversized output and stamps `output_truncated=True`; (6) the audit-trail row records the canonical command, exit code, captured I/O, and timestamps.
+
+Criteria whose oracle text contains the `user_confirms` marker are recorded with `status: pending` until `agentlaw_plan_review_oracle_user_confirm` marks them confirmed. Criteria with no extractable runnable command are also recorded `pending` with reason `no_runnable_command_extracted` so the host can choose to either rewrite the oracle text or invoke `oracle_user_confirm`.
+
+**Parameters**
+- `session_id` (string, required).
+- `timeout_seconds` (integer, optional; default `60`) — per-command timeout passed to the safe-subprocess runner.
+- `output_cap_bytes` (integer, optional; default `1048576`) — per-stream output cap.
+
+**Returns**
+- `session_id`, `phase`, `oracle_last_run_at`, `criteria_total`, `results_summary` (status → count map), `oracle_results` (full per-criterion record map).
+
+**Errors**
+- `wrong_phase` when the session is not in `oracle_evaluation`.
+- `session_not_found` when the id does not match any row.
+- `plan_not_found` when the plan body file is missing.
+- `no_acceptance_criteria_with_oracle` when the plan body has no `crit-*` bullets carrying an `Oracle:` marker.
+
+---
+
+### `agentlaw_plan_review_oracle_user_confirm`
+Record a user confirmation for one acceptance criterion. Used for criteria whose oracle is satisfied by manual review — either because the oracle text contains the `user_confirms` marker, or because `oracle_check` recorded `pending` with reason `no_runnable_command_extracted`. Sets the criterion's status to `user_confirmed` so the archive gate accepts it.
+
+**Parameters**
+- `session_id` (string, required).
+- `crit_id` (string, required) — must match a key already present in `oracle_results` (so `oracle_check` must have run at least once).
+- `confirmation_note` (string, required) — free-text description of what the user verified; non-empty.
+
+**Returns**
+- `session_id`, `phase`, `crit_id`, `status` (`user_confirmed`), `results_summary` (refreshed status → count map).
+
+**Errors**
+- `wrong_phase` when the session is not in `oracle_evaluation`.
+- `session_not_found`, `crit_id_required`, `confirmation_note_required`, `crit_not_in_oracle_results`.
+
+---
+
+### `agentlaw_plan_review_clarification_check`
+Run the plan-review-system ambiguity gate against a live session. If ambiguity is above the threshold, the session enters `clarification_pending` and the response returns surfaced questions.
+
+**Parameters**
+- `session_id` (string, required).
+- `intent_text` (string, required).
+- `threshold` (number, optional; default `0.5`).
+
+**Returns**
+- `session_id`, `phase`, `requires_clarification`, `ambiguity_score`, `ambiguity_flags`, `surfaced_questions`, `retrieval_hits`.
+
+**Errors**
+- `session_not_found` when the id does not match any row.
+
+---
+
+### `agentlaw_plan_review_clarification_answer`
+Record the user's answer for a `clarification_pending` session and return the session to the normal `interview` flow.
+
+**Parameters**
+- `session_id` (string, required).
+- `user_answer` (string, required).
+- `answered_questions` (list of strings, optional).
+
+**Returns**
+- `session_id`, `phase` (`interview`), `clarification_resolved`, `next_action_message`.
+
+**Errors**
+- `wrong_phase` when the session is not in `clarification_pending`.
+- `user_answer_too_short` for a blank answer.
+- `session_not_found` when the id does not match any row.
+
+---
+
+### `agentlaw_plan_review_preventer_lint`
+Run the `plan_review_system` failure-preventer dispatcher against a single-file plan or Pattern 2 directory bundle. Findings are filtered by the plan's declared task classes and recorded in `plan_review_preventer_audit`.
+
+**Parameters**
+- `plan_path` (string, required) — repo-relative path under `docs/plans/active/` or `docs/plans/draft/`.
+- `session_id` (string, optional).
+
+**Returns**
+- `task_classes`, `finding_count`, `findings`, `audit_id`.
+
+**Errors**
+- `plan_outside_active_or_draft`.
+- `plan_not_found`.
+
+---
+
+### `agentlaw_failure_pattern_check`
+Scan correction memory logs for recurring keyword patterns and surface promotion candidates for future preventers.
+
+**Parameters**
+- `threshold` (integer, optional; default `3`).
+- `limit` (integer, optional; default `20`).
+
+**Returns**
+- `threshold`, `log_count`, `hit_count`, `hits`.
+
+**Errors**
+- (none).
+
+---
+
+### `agentlaw_plan_review_step_critique_check`
+Validate and execute one `verification_tool_call` payload for a step-level finding. In-process tool kinds (`file_exists`, `grep`, `regex_in_file`) execute against the target workspace; `test_run` remains shape-validated for the oracle path.
+
+**Parameters**
+- `verification_tool_call` (object, required) — `{kind, args, expected_outcome}`.
+
+**Returns**
+- `ok`, `actual_outcome`, `matched_expectation`, `detail`.
+
+**Errors**
+- `verification_tool_call_not_a_dict`.
+- `verification_tool_call_invalid`.
+
+---
+
+### `agentlaw_plan_review_req_create`
+Create the next REQ-N requirement record for a plan.
+
+**Parameters**
+- `plan_path` (string, required).
+- `statement` (string, required).
+- `status` (string, optional; default `active`) — `active`, `withdrawn`, or `superseded`.
+
+**Returns**
+- `req_id`, `plan_slug`, `n`, `statement`, `status`.
+
+**Errors**
+- `statement_required`.
+- `invalid_req_status`.
+- `req_id_invalid`.
+
+---
+
+### `agentlaw_plan_review_conf_create`
+Create the next CONF-N confirmation record and optionally bind it to existing REQ-N records.
+
+**Parameters**
+- `plan_path` (string, required).
+- `confirmation_method` (string, required).
+- `user_statement` (string, required).
+- `confirmed_req_ids` (list of strings, optional).
+- `scope_description` (string, optional).
+- `applies_to_work_steps` (list of strings, optional).
+
+**Returns**
+- `conf_id`, `plan_slug`, `n`, `confirmation_method`, `confirmed_req_ids`, `scope_description`, `applies_to_work_steps`.
+
+**Errors**
+- `confirmation_method_invalid`.
+- `user_statement_required`.
+- `conf_id_invalid`.
+- `req_id_invalid`.
+- `req_ids_not_found`.
+
+---
+
+### `agentlaw_plan_review_req_bind`
+Bind an existing CONF-N confirmation to one existing REQ-N requirement.
+
+**Parameters**
+- `conf_id` (string, required).
+- `req_id` (string, required).
+
+**Returns**
+- `conf_id`, `req_id`, `bound`.
+
+**Errors**
+- `conf_id_invalid`, `req_id_invalid`.
+- `conf_id_not_found`, `req_id_not_found`.
+
+---
+
+### `agentlaw_plan_archive`
+Move a plan from `docs/plans/active/` or `docs/plans/draft/` to `docs/plans/completed/` and archive any matching session row in the same operation. The path may name either a single Markdown plan file or a Pattern 2 directory bundle. When no session exists for the path, a synthetic archived row is recorded so the verifier's plan-DB consistency check has an artifact to reconcile against.
+
+**Archive gate (Step 5-a, Q6=a all-or-nothing).** When the active session for the plan is in `oracle_evaluation` phase, the gate refuses the move unless every criterion in `oracle_results` resolves to `pass` or `user_confirmed`. Sessions never advanced to `oracle_evaluation` (legacy plans, or simple plans that skipped the second diamond) bypass this gate and archive under the original path for backward compatibility.
+
+**Parameters**
+- `plan_path` (string, required) — repo-relative POSIX path to the plan file in active or draft.
+
+**Returns**
+- `phase` — always `archived`.
+- `from_path` — the original plan path (echoed).
+- `to_path` — the new path under `docs/plans/completed/`.
+
+**Errors**
+- `plan_outside_active_or_draft` when the path is not under `docs/plans/active/` or `docs/plans/draft/`.
+- `plan_not_found` when the file or directory bundle does not exist on disk.
+- `completed_destination_exists` when the target completed path already exists.
+- `archive_gate_oracle_results_empty` when the session is in `oracle_evaluation` but `oracle_check` has not yet been run.
+- `archive_gate_blocked` when one or more criteria are still `fail`, `error`, or `pending`. The error payload includes a `blocking_criteria` list naming each unresolved criterion and its current status.
+
+---
+
+### `agentlaw_substance_deck_list`
+List the substance decks registered at MCP server startup. Each deck is loaded from a `docs/planning-protocol/substance-deck-*.md` file at server startup and (re-)loaded on every call so deck file edits take effect without restart. Plans declaring `- substance: <name>` in their `## Domain Coverage` section bind to one of these decks for verification command defaults; the `code` substance deck registers `pytest`, `mutmut`, and `hypothesis`.
+
+**Parameters**
+- (none)
+
+**Returns**
+- `deck_count` — number of decks loaded.
+- `decks` — list of `{name, source_path, trigger_marker, verification_commands}` per loaded deck.
+
+**Errors**
+- (none — degraded environments without the deck directory return `deck_count: 0`).
+
+---
+
+### `agentlaw_plan_review_selected_personas_extend`
+Append specialized personas to the session's `selected_personas` list. Used after the host receives the universal → specialized `transition_payload` from `agentlaw_plan_review_finding_submit` — or at round-end when `agentlaw_plan_review_round_check` re-surfaces remaining candidates via `extend_prompt`. Already-selected personas are silently skipped (set semantics on names). The tool refuses to remove already-reviewed personas — `selected_personas` only grows. Each extension writes one `memory_logs` audit row recording the appended persona names and the rationale, and records the current `round_number` in `convergence_state.last_extend_round` so the next `round_check` can suppress `extend_prompt` for that round (loop-inducing prompt avoidance).
+
+**Parameters**
+- `session_id` (string, required).
+- `add_personas` (list of strings, required; non-empty).
+- `rationale` (string, required; non-empty) — explains why the specialized personas were selected.
+
+**Returns**
+- `session_id`, `selected_personas` (refreshed full list), `appended` (only the names actually appended), `audit_log_entry_id`.
+
+**Errors**
+- `session_not_found`, `wrong_phase` (must be `persona_review` or `persona_review_round_check`), `add_personas_empty`, `rationale_required`.
+- `personas_not_in_deck` (the response payload includes the list of unknown names).
+
+---
+
+### `agentlaw_plan_review_session_prune_proposal`
+Propose archived `plan_review_session` rows older than `threshold_days` as prune candidates. Read-only — returns the candidate list with each row's plan-file lifecycle status (`draft` / `active` / `completed` / `renamed_in_<slot>` / `absent`) so the host can judge safety. Sessions already pruned (`pruned_at IS NOT NULL`) are excluded.
+
+**Parameters**
+- `threshold_days` (integer, optional; default `90`) — non-negative.
+
+**Returns**
+- `threshold_days`, `cutoff_iso`, `candidate_count`, `candidates` (list of `{session_id, plan_path, archived_at, age_days, plan_lifecycle_status}`).
+
+**Errors**
+- `threshold_days_must_be_non_negative`.
+
+---
+
+### `agentlaw_plan_review_session_prune_confirm`
+Apply the prune to one or more archived `plan_review_session` rows. Mode `soft` (default) sets `pruned_at` and `pruned_reason` and preserves the row body so the prune is reversible by clearing `pruned_at`. Mode `hard` requires `irreversibility_ack` and DELETEs the row. Cross-reference cascade protection refuses any prune whose candidate `session_id`s are cited in plan bodies or memory entries unless `cascade_authorization` is `cascade`; the response then enumerates the full reference chain. Each successful confirm appends one `memory_logs` row recording the operation, mode, candidate ids, cascade chain, and `user_authorization_note`.
+
+**Parameters**
+- `session_ids` (list of strings, required; non-empty).
+- `user_authorization_note` (string, required; non-empty).
+- `mode` (string, optional; default `soft`; one of `soft`, `hard`).
+- `irreversibility_ack` (string, optional; required when `mode=hard`).
+- `cascade_authorization` (string, optional; `cascade` to authorize the full reference chain in one decision).
+
+**Returns**
+- `mode`, `applied_session_ids`, `applied_count`, `cascade_chain` (map of cited candidate → list of citing artifacts), `audit_log_entry_id`.
+
+**Errors**
+- `session_ids_empty`, `user_authorization_note_required`, `invalid_mode`, `hard_mode_requires_irreversibility_ack`.
+- `session_not_found`, `session_not_archived`.
+- `cascade_authorization_required` (response payload includes `cited_candidates`, `cascade_size`, `cascade_artifacts`).
+
+---
+
+### `memory_prune_proposal`
+Propose `memory_items` and `memory_logs` rows older than `threshold_days` as prune candidates. Read-only — returns the candidate list split into items and logs. Items are filtered to status in `{superseded, stale, suppressed}`; live status (`active`, `tentative`, etc.) is excluded so the proposal cannot suggest deleting an in-use entry. Logs have no status filter — they are append-only operational records and the threshold is the only inclusion gate.
+
+**Parameters**
+- `threshold_days` (integer, optional; default `180`) — non-negative.
+
+**Returns**
+- `threshold_days`, `cutoff_iso`, `items_count`, `logs_count`, `items` (list of `{id, type, scope, status, path, updated_at, age_days}`), `logs` (list of `{id, kind, scope, path, recorded_at, age_days}`).
+
+**Errors**
+- `threshold_days_must_be_non_negative`.
+
+---
+
+### `memory_prune_confirm`
+Apply the prune to one or more `memory_items` and/or `memory_logs` rows. Items and logs may be passed in the same call but are listed in separate parameters since their soft-delete shapes differ — items get `status='suppressed'` and logs get a `pruned` tag because `memory_logs` has no status column. Mode `soft` is reversible: clear status back (items) or remove the `pruned` tag (logs). Mode `hard` DELETEs the row and its derived chunks / tags; `irreversibility_ack` is required. Cross-reference cascade protection mirrors `agentlaw_plan_review_session_prune_confirm`.
+
+**Parameters**
+- `user_authorization_note` (string, required; non-empty).
+- `item_ids` (list of strings, optional).
+- `log_ids` (list of strings, optional).
+- `mode` (string, optional; default `soft`; one of `soft`, `hard`).
+- `irreversibility_ack` (string, optional; required when `mode=hard`).
+- `cascade_authorization` (string, optional; `cascade` to authorize the full reference chain in one decision).
+
+**Returns**
+- `mode`, `applied_item_ids`, `applied_log_ids`, `applied_count`, `cascade_chain`, `audit_log_entry_id`.
+
+**Errors**
+- `no_candidates`, `user_authorization_note_required`, `invalid_mode`, `hard_mode_requires_irreversibility_ack`.
+- `item_not_found`, `log_not_found`.
+- `cascade_authorization_required` (response payload includes `cited_candidates`, `cascade_size`, `cascade_artifacts`).
 
 ---
 

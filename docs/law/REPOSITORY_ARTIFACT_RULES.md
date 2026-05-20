@@ -129,7 +129,7 @@ In this model, `memory/*` is the human-reviewable canonical memory layer and `.h
 
 `memory/` is a governed default canonical memory path. It stores lower-authority memory records, not law.
 
-`memory/rules/` is the default path for project-local governance rules (the `rule` memory type). Rules sit below shared `docs/law/*` in authority and above known facts and preferences. Full framework — front matter schema, authority position, discoverability obligations, and distribution-boundary rule for `publish-repo/memory/rules/` — lives in `docs/law/MEMORY_AND_CONTINUITY_RULES.md` under "Local Rule Memory Type".
+`memory/rules/` is the default path for project-local governance rules (the `rule` memory type). Rules sit below shared `docs/law/*` in authority and above known facts and preferences. Full framework — front matter schema, authority position, discoverability obligations, and distribution-boundary rule for the bundled scaffold's `memory/rules/` — lives in `docs/law/MEMORY_AND_CONTINUITY_RULES.md` under "Local Rule Memory Type".
 
 Memory source files, databases, indexes, logs, and context packets must not:
 
@@ -250,7 +250,7 @@ Examples:
 - `AGENTLAW_UPDATE_TOOL.md`
 - `AGENTLAW_FIX_TOOL.md`
 
-Harness bootstraps from upstream are performed via `AGENTLAW_INIT_TOOL.md`; that document carries its own Full Bootstrap Cycle, Responsibility Split, and Non-Pip Distribution sections. Harness updates from upstream are performed via `AGENTLAW_UPDATE_TOOL.md`; that document carries its own Full Update Cycle, Responsibility Split, Failure Modes, and Non-Pip Distribution sections. The pip package's `pipx upgrade agentlaw` brings the new shared kit and applies binary schema migrations; the LLM-driven `AGENTLAW_UPDATE_TOOL.md` procedure incorporates governance content into local law and artifacts. Skipping the LLM-driven procedure after a `pipx upgrade` is a governance violation: it leaves binary infrastructure ahead of local law.
+Harness bootstraps from upstream are performed via `AGENTLAW_INIT_TOOL.md`; that document carries its own Full Bootstrap Cycle and Responsibility Split sections. Harness updates from upstream are performed via `AGENTLAW_UPDATE_TOOL.md`; that document carries its own Full Update Cycle, Responsibility Split, and Failure Modes sections. The pip package's `pipx upgrade agentlaw` brings the new shared kit and applies binary schema migrations; the LLM-driven `AGENTLAW_UPDATE_TOOL.md` procedure incorporates governance content into local law and artifacts. Skipping the LLM-driven procedure after a `pipx upgrade` is a governance violation: it leaves binary infrastructure ahead of local law.
 
 ### Plan Documents
 Plan documents use lowercase kebab case with names that describe the work clearly.
@@ -273,6 +273,8 @@ For active plans that govern non-trivial or high-risk implementation work, the p
 - rollback, repair, or recovery path
 - explicit non-goals
 - new reference or law files proposed, if any, each with a justification for why the content does not fit in an existing artifact under its defined role
+- work breakdown
+- execution gates
 
 Plans for trivial cleanup may stay smaller, but they must not hide public-contract, runtime, package, configuration, schema, or cross-component impact.
 
@@ -284,14 +286,16 @@ Active plans must also carry compact review evidence fields:
 - `Plan reviewed`
 - `Personas applied`
 - `Revised after review`
+- `Deep Review Selection` for non-trivial plans, or an explicit not-applicable
+  marker for trivial plans
 
 When `Review required` is `no`, the plan must carry `Review exemption reason`
 instead of the other review-completion evidence. The verifier treats these
 fields as parseable contract, not decorative prose.
 
 When `Review required` is `yes`, the plan must also carry a short `Separate
-Persona Review Passes` section with one block per persona and these parseable
-fields in each block:
+Persona Review Passes` section with one block per persona. Blocks with concrete
+findings must carry these parseable fields:
 
 - `Severity`
 - `Plan risk found`
@@ -299,12 +303,24 @@ fields in each block:
 - `Verification or gate to add`
 - `Residual risk if accepted`
 
+Blocks where the persona found no concrete plan change may instead use compact
+PASS evidence, but the block must still name the persona and explicitly state
+that no concrete plan change was found. Compact PASS evidence is not valid for
+`must-change` or `should-change` findings.
+
+New plans should use the stricter review-lint shape for every persona block:
+`Status`, `Severity`, `Inspected sections`, `Evidence`, `Plan risk found`,
+`Required plan change`, `Verification or gate to add`, and
+`Residual risk if accepted`. `PASS` and `N/A` are invalid when they carry no
+evidence or no inspected sections. Legacy compact PASS remains accepted for
+plans authored before the stricter shape lands until those plans are migrated.
+
 The section is evidence that persona review was run as separate passes. It is
 not a place to preserve long duplicate draft and revised plan bodies.
 
 ### Contract Documents
 Contract documents use lowercase kebab case. They describe a boundary surface shared with target projects and must carry an authority header declaring their domain, verification check, and governing law anchor.
-They must reside in `docs/contracts/` and be mirrored to `publish-repo/docs/contracts/`.
+They must reside in `docs/contracts/` and be synchronized into the bundled scaffold.
 
 Examples:
 - `shared-agentlaw-baseline.md`
@@ -334,13 +350,12 @@ method, and persona deck selection. They are shared with downstream projects,
 but they remain below the law layer.
 
 Law defines the following finite set of shared planning protocol files
-distributed in `publish-repo/docs/planning-protocol/`: `README.md`,
+distributed in the bundled scaffold's `docs/planning-protocol/`: `README.md`,
 `task-classification.md`, `review-method.md`, `persona-decks-core.md`,
 `persona-decks-specialized.md`, `plan-template.md`,
 `persona-section-map.md`. Adding, renaming, or removing a file requires a
 plan that edits this enumeration in the same change; `agentlaw verify`
-mechanically asserts that `publish-repo/docs/planning-protocol/` contains this
-exact set and no unratified sibling files.
+mechanically asserts that scaffold shared files match the authoring sources.
 
 ## Naming Anti-Patterns
 Do not use:
@@ -407,7 +422,7 @@ When the search surfaces an existing rule whose intent overlaps:
 
 This rule does not apply to factual material additions inside an existing § (adding a missing parameter to a contract document's parameter list, adding a new entry to a finite enumeration, fixing a typo). It applies to **rule** additions — text that imposes a new obligation, prohibition, or behavioral expectation.
 
-Law defines the following finite set of shared reference roles distributed in `publish-repo/docs/references/`: `README`, `project-overview`. Adding, renaming, or removing a role requires a plan that edits this enumeration in the same change; `agentlaw verify` mechanically asserts that `publish-repo/docs/references/` contains no files outside this set (plus the local-only references under `docs/references/` in the authoring repo, which are unbounded by design and not part of this enumeration). Splitting a single named role across sibling files without law backing is governance drift. When authoring-workspace content and distribution-template content share the same role, they remain one file by role and must follow the mirror rules in `SCOPE.md` and the publish-seed boundary, not a new sibling file.
+Law defines the following finite set of shared reference roles distributed in the kit's reference directory (e.g. `docs/references/`): `README`, `project-overview`. Adding, renaming, or removing a role requires a plan that edits this enumeration in the same change; `agentlaw verify` mechanically asserts that the distributed reference directory contains no files outside this set. Splitting a single named role across sibling files without law backing is governance drift. When a single named role's content varies between contexts (for example, a populated version vs a template version), the variation must follow the mirror rules in `SCOPE.md` and the publish-seed boundary rather than being expressed through a new sibling file.
 
 The `project-overview` role additionally carries a "Code architecture map" subsection. Its obligations — slot menu, minimum structure-plus-flow coverage, slot-selection rationale, `Map scope:` declaration, density cap, Mermaid-only format, slot-name headings, and the mtime-based Layer 2 staleness check — are specified in `docs/law/CODE_AUTHORSHIP_AND_STEWARDSHIP_RULES.md` under "Code Architecture Map".
 

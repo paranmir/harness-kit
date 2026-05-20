@@ -2,9 +2,9 @@
 
 ## Authority
 This document is a contract document. It is the source of truth
-for the distribution contract between agentlaw and target projects, shared with target projects via `publish-repo/`,
-and its consistency with the `publish-repo/` tree and target project layout is mechanically enforced
-by `agentlaw verify` (`_test_scaffold_drift` + `_test_publish_seed_contract_finite_set`).
+for the distribution contract between agentlaw and target projects, shared with target projects via the bundled scaffold,
+and its consistency with the scaffold tree and target project layout is mechanically enforced
+by `agentlaw verify` (`_test_package_data_in_sync`).
 
 Governing law: `docs/law/REPOSITORY_ARTIFACT_RULES.md`. Amendments land
 through a plan that updates this file and any dependent law
@@ -22,6 +22,6 @@ This file records the shared-kit baseline currently reflected in the workspace.
 - Baseline recorded on: `2026-04-27`
 - Recorded by: `v0.1.1 deployment execution plan`
 - Notes:
-  - Root constitution and root control documents are mirrors of `publish-repo/*`.
-  - The baseline commit was read from `publish-repo/.git`.
+  - Root constitution and root control documents are synchronized into `src/agentlaw/scaffold/*`.
+  - `src/agentlaw/scaffold/*` is the active package distribution source.
   - This update includes: failure taxonomy expanded to 7 classes, Restore/Save Request Protocols added to REPOSITORY_ARTIFACT_RULES, genericization gap detection added to FIX/UPDATE tools.
