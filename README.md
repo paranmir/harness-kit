@@ -5,9 +5,9 @@ A law-first governance kit for AI coding agents — install governance structure
 `agentlaw` gives any repository a governed starting structure that AI coding agents can read, follow, and maintain. It works for brand-new repositories and already-existing codebases alike. Drop it in, run the bootstrap, and the agent knows what the rules are before it writes a single line.
 
 In practical terms, agentlaw gives your project a stable agreement layer:
-law-first governance documents, memory and continuity records, planning and
-review rules, verification gates, and agent setup instructions that make those
-rules visible to the coding agent at the start of each session.
+law-first governance documents, memory and continuity records, planning and review
+rules, verification gates, and agent setup instructions that make those rules
+visible to the coding agent at the start of each session.
 
 ---
 
