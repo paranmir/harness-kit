@@ -49,6 +49,40 @@ agentlaw run-mcp --target .
 agentlaw now --json
 ```
 
+## Harness Workflow
+
+Use agentlaw as an operating loop, not only as a command list:
+
+1. Restore context at the start of a session with `agentlaw_session_restore` or `agentlaw session-restore --target . --json`.
+2. State the task and let the agent classify whether it is trivial, plan-required, fix/init/update, or release/deploy-adjacent.
+3. For non-trivial work, require a reviewed plan before implementation. The plan review selects the right persona review passes, records user gates, and names acceptance oracles.
+4. Implement from the reviewed plan, then run the listed oracle checks, `agentlaw verify .`, and any focused tests before archiving the plan.
+5. Save session state with `agentlaw_session_save` at milestones and before context compaction.
+
+### When to use init, update, and fix
+
+- Use `AGENTLAW_INIT_TOOL.md` when bootstrapping agentlaw into a new project or re-initializing the scaffold.
+- Use `AGENTLAW_UPDATE_TOOL.md` when the installed kit or scaffold has changed and this project needs those upstream harness updates merged without losing local project facts.
+- Use `AGENTLAW_FIX_TOOL.md` when the harness is drifting, a tracker-policy violation happened, the agent bypassed a rule, MCP/memory state looks inconsistent, or the same governance failure repeats.
+
+### Plan, persona, and oracle review
+
+The normal non-trivial path is plan first, implementation second, oracle last. A plan states the task contract, affected surfaces, user gates, risks, rollback paths, and acceptance criteria. The persona review checks that plan from specific lenses such as trigger coverage, acceptance criteria, affected surfaces, external contracts, user gates, and form-vs-substance. The oracle phase checks whether the completed work satisfies the plan's criteria before the plan is archived.
+
+### If the harness looks broken
+
+First ask the agent to restore context again. If MCP or host integration still looks wrong, run:
+
+```bash
+agentlaw session-restore --target . --json
+agentlaw mcp-recover --target . --client auto --json
+agentlaw memory-runtime-check --target . --json
+agentlaw memory-runtime-repair --target . --json
+agentlaw verify .
+```
+
+If the problem is repeated, rule-related, or affects the agent's ability to follow the harness, treat it as fix-class work and tell the agent to start from `AGENTLAW_FIX_TOOL.md`.
+
 ### Host reminder hooks
 
 `agentlaw init` registers a `UserPromptSubmit` reminder hook for supported
