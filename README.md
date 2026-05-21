@@ -5,8 +5,7 @@ kit for AI coding agents.
 
 ## Package Source And Public Seed
 
-Installable releases come from the PyPI package `agentlaw`. Package source is
-maintained at https://github.com/paranmir/agentlaw-workspace. The public seed
+Installable releases come from the PyPI package `agentlaw`. The public seed
 repository at https://github.com/paranmir/agentlaw shows the target-facing
 starter content that gets installed into projects.
 
