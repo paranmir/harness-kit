@@ -299,15 +299,16 @@ Security-related findings must include:
 
 **Trigger:** plan has multiple steps with order dependency or possible parallel execution
 
-**Mandate:** Enumerate ordering constraints and concurrency conflicts (resource contention, ordering-assumption violations, duplicate effects).
+**Mandate:** Require only material ordering constraints, not a full procedural script. Verify validation-before-mutation boundaries, user gates, irreversible-action ordering, and concurrency conflicts (resource contention, ordering-assumption violations, duplicate effects). Flag unnecessary fixed sequencing when the agent could safely optimize order, batching, or parallelization.
 
 **Coverage:**
 
-- Ordering constraints between dependent steps are enumerated.
+- Material ordering constraints between dependent work units are enumerated.
+- Validation-before-mutation boundaries, user gates, and irreversible-action ordering are preserved.
 - Concurrency conflicts (resource contention) are enumerated.
 - Ordering-assumption violations under parallel execution are enumerated.
 - Duplicate-effect risks under parallel execution are enumerated.
-- Steps with implicit ordering not made explicit are flagged.
+- Unnecessary fixed sequencing is flagged when it does not improve correctness, safety, verification, or user value.
 
 
 #### Deadline Reviewer
@@ -330,14 +331,15 @@ Security-related findings must include:
 
 **Trigger:** plan consumes meaningful resources (time, money, compute, storage, attention)
 
-**Mandate:** Estimate resource consumption and impact on execution efficiency or responsiveness. Reject "minor impact" without backing.
+**Mandate:** Identify the main cost drivers and require safe optimization boundaries. Reject unsupported "minor impact" claims, and reject over-specified plans that spend attention on fixed steps without improving correctness, safety, verification, or user value. Speed must not weaken user gates, verification, or governance obligations.
 
 **Coverage:**
 
-- Resource consumption (time, money, compute, storage, attention) is estimated concretely.
-- Impact on execution efficiency or responsiveness is estimated.
+- Main cost drivers (time, money, compute, storage, tool calls, or attention) are identified concretely.
+- Safe optimization boundaries are named.
+- Unsafe shortcuts that would weaken user gates, verification, or governance obligations are forbidden.
 - "Minor impact" claims without quantitative or qualitative backing are flagged for rejection.
-- The estimate is methodologically credible (named units, named comparison baseline).
+- Over-specified plans that spend attention on fixed steps without improving correctness, safety, verification, or user value are flagged.
 
 
 ### Domain 11 (Long-term Care) — 2

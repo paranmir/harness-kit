@@ -420,6 +420,11 @@ A useful finding includes at least one of:
 - a rollback or recovery gap
 - a scope leak
 - a safe simplification
+- over-planning, including fixed step sequences that can safely be left to the
+  agent
+- procedural detail that does not affect correctness, safety, verification, or user value
+- repeated checks that can be batched, or expensive probes that should follow
+  cheaper prerequisite checks
 
 Do not keep weak findings that only restate generic caution. See
 §Substance Enforcement (mechanical) for the server-side checks

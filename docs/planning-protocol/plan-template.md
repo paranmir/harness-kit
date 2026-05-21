@@ -131,6 +131,8 @@ lightweight plans, it is the required clarification artifact.
 
 - Restated ask: [in the author's own words; user-confirmable form]
 - Underlying need: [if literal ask might mask a deeper goal]
+- Final goal: [what must be true when the task is complete]
+- Intermediate goals: [necessary milestone states, not fixed execution steps]
 - Output artifact shape: [specific form, format, length]
 - Acceptance criteria: [concrete verification action; no vague phrases.
   When a criterion asserts specific code behavior (named module, function,
@@ -170,6 +172,7 @@ Every `crit-*` carries an `Oracle:` marker for
 
 ## Work Breakdown
 
+- Work units: [major units of work, not a mandatory step-by-step script]
 - Data affected: [DB tables, files, persistent records, schemas, financial
   data, source records, or N/A]
 - User/interface surface: [UI, API, CLI, document, message, report, decision
@@ -177,12 +180,18 @@ Every `crit-*` carries an `Oracle:` marker for
 - Control/API boundary: [API route, command, workflow step, external
   interface, advisory boundary, or N/A]
 - Permission/authority rule: [who may do what; N/A only with reason]
+- Material dependencies: [dependencies that affect correctness, safety,
+  reversibility, external effects, user gates, or verification]
 - Failure cases: [normal failure, missing input, invalid input, unavailable
   dependency]
 - Negative/adversarial cases: [misuse, abuse, boundary violation, hostile
   input, downside scenario]
 - Test/check cases: [how each important behavior or claim will be verified]
-- Execution order: [ordered steps; name dependencies]
+- Agent optimization authority:
+  - The agent may choose execution order, batching, parallelization, and local
+    tactics within this plan contract.
+  - The agent must not bypass acceptance criteria, verification, user gates,
+    rollback boundaries, stop conditions, or governance obligations.
 
 ## Premise
 
@@ -363,7 +372,10 @@ tests, dependencies, build, deployment, or generated code.]
 
 [Fill if marked.]
 
-- Step ordering / dependency:
+- Required ordering constraints: [only constraints that materially affect
+  correctness, safety, reversibility, user gates, external side effects, or
+  validation-before-mutation boundaries]
+- Parallelization opportunities: [work that may be done independently]
 - Parallel/concurrent execution risks:
 - Deadlines / expiry:
 
@@ -371,8 +383,12 @@ tests, dependencies, build, deployment, or generated code.]
 
 [Fill if marked.]
 
-- Resource cost estimate:
-- Efficiency / responsiveness impact:
+- Optimization target: [time / token / tool calls / compute / user attention /
+  money]
+- Expected cost drivers: [what makes this task expensive]
+- Safe shortcuts allowed: [what may be skipped, batched, reused, or
+  approximated without weakening correctness]
+- Unsafe shortcuts forbidden: [what must not be skipped even for speed]
 
 ## (Conditional) Long-term Care
 

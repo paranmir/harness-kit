@@ -353,6 +353,16 @@ Useful findings identify a missing step, wrong sequence, missing verification,
 missing user gate, missing source, rollback gap, scope leak, or safe
 simplification.
 
+Plans define the work contract, not a mandatory local execution script. A
+valid plan states the final goal, necessary intermediate goal states, success
+criteria, constraints, user gates, stop conditions, and verification boundary.
+The agent may choose the execution path, local order, batching, and
+parallelization unless a fixed order is required by a correctness dependency,
+irreversible or hard-to-reverse action, external side effect, user approval
+gate, security/privacy/money/deployment/legal/governance risk, or
+validation-before-mutation boundary. Do not require a fixed step-by-step script
+when goal-level constraints and verification are sufficient.
+
 Weak findings that only restate generic caution should not survive
 consolidation.
 
