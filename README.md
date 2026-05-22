@@ -36,6 +36,11 @@ pipx install agentlaw
 pipx install "agentlaw[embeddings]"
 pipx inject agentlaw sentence-transformers huggingface_hub
 pipx upgrade agentlaw
+agentlaw --version
+
+# If an older 0.1.x install still reports 0.1.5 as current, force pipx
+# to ask PyPI directly instead of a stale cache or mirror:
+pipx upgrade agentlaw --pip-args "--no-cache-dir --index-url https://pypi.org/simple"
 
 # Initialize or merge the harness into a project
 agentlaw init . --skip-model --setup-agents prompt
@@ -57,10 +62,13 @@ agentlaw run-mcp --target .
 agentlaw now --json
 ```
 
-After `agentlaw init` or `pipx upgrade agentlaw`, run `agentlaw setup-status`
-and report the result before claiming the harness is ready. The status report
-names optional pieces that were not installed, host/MCP pieces that are not
-activated yet, and the concrete next action for each gap.
+Global installation only makes the `agentlaw` command available. A project
+does not opt into agentlaw until someone explicitly runs `agentlaw init` in
+that project. After `agentlaw init` or `pipx upgrade agentlaw`, run
+`agentlaw setup-status` and report the result before claiming the harness is
+ready. The status report names optional pieces that were not installed,
+host/MCP pieces that are not activated yet, and the concrete next action for
+each gap.
 
 ## Harness Workflow
 
@@ -121,6 +129,10 @@ This scaffold includes Agent Skills in both common host locations:
 - `.agents/skills/agentlaw-plan-authoring/` and
   `.claude/skills/agentlaw-plan-authoring/` route plan creation, review,
   execution, oracle, and archive work to the planning protocol.
+- `.agents/skills/agentlaw-post-task-retrospective/` and
+  `.claude/skills/agentlaw-post-task-retrospective/` route task closeout
+  lessons to skill, law/contract, test/verifier, memory/reference, tracker,
+  or chat-only outcomes.
 
 The duplicated directories are host compatibility paths, not separate rule
 systems. Governing content remains in `AGENTLAW_*`, `docs/law/*`, and
@@ -158,6 +170,13 @@ The canonical memory layer is plain Markdown under `memory/*`:
 Derived runtime state belongs under `.harness/`, including the SQLite index at
 `.harness/index/meta.db` and any downloaded embedding model. `.harness/` is
 rebuildable runtime state, not the source of truth.
+
+## Multi-project note
+
+Codex uses a user-level MCP registration, so registering agentlaw with Codex
+only makes the command available globally. It is not project setup. When Codex
+is opened in a project that has not explicitly run `agentlaw init`,
+`agentlaw run-mcp` exits instead of creating `.harness`.
 
 ## Project Specialization
 
