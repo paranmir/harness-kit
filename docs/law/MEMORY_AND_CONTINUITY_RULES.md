@@ -60,6 +60,26 @@ Memory must not:
 - treat SQL, vector indexes, caches, or MCP outputs as governing authority
 - promote itself directly into law, skills, plans, references, or shared artifacts
 
+## Skill Lifecycle Telemetry
+
+Skill lifecycle telemetry is lower-authority runtime state used to make skill
+maintenance visible. The MCP tools may record explicit skill events and report
+invocation count, last-used timestamp, outcome/gain aggregates, and read-only
+stale-skill candidates.
+
+Telemetry may inform post-task retrospective routing, but it must not become an
+automatic mutation path. A stale candidate report is not authorization to
+delete, archive, quarantine, rewrite, or create any skill file. Destructive or
+hard-to-reverse skill lifecycle actions require a separate explicit user gate
+and, when non-trivial, a reviewed plan.
+
+Skill telemetry must stay purpose-limited. It may store skill name, event kind,
+timestamp, source, small evidence text or id, optional outcome/gain, session id,
+and tags. It must not store full prompts, secrets, raw private transcripts, or
+credential material. Lifecycle event rows have a default 180-day retention
+review threshold; the first response to old rows is read-only reporting,
+suppression, or prune candidacy, while hard deletion remains user-gated.
+
 ## Canonical Layout
 The canonical memory layer is file-based and human-reviewable:
 

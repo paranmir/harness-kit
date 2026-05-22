@@ -22,7 +22,7 @@ The full update cycle has three steps. Steps 1 and 3 are user-driven (terminal c
 
 1. **Infrastructure update (terminal)**: `pipx upgrade agentlaw`. Replaces the PyPI package code (CLI, MCP server, schema files), brings the new bundled shared kit into the package's `scaffold/` directory, and automatically applies any pending schema migrations to `.harness/index/meta.db`. If an older 0.1.x environment still reports 0.1.5 as current, run `pipx upgrade agentlaw --pip-args "--no-cache-dir --index-url https://pypi.org/simple"` and verify with `agentlaw --version`; this forces pipx to query PyPI directly instead of a stale cache or mirror. The public seed repository at `https://github.com/paranmir/agentlaw` is a readable distribution view of the shared starter tree; it is not the package source a target project upgrades from. Immediately after the upgrade, run `agentlaw setup-status --target . --after-update` and surface any `not installed`, `not activated`, or `unknown` entries before claiming the updated harness is ready.
 2. **Governance content merge (LLM-driven)**: invoke an LLM with this document. The LLM follows the Direct Procedure below — read the recorded baseline, compare new shared kit against it, replace root mirrors, merge new requirements into local law without losing local facts, refresh the baseline record.
-3. **Verification (terminal)**: `agentlaw verify`. Confirms root mirrors match the new shared kit, local facts and behavioral oracle content were preserved, new shared requirements are present, and the shared baseline record matches.
+3. **Verification (terminal)**: run `agentlaw align --check --target .`, resolve any routing/readme issues with `agentlaw align --write --target .` where safe, then run `agentlaw verify`. Confirms root mirrors match the new shared kit, local facts and behavioral oracle content were preserved, new shared requirements are present, and the shared baseline record matches.
 
 The Direct Procedure below is a self-contained version of step 2 that begins with a step 0 reminder to run step 1 first. The Responsibility Split and Failure Modes sections at the bottom of this document supplement the cycle for non-default situations.
 
@@ -46,7 +46,8 @@ Use this document as a direct procedure even if no prompt block is reused.
 6. Refresh the shared baseline record to the shared version now reflected in the project.
 7. Update `AGENTS.md` routing if the read path changed.
 8. Verify that every new shared requirement is traceable in the resulting localized law.
-9. Re-run `agentlaw setup-status --target .` before handoff and report remaining gaps. Use `--after-update` only immediately after the terminal package upgrade and before the LLM-driven merge; after the merge, the normal status command is the readiness check. If MCP registration, runtime context restore, schema, or optional embedding state still appears in `not activated`, `not installed`, or `unknown`, name that state and the next action instead of presenting the update as fully active.
+9. Run `agentlaw align --check --target .` and use `agentlaw align --write --target .` only for safe routing updates that the command marks autofixable.
+10. Re-run `agentlaw setup-status --target .` before handoff and report remaining gaps. Use `--after-update` only immediately after the terminal package upgrade and before the LLM-driven merge; after the merge, the normal status command is the readiness check. If MCP registration, runtime context restore, schema, or optional embedding state still appears in `not activated`, `not installed`, or `unknown`, name that state and the next action instead of presenting the update as fully active.
 
 ## Completion Checks
 An update run is complete only when:
@@ -56,6 +57,7 @@ An update run is complete only when:
 - existing localized law documents were checked for genericization gaps — starter placeholder sections that remain unfilled despite concrete project facts being available
 - the shared baseline record matches the shared version now reflected in the project
 - routing and tracker follow-up were reviewed when affected
+- `agentlaw align --check --target .` was run after routing-affecting changes
 - post-update setup status was reported, including any inactive governance merge, MCP registration, runtime context restore, schema, or optional embedding state
 
 ## Failure Conditions
@@ -95,7 +97,7 @@ Procedure:
 
 2. Replace root-level mirror files.
    - `AGENTLAW_CONSTITUTION.md`: replace with the new version.
-   - Root control documents (`AGENTLAW_INIT_TOOL.md`, `AGENTLAW_FIX_TOOL.md`, `AGENTLAW_UPDATE_TOOL.md`): replace with the new versions.
+   - Root control documents (`AGENTLAW_INIT_TOOL.md`, `AGENTLAW_FIX_TOOL.md`, `AGENTLAW_UPDATE_TOOL.md`, `AGENTLAW_ALIGN_TOOL.md`): replace with the new versions.
    - These are shared scaffolding, not localized content, so direct replacement is correct.
 
 3. Merge changes into the localized law layer.

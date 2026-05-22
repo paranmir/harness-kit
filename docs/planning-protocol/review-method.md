@@ -86,16 +86,19 @@ machine rather than by host self-discipline:
    matches the plan body byte-for-byte.
 5. `agentlaw_plan_review_round_check()` evaluates the round at its
    boundary. Two consecutive zero-finding rounds run the Review Quality
-   Gate before finalization; a score below the threshold restarts the
-   review from round 1. Stagnation (same persona citing the same plan line
-   in consecutive rounds) or hitting the round cap stalls it.
+   Gate and, when it passes, leave the session in
+   `persona_review_round_check` with a finalize-pending marker; a score
+   below the threshold restarts the review from round 1. Stagnation (same
+   persona citing the same plan line in consecutive rounds) or hitting the
+   round cap stalls it.
 6. `agentlaw_plan_review_session_finalize()` first verifies any applicable
    `## Review Coverage Matrix` is closed: no `needs_user_answer` rows,
    no invalid statuses, evidence on `covered` / `accepted_risk`, rationale on
    `not_applicable` / `out_of_scope`, and `crit-*` linkage for rows that claim
-   coverage. Only then does it write `Plan reviewed: yes` and
-   `Plan contract hash` into the plan body, then refresh both the whole-body
-   content hash and reviewed-contract-section hash.
+   coverage. Only then does it set phase `finalized`, write
+   `Plan reviewed: yes` and `Plan contract hash` into the plan body, then
+   refresh both the whole-body content hash and reviewed-contract-section
+   hash.
 7. `agentlaw_plan_archive(plan_path)` moves the plan to
    `docs/plans/completed/` and archives the session row in one
    operation when the work the plan governs is done.
@@ -299,8 +302,10 @@ Components are deterministic: coverage of selected personas, substance of
 the submitted findings, novelty across same-persona rounds, and severity
 calibration.
 
-If `score >= threshold`, `round_check` finalizes as before and includes the
-quality report in the success payload and `convergence_state`. If
+If `score >= threshold`, `round_check` records finalize-pending convergence
+and includes the quality report in the success payload and
+`convergence_state`; `session_finalize` remains responsible for setting phase
+`finalized` and writing the reviewed block. If
 `score < threshold`, `round_check` does not finalize; it records a rejected
 attempt summary in `convergence_state.review_quality_restarts`, clears the
 current attempt findings, resets `round_number` to `1`, sets

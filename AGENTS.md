@@ -7,7 +7,7 @@ This repository is governed by the agentlaw kit — a law-first governance harne
 
 ## Governance Reminder
 
-Before starting fix / init / upgrade / governance work (tracker-policy violation, repeated mistake, rule bypass, new project setup, kit upgrade), read the matching root control document first: `AGENTLAW_FIX_TOOL.md` for fix-class work, `AGENTLAW_INIT_TOOL.md` for init, `AGENTLAW_UPDATE_TOOL.md` for kit upgrades. The `.claude/skills/agentlaw-governance/SKILL.md` and `.agents/skills/agentlaw-governance/SKILL.md` skills (Agent Skills open standard) carry the same reminder for Claude Code and Codex respectively.
+Before starting fix / init / upgrade / align / governance work (tracker-policy violation, repeated mistake, rule bypass, new project setup, kit upgrade, local harness routing drift), read the matching root control document first: `AGENTLAW_FIX_TOOL.md` for fix-class work, `AGENTLAW_INIT_TOOL.md` for init, `AGENTLAW_UPDATE_TOOL.md` for kit upgrades, `AGENTLAW_ALIGN_TOOL.md` for local routing/readme alignment. The `.claude/skills/agentlaw-governance/SKILL.md` and `.agents/skills/agentlaw-governance/SKILL.md` skills (Agent Skills open standard) carry the same reminder for Claude Code and Codex respectively.
 
 ## Source of Truth
 Document priority is:
@@ -17,6 +17,7 @@ Document priority is:
    - `AGENTLAW_INIT_TOOL.md`
    - `AGENTLAW_UPDATE_TOOL.md`
    - `AGENTLAW_FIX_TOOL.md`
+   - `AGENTLAW_ALIGN_TOOL.md`
 3. `docs/law/*`
 4. Approved structured repository artifacts such as `docs/plans/*`, `docs/references/*`, and stable generated facts when they exist
 5. Approved continuity or memory records
@@ -52,6 +53,7 @@ Routing only — see referenced documents for governing content.
 
 - `README.md` — installation, usage, and project description.
 - `LICENSE` — license.
+- `AGENTLAW_ALIGN_TOOL.md` — local harness routing/readme alignment procedure; use with `agentlaw align --check --target .` and `agentlaw align --write --target .`.
 - `docs/law/*` — workspace law (constitution-derived governance). Read order in §Read First above.
 - `docs/contracts/*` — MCP tool surface (`agentlaw-mcp-tools.md`), shared baseline, update workflow.
 - `docs/planning-protocol/*` — review-method, task-classification, persona decks (core + specialized), persona-section map, plan template.
@@ -74,4 +76,4 @@ Code architecture and module connections: `docs/references/project-overview.md` 
 1. Keep this project's law, references, plans, and memory aligned with actual
    practice.
 2. Keep project-specific facts in the approved project artifacts named above.
-3. Run the matching root control document before fix, init, or update work.
+3. Run the matching root control document before fix, init, update, or align work.

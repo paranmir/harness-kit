@@ -25,6 +25,11 @@ Use this document when one or more of the following is true:
 - a post-task retrospective identifies a reusable agent behavior correction and the owning layer is unclear
 - you need to decide whether the response belongs in law, tracker, `AGENTS.md`, an agent skill, or enforcement
 
+If the only problem is that present harness artifacts are not reflected in
+`AGENTS.md`, README, or other routing surfaces, use `AGENTLAW_ALIGN_TOOL.md`
+and run `agentlaw align --check --target .` before treating it as a fix-class
+root-cause problem.
+
 Do not use this document as a substitute for normal project work when no current governance problem exists.
 
 For distribution or setup-related fixes, use the current public distribution model as the starting fact: install and upgrade come from the PyPI package `agentlaw` (`pipx install agentlaw`, `pipx upgrade agentlaw`), while `https://github.com/paranmir/agentlaw` is the public seed repository for inspecting target-facing starter content. Do not route target users to a local development workspace or a removed publish repository.
@@ -282,6 +287,7 @@ After making the correction, check:
 - did it avoid unnecessary escalation
 - did it keep `AGENTS.md` short
 - did another related document also need updating
+- did `agentlaw align --check --target .` report stale routing or README surfaces
 - for existing-project work, were important local facts turned into readable law
 - for existing-project work, do important discrepancies remain explicitly documented in law or tracker form
 

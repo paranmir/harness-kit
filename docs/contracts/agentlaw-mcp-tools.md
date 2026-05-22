@@ -41,7 +41,7 @@ Enforcement: future tool additions or modifications must adhere to this 5-axis f
 
 ## Governance Reminder Skill (agentlaw-governance)
 
-`agentlaw init` deploys a cross-platform Agent Skills open standard SKILL.md to both `.claude/skills/agentlaw-governance/` (Claude Code) and `.agents/skills/agentlaw-governance/` (Codex). The skill description matches when the agent's current work involves fix / init / upgrade / governance keywords (`fix this`, `고치자`, `rule was violated`, `governance gap`, `init project`, `upgrade kit`, `초기화`, `업그레이드`, etc.) and surfaces the matching root-control document (`AGENTLAW_FIX_TOOL.md` / `AGENTLAW_INIT_TOOL.md` / `AGENTLAW_UPDATE_TOOL.md`) before plan-spawning or other action-consequential steps. Both deployment paths receive identical SKILL.md content (byte-equal); directory difference is platform convention. `agentlaw init --merge` refreshes the skill files additively (no overwrite of existing customization).
+`agentlaw init` deploys a cross-platform Agent Skills open standard SKILL.md to both `.claude/skills/agentlaw-governance/` (Claude Code) and `.agents/skills/agentlaw-governance/` (Codex). The skill description matches when the agent's current work involves fix / init / upgrade / align / governance keywords (`fix this`, `고치자`, `rule was violated`, `governance gap`, `init project`, `upgrade kit`, `align`, `routing drift`, `초기화`, `업그레이드`, etc.) and surfaces the matching root-control document (`AGENTLAW_FIX_TOOL.md` / `AGENTLAW_INIT_TOOL.md` / `AGENTLAW_UPDATE_TOOL.md` / `AGENTLAW_ALIGN_TOOL.md`) before plan-spawning or other action-consequential steps. Both deployment paths receive identical SKILL.md content (byte-equal); directory difference is platform convention. `agentlaw init --merge` refreshes the skill files additively (no overwrite of existing customization).
 
 Scaffold root also receives `AGENTS.md` and `CLAUDE.md` reminder lines (universal config files that Codex and Claude Code respectively auto-load every session), pointing at the same skill and root-control documents. The 3-layer hybrid (Skill primary + AGENTS/CLAUDE.md secondary + MCP tool description tertiary) is research-grounded — see `docs/plans/completed/2026-05-12-root-control-document-trigger-consultation-plan.md` for evidence (Anthropic + OpenAI Codex official guidance; AGENTIF benchmark on tool-description follow-rate).
 
@@ -64,6 +64,30 @@ format, duplicate the planning protocol, or override `docs/law/*`. Both
 deployment paths receive identical SKILL.md content (byte-equal); directory
 difference is platform convention.
 
+## Post-Task Retrospective Reminder Skill (agentlaw-post-task-retrospective)
+
+`agentlaw init` also deploys a cross-platform Agent Skills open standard
+SKILL.md to both `.claude/skills/agentlaw-post-task-retrospective/` (Claude
+Code) and `.agents/skills/agentlaw-post-task-retrospective/` (Codex). The
+skill description matches near task closeout, after meaningful fix,
+implementation, plan/oracle/archive, publish, verification, or governance
+work, and when the agent or user raises retrospective / 회고 / skill-route
+questions.
+
+The skill is a procedural reminder and routing aid only. It tells the agent to
+choose among skill, law/contract, test/verifier, memory/reference, tracker, or
+chat-only outcomes; it does not make skill creation the default. Real
+corrections, repeated failures, governance gaps, or rule bypasses still route
+through `AGENTLAW_FIX_TOOL.md` before file changes. Both deployment paths
+receive identical SKILL.md content (byte-equal); directory difference is
+platform convention.
+
+When skill lifecycle telemetry is available, the retrospective route may use
+`agentlaw_skill_lifecycle_report` as evidence and may record meaningful use via
+`agentlaw_skill_event_record`. Telemetry is lower-authority runtime state; stale
+candidate reports do not authorize automatic skill creation, deletion, archive,
+quarantine, or file rewrites.
+
 ## Tool Operations Authority
 
 - All tools operate on `.harness/index/meta.db` (SQLite + FTS5 + sqlite-vec) and the canonical Markdown layer under `memory/*`.
@@ -77,7 +101,7 @@ difference is platform convention.
 - All ids are stable slugs persisted in markdown front matter (see schema reference).
 - All tools return a `runtime_status` field reporting whether the index, vector store, and embedding model are available. The `runtime_status` block contains: `mcp_server`, `meta_db`, `fts_index`, `vector_index`, `memory_items_index` (added 2026-05-14 — `ready` when the items table matches on-disk Markdown under `memory/{known-facts,rules}/`, `stale_relative_to_disk` when on-disk count exceeds items table count; `agentlaw_session_restore` triggers items-only auto-rebuild on stale before assembling the packet so the returned packet reflects post-rebuild state), `embedding_model`, `embedding_model_on_disk`, `schema_version`, `kit_version`, and `embedding_runtime`.
 - When a tool cannot complete due to missing runtime, it returns a structured `degraded` result rather than raising; the caller decides how to fall back.
-- Closed-set parameters (`type`, `scope`, `status`, `to_status`, `kind`, `mode`, `order_by`, `target_kind`) advertise their permitted values via JSON Schema `enum` constraints. MCP hosts may reject invalid values at the schema layer before the tool is invoked. The server still validates every closed-set parameter at runtime — schema enforcement is advisory; the server remains authoritative.
+- Closed-set parameters (`type`, `scope`, `status`, `to_status`, `kind`, `mode`, `order_by`, `target_kind`, skill lifecycle `event_kind`, `source`, and `outcome`) advertise their permitted values via JSON Schema `enum` constraints. MCP hosts may reject invalid values at the schema layer before the tool is invoked. The server still validates every closed-set parameter at runtime — schema enforcement is advisory; the server remains authoritative.
 
 ### Error Codes
 Expected Harness domain failures are returned in-band in the tool result as an `error` object plus `runtime_status` when available:
@@ -487,6 +511,7 @@ All working-set fields below carry the **current snapshot only** — each entry 
 - `verification_required` — always `true` in V1. The tool surfaces the post-save verification obligation but does not run project verification commands.
 - `verify_hint` — concise caller guidance for the verification command.
 - `memory_write_summary` — `{ total_writes, log_writes_by_kind, item_writes_by_type, zero_write_warning, lookback_since, lookback_fallback_used }`. Counts memory writes since the previous working-set `updated_at`; falls back to a 24-hour window when no prior timestamp is readable. `zero_write_warning` is non-null when the count is zero, with a pointer to the §Log Write Criterion. Histograms are keyed by what the DB tracks (log kind, item type), not by tool name.
+- `skill_lifecycle_summary` — bounded lower-authority telemetry summary: `{ available, skills_total, stale_after_days, stale_candidate_count, top_stale_candidates, authority }` when telemetry tables are available, or `{ available: false, degraded }` when they are not. This field is advisory evidence for retrospective routing and never authorizes skill mutation.
 - `investigation_log_gap` — echoes the agent-supplied dict when provided, or returns a stub `{ turns_with_substantive_reads: null, turns_with_reads_but_zero_writes: null, flagged_turns: [], note: "..." }` when omitted.
 - `promotion_reminder` (object) — save-time reminder of the agent-applied promotion protocol. The dict is forward-looking; runtime never selects promotion candidates. Sub-keys:
   - `required_when` (array) — the three properties that must all be true for a promotion proposal: `durability`, `future_operational_relevance`, `authority_gap`.
@@ -600,6 +625,62 @@ Report runtime status.
 
 ---
 
+## Skill Lifecycle Tools
+
+### `agentlaw_skill_event_record`
+Record one explicit skill lifecycle event in lower-authority runtime
+telemetry. Use when an agent actually invokes, applies, considers, or reviews a
+skill route and wants future retrospective decisions to have mechanical
+evidence. Do not use this tool to store full prompts, secrets, private
+transcripts, or to authorize skill mutation.
+
+**Parameters**
+- `skill_name` (string, required) — skill name or directory-style identifier; normalized to a stable lowercase slug.
+- `event_kind` (string, required) — one of `reminded`, `considered`, `invoked`, `applied`, `succeeded`, `failed`, or `stale_reviewed`.
+- `outcome` (string, optional, default `unknown`) — one of `unknown`, `useful`, `neutral`, `failed`, or `skipped`.
+- `gain` (number, optional) — small caller-supplied usefulness signal. It is an aggregate hint, not a reward model.
+- `source` (string, optional, default `agent_declared`) — one of `agent_declared`, `hook_reminder`, `session_save`, `manual_review`, or `test`.
+- `evidence` (string, optional) — short evidence text or id, capped by runtime. Full prompts and secrets are prohibited.
+- `session_id` (string, optional) — related session id when available.
+- `tags` (array of strings, optional).
+- `strict_known_skill` (boolean, optional, default `false`) — when true, unknown skills are rejected after discovery; when false, explicit events can create a registry row for externally provided skills.
+
+**Returns**
+- `event_id`.
+- `skill_name` — canonical normalized skill name.
+- `event_kind`, `occurred_at`, `source`, `outcome`.
+- `runtime_status`.
+
+**Errors**
+- `unknown_skill` when `strict_known_skill=true` and discovery/registry has no matching skill.
+- `invalid_event_kind`, `invalid_source`, or `invalid_outcome` for invalid closed-set values.
+
+### `agentlaw_skill_lifecycle_report`
+Return read-only skill lifecycle telemetry: invocation count, last-used
+timestamp, outcome/gain aggregates, score, and stale-skill candidate status.
+Stale candidates are advisory only and do not authorize archive, quarantine,
+deletion, creation, or file edits.
+
+**Parameters**
+- `stale_after_days` (integer, optional, default `30`) — age threshold for stale-candidate calculation.
+- `include_events` (boolean, optional, default `false`) — include a bounded list of recent event rows per skill.
+- `skill_name` (string, optional) — limit the report to one normalized skill.
+
+**Returns**
+- `generated_at`.
+- `stale_after_days`.
+- `retention_review_days` — default lifecycle event retention-review threshold, currently `180`.
+- `skills_total`.
+- `stale_candidate_count`.
+- `entries` — per-skill objects containing `skill_name`, `display_name`, `source_paths`, `invocation_count`, `last_used_at`, `event_counts`, `outcome_counts`, `gain_total`, `score`, and `stale_candidate`.
+- `authority` — reminder that telemetry is lower-authority runtime evidence.
+- `runtime_status`.
+
+**Errors**
+- `stale_after_days_must_be_non_negative`.
+
+---
+
 ### `agentlaw_authority_lookup`
 Return the authority sources an agent should consult before a named action class. Distinguishes memory recall from law/protocol/contract recall: memory is lower authority and is referenced via `memory_lookup` guidance; the binding sources for the action live in `repository_authority_sources`.
 
@@ -631,6 +712,7 @@ Open a persona-review-loop session for a plan in `docs/plans/active/` or `docs/p
 
 **Returns**
 - `session_id` — opaque id of the form `session/plan-review/<uuid4>`.
+- Plan-review lifecycle tools accept either the canonical `session/plan-review/<uuid4>` value or its raw UUID alias as input; successful responses and persisted records always use the canonical full value.
 - `phase` — always `interview` on success.
 - `round_number` — always `0` on success.
 - `selected_personas` — the list resolved for the session.
@@ -738,15 +820,16 @@ Submit one persona's finding. Verifies the persona matches the current slot, the
 ---
 
 ### `agentlaw_plan_review_round_check`
-Evaluate the just-completed round. Convergence (two consecutive zero-finding rounds at round 2 or later) runs the Review Quality Gate before finalization; below-threshold review quality restarts review from round 1. Stagnation (same persona citing a shared plan line across two consecutive rounds) or hitting the round cap stalls; otherwise the next round opens with `current_persona` reset to the first selected persona.
+Evaluate the just-completed round. Convergence (two consecutive zero-finding rounds at round 2 or later) runs the Review Quality Gate and, when it passes, leaves the session in `persona_review_round_check` with a finalize-pending marker; `agentlaw_plan_review_session_finalize` is the only tool that sets phase `finalized` and writes the reviewed block. Below-threshold review quality restarts review from round 1. Stagnation (same persona citing a shared plan line across two consecutive rounds) or hitting the round cap stalls; otherwise the next round opens with `current_persona` reset to the first selected persona.
 
 **Parameters**
 - `session_id` (string, required).
 
 **Returns**
-- `session_id`, `phase` (`finalized`, `stalled`, or `persona_review` for the next round).
+- `session_id`, `phase` (`persona_review_round_check` for finalize-pending convergence, `stalled`, or `persona_review` for the next round).
 - `round_number`, `current_persona` (first selected persona on advance).
-- `convergence` — set to `two_consecutive_zero_findings` on finalize.
+- `convergence` — set to `two_consecutive_zero_findings` on finalize-pending convergence.
+- `next_action_message` — on finalize-pending convergence, instructs the host to submit Self-Challenge and then call `agentlaw_plan_review_session_finalize`.
 - `review_quality_gate` — present on would-finalize convergence. Shape: `{ score, threshold, decision, status, completed_round, components, weights, reasons }`. The default `threshold` is `0.80`; `decision` is `pass` or `restart`. When `decision="restart"`, the session remains in `persona_review`, `round_number` resets to `1`, `current_persona` resets to the first selected persona, current-attempt findings are cleared, and `convergence_state.review_quality_restarts` stores the rejected-attempt summary.
 - `stagnation` — array of `{ persona, shared_lines, round_pair }` entries when stagnation triggered.
 - `round_cap_reached` (boolean) — set when the round cap forced the stalled transition.
@@ -799,7 +882,7 @@ Record the Self-Challenge response that `session_finalize` requires. The respons
 ---
 
 ### `agentlaw_plan_review_session_finalize`
-Mark the session finalized and write the `Plan reviewed: yes` and `Plan contract hash` fields into the plan body. Rejects when the plan body has changed since the last hash record so the host explicitly chooses between invalidate and reconcile. Also rejects opted-in/prospective plans whose `## Review Coverage Matrix` is not closed, so unresolved unknowns require a user-question/update step before review can complete.
+Mark the session finalized and write the `Plan reviewed: yes` and `Plan contract hash` fields into the plan body. Accepts a convergence-pending `persona_review_round_check` session produced by `agentlaw_plan_review_round_check`; legacy sessions already in `finalized` remain compatible. Rejects when the plan body has changed since the last hash record so the host explicitly chooses between invalidate and reconcile. Also rejects opted-in/prospective plans whose `## Review Coverage Matrix` is not closed, so unresolved unknowns require a user-question/update step before review can complete.
 
 Before writing the reviewed block, finalize re-validates the stored Self-Challenge response against the current persisted findings list. If a path-B response no longer covers every current must-change / should-change finding, finalize returns `self_challenge_stale_after_new_finding` and the host must re-submit Self-Challenge.
 
@@ -812,7 +895,7 @@ Before writing the reviewed block, finalize re-validates the stored Self-Challen
 - `plan_contract_hash` — SHA-256 hash of the reviewed contract sections. The contract hash excludes only explicit mutable evidence/status sections: `Status`, `Plan Review Evidence`, `Separate Persona Review Passes`, `Plan Amendment Authorizations`, `Plan Oracle Evidence`, and `Implementation Deviation Records`.
 
 **Errors**
-- `wrong_phase` when the session is not in `finalized`.
+- `wrong_phase` when the session is neither convergence-pending `persona_review_round_check` nor legacy `finalized`.
 - `self_challenge_required` when no Self-Challenge response has been recorded for the session. Response carries a `hint` pointing at `agentlaw_plan_review_self_challenge_submit`.
 - `self_challenge_stale_after_new_finding` when the recorded Self-Challenge response fails validation against the current findings list. Response carries `details` from Self-Challenge validation and `next_action_message` telling the host to re-submit Self-Challenge.
 - `review_coverage_matrix_open` when the plan's Review Coverage Matrix is missing, has invalid statuses, contains `needs_user_answer`, lacks required evidence/rationale, or lacks required `crit-*` linkage. Response carries `details` plus `next_action_message` instructing the host to ask the user for unresolved unknowns and update the plan before retrying.

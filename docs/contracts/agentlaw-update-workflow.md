@@ -31,6 +31,7 @@ This document is operational reference, not law. The governing procedure for the
 Do not invoke this workflow for:
 - First-time setup → use [`AGENTLAW_INIT_TOOL.md`](../AGENTLAW_INIT_TOOL.md).
 - Fixing local drift where the agent escaped harness rules → use [`AGENTLAW_FIX_TOOL.md`](../AGENTLAW_FIX_TOOL.md).
+- Reconciling routing/readme surfaces after local harness structure changed → use [`AGENTLAW_ALIGN_TOOL.md`](../AGENTLAW_ALIGN_TOOL.md) and `agentlaw align --check --target .`.
 
 ## Full Update Cycle
 
@@ -72,7 +73,7 @@ The LLM follows the procedure in that document:
 6. Refreshes `references/shared-agentlaw-baseline.md` with the new baseline.
 7. Updates `AGENTS.md` routing if the read path changed.
 8. Verifies that every new shared requirement is traceable in the local law.
-9. Re-runs `agentlaw setup-status --target .` and reports remaining readiness gaps before handoff. The `--after-update` form is reserved for the immediate post-`pipx upgrade` / pre-merge checkpoint.
+9. Runs `agentlaw align --check --target .`, uses `agentlaw align --write --target .` only for safe autofixable routing updates, then re-runs `agentlaw setup-status --target .` and reports remaining readiness gaps before handoff. The `--after-update` form is reserved for the immediate post-`pipx upgrade` / pre-merge checkpoint.
 
 The LLM is not allowed to skip these steps or to treat the operation as a fresh bootstrap.
 
@@ -112,4 +113,5 @@ If verification fails, treat the update as incomplete and resolve the gap before
 - [`AGENTLAW_UPDATE_TOOL.md`](../AGENTLAW_UPDATE_TOOL.md) — governing procedure for step 2.
 - [`AGENTLAW_INIT_TOOL.md`](../AGENTLAW_INIT_TOOL.md) — first-time setup; not for updates.
 - [`AGENTLAW_FIX_TOOL.md`](../AGENTLAW_FIX_TOOL.md) — for fixing local drift, not for upstream updates.
+- [`AGENTLAW_ALIGN_TOOL.md`](../AGENTLAW_ALIGN_TOOL.md) — for local routing/readme alignment after structure changes.
 - [`references/shared-agentlaw-baseline.md`](shared-agentlaw-baseline.md) — baseline record consulted in step 2.

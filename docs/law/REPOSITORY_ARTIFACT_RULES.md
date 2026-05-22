@@ -249,8 +249,9 @@ Examples:
 - `AGENTLAW_INIT_TOOL.md`
 - `AGENTLAW_UPDATE_TOOL.md`
 - `AGENTLAW_FIX_TOOL.md`
+- `AGENTLAW_ALIGN_TOOL.md`
 
-Harness bootstraps from upstream are performed via `AGENTLAW_INIT_TOOL.md`; that document carries its own Full Bootstrap Cycle and Responsibility Split sections. Harness updates from upstream are performed via `AGENTLAW_UPDATE_TOOL.md`; that document carries its own Full Update Cycle, Responsibility Split, and Failure Modes sections. The pip package's `pipx upgrade agentlaw` brings the new shared kit and applies binary schema migrations; the LLM-driven `AGENTLAW_UPDATE_TOOL.md` procedure incorporates governance content into local law and artifacts. Skipping the LLM-driven procedure after a `pipx upgrade` is a governance violation: it leaves binary infrastructure ahead of local law.
+Harness bootstraps from upstream are performed via `AGENTLAW_INIT_TOOL.md`; that document carries its own Full Bootstrap Cycle and Responsibility Split sections. Harness updates from upstream are performed via `AGENTLAW_UPDATE_TOOL.md`; that document carries its own Full Update Cycle, Responsibility Split, and Failure Modes sections. Harness fixes are performed via `AGENTLAW_FIX_TOOL.md`; harness routing/readme reconciliation is performed via `AGENTLAW_ALIGN_TOOL.md` and the `agentlaw align --check --target .` / `agentlaw align --write --target .` command surface. The pip package's `pipx upgrade agentlaw` brings the new shared kit and applies binary schema migrations; the LLM-driven `AGENTLAW_UPDATE_TOOL.md` procedure incorporates governance content into local law and artifacts. Skipping the LLM-driven procedure after a `pipx upgrade` is a governance violation: it leaves binary infrastructure ahead of local law.
 
 ### Plan Documents
 Plan documents use lowercase kebab case with names that describe the work clearly.
@@ -383,6 +384,7 @@ The default root-level constitution, entry, and control documents are:
 - `AGENTLAW_INIT_TOOL.md`
 - `AGENTLAW_UPDATE_TOOL.md`
 - `AGENTLAW_FIX_TOOL.md`
+- `AGENTLAW_ALIGN_TOOL.md`
 
 ## Directory Creation Gate
 Creating a new directory is not the default response to project growth.
@@ -410,7 +412,7 @@ Before creating a new file under `docs/references/`, the agent must identify any
 - The justification must be visible in the plan, not only in conversation or commit messages.
 
 ### New Section / Rule Addition Rule
-Before adding a new section (`##` or `###`), rule, or sub-section to a law document under `docs/law/*`, a root control document (`AGENTLAW_CONSTITUTION.md`, `AGENTLAW_INIT_TOOL.md`, `AGENTLAW_UPDATE_TOOL.md`, `AGENTLAW_FIX_TOOL.md`), a contract document under `docs/contracts/*`, or a reference document under `docs/references/*`, the agent must first search the target artifact (and its sibling artifacts in the same class) for any existing rule whose **intent** overlaps with the proposed content.
+Before adding a new section (`##` or `###`), rule, or sub-section to a law document under `docs/law/*`, a root control document (`AGENTLAW_CONSTITUTION.md`, `AGENTLAW_INIT_TOOL.md`, `AGENTLAW_UPDATE_TOOL.md`, `AGENTLAW_FIX_TOOL.md`, `AGENTLAW_ALIGN_TOOL.md`), a contract document under `docs/contracts/*`, or a reference document under `docs/references/*`, the agent must first search the target artifact (and its sibling artifacts in the same class) for any existing rule whose **intent** overlaps with the proposed content.
 
 The search obligation is satisfied only when the agent has used **multiple synonym variants of the intended rule title and intent**, not a single keyword. A search that uses only the title the agent has in mind will systematically miss rules whose authors used different phrasing for the same intent. Concrete example: a proposed "Comment Self-Narration Prohibition" must also search the artifact for `implementation history`, `changelog`, `narration`, `rename history`, `historical context`, and the specific anti-patterns the proposed rule would prohibit. The obligation extends across the entire governed artifact set in scope, not only the file the new rule would land in.
 

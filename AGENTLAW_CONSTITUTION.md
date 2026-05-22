@@ -11,7 +11,7 @@ These rules are intended to govern any coding agent working in the repository, n
 The repository follows a 5-layer written-governance structure. The hierarchy is:
 
 1. Root-level constitutional documents (`AGENTLAW_CONSTITUTION.md`)
-2. Root-level control documents (`AGENTLAW_INIT_TOOL.md`, `AGENTLAW_UPDATE_TOOL.md`, `AGENTLAW_FIX_TOOL.md`)
+2. Root-level control documents (`AGENTLAW_INIT_TOOL.md`, `AGENTLAW_UPDATE_TOOL.md`, `AGENTLAW_FIX_TOOL.md`, `AGENTLAW_ALIGN_TOOL.md`)
 3. Law documents (`docs/law/*`)
 4. Approved structured repository artifacts (`docs/contracts/*`, `docs/plans/*`, `docs/references/*`, and stable generated facts when they exist)
 5. Approved continuity or memory records (`memory/*`)
@@ -144,11 +144,13 @@ The default root control documents are:
 - `AGENTLAW_INIT_TOOL.md`
 - `AGENTLAW_UPDATE_TOOL.md`
 - `AGENTLAW_FIX_TOOL.md`
+- `AGENTLAW_ALIGN_TOOL.md`
 
 Their role is to:
 - help agents initialize or rebuild a repository from the shared harness kit
 - help agents incorporate upstream harness changes into an already-bootstrapped project
 - analyze current governance problems and place corrective additions at the correct layer
+- reconcile local routing and README surfaces after harness structure or command surfaces change
 
 They must not:
 - replace `docs/law/*` as the project law layer

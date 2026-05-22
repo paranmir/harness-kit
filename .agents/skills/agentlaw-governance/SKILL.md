@@ -2,17 +2,17 @@
 name: agentlaw-governance
 description: |
   agentlaw governance procedure reminder. Activate when starting fix /
-  init / upgrade / governance work: tracker-policy violation, repeated
+  init / upgrade / align / governance work: tracker-policy violation, repeated
   mistake, rule bypass, new project setup, agentlaw kit upgrade, or any
   case the user signals with phrases like "fix this", "고치자", "rule
   was violated", "governance gap", "init project", "set up agentlaw",
-  "upgrade kit", "kit update", "초기화", "업그레이드". Reads and
+  "upgrade kit", "kit update", "align", "routing drift", "초기화", "업그레이드". Reads and
   surfaces the matching AGENTLAW_*_TOOL.md procedure before action.
 ---
 
 # agentlaw Governance Reminder
 
-Activate this skill **before** starting fix / init / upgrade class work
+Activate this skill **before** starting fix / init / upgrade / align class work
 on an agentlaw-bootstrapped project. The skill exists to prevent the
 recurring pattern where agents jump to plan-spawning / direct action
 without first consulting the matching root-control document.
@@ -24,6 +24,7 @@ without first consulting the matching root-control document.
 | Diagnose a governance gap, repeated mistake, or rule bypass; spawn a fix-class plan | `AGENTLAW_FIX_TOOL.md` |
 | Set up a new project from the agentlaw kit; bootstrap memory / scaffold / runtime | `AGENTLAW_INIT_TOOL.md` |
 | Upgrade an existing agentlaw target to a new kit version; incorporate upstream changes | `AGENTLAW_UPDATE_TOOL.md` |
+| Reconcile local routing or README surfaces after laws, root controls, directories, or command surfaces changed | `AGENTLAW_ALIGN_TOOL.md` |
 
 These documents live at the **project root** of an agentlaw-bootstrapped
 target. If you are in a target project that does not have them at the
@@ -67,7 +68,7 @@ When activated, the agent must:
 4. Do **not** mark the procedure complete by reading alone — the
    procedure must be applied. "Already read" is not preservation
    across turns; re-activate this skill any time the work crosses
-   into a new fix / init / upgrade scope.
+   into a new fix / init / upgrade / align scope.
 
 ## Skill lifecycle
 
@@ -85,6 +86,7 @@ When activated, the agent must:
 - `AGENTLAW_FIX_TOOL.md` — fix-class procedure (Steps 1-10).
 - `AGENTLAW_INIT_TOOL.md` — init/bootstrap procedure.
 - `AGENTLAW_UPDATE_TOOL.md` — kit upgrade procedure.
+- `AGENTLAW_ALIGN_TOOL.md` — local routing/readme alignment procedure.
 - `AGENTS.md` — project-root agent routing map.
 - `docs/law/PLANNING_AND_REVIEW_RULES.md` § before_action_authority_check —
   the law-layer obligation this skill surfaces as a channel.

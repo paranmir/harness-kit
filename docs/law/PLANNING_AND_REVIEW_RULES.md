@@ -216,10 +216,11 @@ Required tool sequence:
    carrying a verbatim mandate quote from the persona deck and exact-byte
    plan-line citations.
 5. `agentlaw_plan_review_round_check` evaluates round convergence,
-   stagnation, and the round cap.
+   stagnation, and the round cap. Convergence leaves the session
+   finalize-pending; it does not write the reviewed block.
 6. `agentlaw_plan_review_session_finalize` writes the `Plan reviewed: yes`
-   block to the plan body once two consecutive rounds produce no new
-   findings.
+   block to the plan body and sets phase `finalized` once convergence and
+   Self-Challenge requirements are satisfied.
 7. `agentlaw_plan_archive` moves the plan to `docs/plans/completed/` when
    the work it governs is complete.
 
@@ -428,10 +429,10 @@ behavior, review decisions, verification, and residual risks.
 ## Two-Diamond Verified Delivery (Second Diamond Obligation)
 
 The persona-review loop has two diamonds. The first diamond — interview
-→ self-verify → persona_review → round_check → finalized — validates a
-plan as a document. The second diamond — finalized → oracle_evaluation
-→ archive — validates that the plan's promises are actually realized
-in the artifacts the plan governs.
+→ self-verify → persona_review → round_check convergence →
+session_finalize → finalized — validates a plan as a document. The second
+diamond — finalized → oracle_evaluation → archive — validates that the
+plan's promises are actually realized in the artifacts the plan governs.
 
 Plans whose work is implementable must pass through the second diamond
 before archiving. The MCP tool sequence is

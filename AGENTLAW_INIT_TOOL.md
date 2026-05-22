@@ -14,12 +14,13 @@ Before using this document, read:
 
 ## Full Bootstrap Cycle
 
-The full bootstrap cycle has four steps. Step 0 is user-driven (terminal command). Steps 1-2 are LLM-driven and form the substance of this document. Step 3 is verification.
+The full bootstrap cycle has five steps. Step 0 is user-driven (terminal command). Steps 1-2 are LLM-driven and form the substance of this document. Step 3 is local surface alignment. Step 4 is verification.
 
 0. **Infrastructure setup (terminal)**: install the CLI from PyPI with `pipx install agentlaw` (once, globally), then `cd <target-project>` and run `agentlaw init [--skip-model] [--setup-agents prompt|auto|codex|claude|gemini|none]`. The public seed repository for users who want to inspect the shared starter tree is `https://github.com/paranmir/agentlaw`; the installable package is the PyPI project named `agentlaw`. The pip package unpacks the bundled scaffold (constitution, root control documents, generic starter `docs/law/*`, `memory/*` seed) into the target repository and creates the runtime tree at `.harness/index/meta.db`. Optional sub-steps: allow the embedding model download by installing `agentlaw[embeddings]` and omitting `--skip-model`, and register the agentlaw-memory MCP server with the agent host depending on `--setup-agents` mode. Immediately after init, the LLM must surface the setup status summary from init output or run `agentlaw setup-status --target .` and report what was not installed, what is not activated, and the listed next actions.
 1. **Law specialization (LLM-driven)**: invoke an LLM with this document. The LLM follows the Direct Procedure below — classify the target, specialize the generic starter law (already on disk from step 0) into project-specific law, record the shared baseline, document scope/contract/oracle/failure/execution/regression/memory authority before implementation. This is the substance of the bootstrap.
 2. **Runtime context load (LLM-driven, applicable when MCP is registered)**: after registration in step 0 (if `--setup-agents prompt` or `auto`) and after specialization in step 1, the LLM calls `agentlaw_session_restore` (MCP) or `agentlaw session-restore` (CLI fallback). The response carries the runtime reminder packet — authority recall, write discipline, memory intent rule with multilingual trigger keywords. Until this step has run, the agent has the law layer specialized but no runtime reminders loaded into working context.
-3. **Verification (terminal)**: `agentlaw verify`. Confirms the law layer, baseline record, and memory subsystem are coherent.
+3. **Local surface alignment (terminal or LLM-invoked CLI)**: `agentlaw align --check --target .`; if it reports safe routing drift, run `agentlaw align --write --target .` and re-check. Confirms `AGENTS.md` and user-facing README routing mention the present law/root-control/command surface instead of leaving the new scaffold half-discoverable.
+4. **Verification (terminal)**: `agentlaw verify`. Confirms the law layer, baseline record, and memory subsystem are coherent.
 
 The Direct Procedure below is a self-contained version of step 1, beginning with a step 0 reminder. The Responsibility Split section at the bottom of this document supplements the cycle for non-default situations.
 
@@ -38,6 +39,7 @@ Use this document as a direct procedure even if no prompt block is reused.
 9. Treat the law layer and short entry map as the first deliverable, not product code.
 10. Load runtime reminders. After law specialization, register the agentlaw-memory MCP server (when applicable — typically by following the instructions emitted by `agentlaw init --setup-agents prompt`, or by running `agentlaw agent-setup --client <host> --target . --apply --yes` for direct config writes), then call `agentlaw_session_restore` (MCP) or `agentlaw session-restore --target . --json` (CLI fallback). The response carries authority recall, write discipline, and memory intent rule reminders — including the multilingual trigger keyword list. The session is not "fully bootstrapped" until these reminders are loaded into the agent's working context, since otherwise the agent operates without the framework guidance the rest of the harness depends on.
 11. Re-check setup readiness before handoff. Run `agentlaw setup-status --target . --client auto` after MCP registration/restart attempts and report any remaining `not installed`, `not activated`, or `unknown` entries. Do not summarize the bootstrap as complete while the status report still lists required next actions without acknowledging them.
+12. Align local routing before verification. Run `agentlaw align --check --target .`; if it reports autofixable `AGENTS.md` routing drift, run `agentlaw align --write --target .`, then repeat the check. If README drift remains, update README text explicitly so users can discover the command path.
 
 ## Completion Checks
 A bootstrap run is complete only when:
@@ -49,6 +51,7 @@ A bootstrap run is complete only when:
 - implementation has not started ahead of the documentation gate
 - memory runtime state is documented as derived continuity below repository files and law
 - setup status was reported after init, including skipped optional embeddings, missing or inactive MCP registration, and runtime context restore state when applicable
+- `agentlaw align --check --target .` reports no stale routing or README command-surface gaps
 
 ## Failure Conditions
 Treat the bootstrap as failed or incomplete when:
@@ -192,6 +195,7 @@ Reuse this prompt when:
 | Optional MCP server registration with the agent host | `agentlaw init --setup-agents prompt\|auto\|codex\|claude\|gemini` | Either emits LLM-actionable instructions (`prompt`) or writes the chosen host config directly when paired with `--yes` |
 | Law specialization (`docs/law/*` rewrite from project facts), shared baseline record, scope/contract/oracle/failure/execution/regression/memory authority documentation | LLM via this document | Project-specific specialization on top of the generic starter |
 | Runtime context load (`agentlaw_session_restore`) | LLM (after MCP registration) | Pulls authority recall, write discipline, memory intent reminders into the agent's working context |
+| Local routing/readme alignment | User or LLM-invoked CLI via `agentlaw align --check --target .` and, when safe, `agentlaw align --write --target .` | Reconciles `AGENTS.md` and user-facing command surfaces with the present law/root-control scaffold |
 | Final integrity verification | User via `agentlaw verify` | Confirms the bootstrap produced a coherent state |
 
 The split is hard: the LLM does not create or alter `.harness/index/meta.db` directly under any circumstance, and the pip package does not perform law specialization. Step 1 of the cycle (LLM specialization) must run only after step 0 (pipx install + agentlaw init) has completed cleanly — running step 1 without the scaffold on disk produces files that drift from the shared starter structure.

@@ -27,7 +27,7 @@ canonical statement of its goal.)
 | Path | Purpose |
 | --- | --- |
 | `AGENTLAW_CONSTITUTION.md` | highest-authority document |
-| `AGENTLAW_*_TOOL.md` | root control procedures (init / update / fix) |
+| `AGENTLAW_*_TOOL.md` | root control procedures (init / update / fix / align) |
 | `AGENTS.md` | routing-only entry map (not a rule store) |
 | `docs/law/*` | law layer (canonical rules) |
 | `docs/contracts/*` | shared boundary contracts |
@@ -80,6 +80,11 @@ map references.)
 ## Verification
 
 `agentlaw verify` runs the mechanical checks for this repository.
+
+Run `agentlaw align --check --target .` after adding or removing local
+agentlaw laws, root controls, directories, or command surfaces. Use
+`agentlaw align --write --target .` only for safe routing updates that the
+command marks autofixable, then run `agentlaw verify .`.
 
 (Add project-specific verification commands here — test runners,
 linters, build commands, etc.)

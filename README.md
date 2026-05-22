@@ -51,6 +51,8 @@ agentlaw agent-setup --client auto --target . --verify
 agentlaw agent-setup --client codex --target . --apply --yes
 agentlaw setup-status --target .
 agentlaw setup-status --target . --after-update
+agentlaw align --check --target .
+agentlaw align --write --target .
 agentlaw mcp-recover --target . --client auto --json
 
 # Restore, verify, and operate this project
@@ -80,11 +82,12 @@ Use agentlaw as an operating loop, not only as a command list:
 4. Implement from the reviewed plan, then run the listed oracle checks, `agentlaw verify .`, and any focused tests before archiving the plan.
 5. Save session state with `agentlaw_session_save` at milestones and before context compaction.
 
-### When to use init, update, and fix
+### When to use init, update, fix, and align
 
 - Use `AGENTLAW_INIT_TOOL.md` when bootstrapping agentlaw into a new project or re-initializing the scaffold.
 - Use `AGENTLAW_UPDATE_TOOL.md` when the installed kit or scaffold has changed and this project needs those upstream harness updates merged without losing local project facts.
 - Use `AGENTLAW_FIX_TOOL.md` when the harness is drifting, a tracker-policy violation happened, the agent bypassed a rule, MCP/memory state looks inconsistent, or the same governance failure repeats.
+- Use `AGENTLAW_ALIGN_TOOL.md` and `agentlaw align --check --target .` when local laws, root controls, directories, or command surfaces changed and routing/README surfaces may be stale. Use `agentlaw align --write --target .` only for safe routing updates reported as autofixable.
 
 ### Plan, persona, and oracle review
 
@@ -146,6 +149,8 @@ Before consequential governance work, use the matching root control document:
   bypasses.
 - `AGENTLAW_INIT_TOOL.md` for first-time or re-initialization work.
 - `AGENTLAW_UPDATE_TOOL.md` for incorporating upstream harness changes.
+- `AGENTLAW_ALIGN_TOOL.md` for local routing/readme reconciliation after
+  harness structure or command surfaces change.
 
 ### Advanced-reference path
 
