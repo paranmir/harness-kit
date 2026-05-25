@@ -150,14 +150,14 @@ and runtime shape are intact before the project is treated as harness-ready.
 agentlaw is not a fork or reimplementation of these projects. The links below
 name ideas that shaped the product:
 
-- [OpenAI's in-house data agent](https://openai.com/index/inside-our-in-house-data-agent/) influenced the layered context model: combine code, institutional context, memory, runtime checks, clarification, and evals so an always-on agent can improve without silently drifting.
-- [OpenAI Agent evals](https://developers.openai.com/api/docs/guides/agent-evals) influenced the oracle/check design: treat agent behavior as something that needs traces, graders, datasets, and repeatable regression checks, not only prose confidence.
-- [Ouroboros: What is an agent harness?](https://ouroboros.bot/what-is-an-agent-harness/) influenced the word "harness" here: the goal is a stable operating environment for long-lived agents, with memory, tools, logs, context, and recovery paths the agent can reason about from inside the work. The same line of thinking also shaped agentlaw's two-step review/delivery flow: first validate the plan, then verify the delivered work before archive.
-- [Hermes Agent](https://hermes-agent.nousresearch.com/docs/) and its [learning loop](https://hermes-agent.ai/features/learning-loop) influenced the post-task retrospective route: after meaningful work, the agent should decide whether the lesson belongs in a skill, law/contract, test/verifier, memory/reference, tracker entry, or chat-only note. agentlaw keeps this decision explicit and reviewable instead of automatically creating skills from every task.
-- [Wang et al., "Label Words are Anchors"](https://arxiv.org/abs/2305.14160) influenced the review-method wording around rubric anchors: examples and labels help calibration, but anchors must stay illustrative rather than narrowing the reviewer to only the listed cases.
-- [JuliusBrussee/caveman](https://github.com/juliusbrussee/caveman) influenced the concise-accuracy rule: keep the useful identifiers, paths, commands, and failure conditions, while cutting filler and self-narrating history from current-state docs.
-- [Agent Skills](https://agentskills.io/) influenced the reminder-channel design: keep small task descriptions discoverable up front, then load full procedural instructions only when the task actually calls for them.
-- [Model Context Protocol](https://modelcontextprotocol.io/specification/2024-11-05/index) influenced the runtime boundary: expose tools, resources, prompts, logging, and explicit trust/consent expectations through a structured protocol rather than hidden chat memory.
+- [OpenAI Harness Engineering](https://openai.com/index/harness-engineering/): agent-first harness design across context, tools, memory, checks, and recovery paths.
+- [OpenAI Agent evals](https://developers.openai.com/api/docs/guides/agent-evals): traceable, repeatable agent-behavior oracles.
+- [Ouroboros: What is an agent harness?](https://ouroboros.bot/what-is-an-agent-harness/): harness vocabulary and the two-step review/delivery flow: validate the plan, then verify delivery before archive.
+- [Hermes Agent](https://hermes-agent.nousresearch.com/docs/) and its [learning loop](https://hermes-agent.ai/features/learning-loop): post-task retrospective route for skill, law/contract, test/verifier, memory/reference, tracker, or chat-only output.
+- [Wang et al., "Label Words are Anchors"](https://arxiv.org/abs/2305.14160): rubric anchors that calibrate reviewers without narrowing judgment to listed examples.
+- [JuliusBrussee/caveman](https://github.com/juliusbrussee/caveman): the concise-accuracy rule; keep identifiers, paths, commands, and failure conditions while removing filler and self-narrating history.
+- [Agent Skills](https://agentskills.io/): small discoverable task descriptions with full procedures loaded only when needed.
+- [Model Context Protocol](https://modelcontextprotocol.io/specification/2024-11-05/index): explicit tools, resources, prompts, logging, and trust boundaries instead of hidden chat memory.
 
 ## Harness Workflow
 

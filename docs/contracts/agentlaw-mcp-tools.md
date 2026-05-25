@@ -1210,11 +1210,13 @@ Move a plan from `docs/plans/active/` or `docs/plans/draft/` to `docs/plans/comp
 
 **Archive gate.** When the active session for the plan is in `oracle_evaluation` phase, the gate refuses the move unless every criterion in `oracle_results` resolves to `pass` or `user_confirmed`. Sessions never advanced to `oracle_evaluation` bypass this gate and archive under the original path for backward compatibility.
 
-For `oracle_evaluation` sessions, archive writes `Completed Closure Evidence` and `Plan Oracle Evidence` before moving the file. It validates the completed body shape first and leaves the plan in place when closure evidence is invalid.
+For `oracle_evaluation` sessions, archive writes `Completed Closure Evidence` and `Plan Oracle Evidence` before moving the file. `Completed Closure Evidence` must include a parseable `Affected surfaces` line. The archive tool writes that line from `completed_closure_evidence.affected_surfaces` when supplied; otherwise it falls back to the reviewed plan body and copies the backticked tokens from its `Affected surfaces` field. It validates the completed body shape first and leaves the plan in place when closure evidence is invalid.
 
 **Parameters**
 - `plan_path` (string, required) — repo-relative POSIX path to the plan file in active or draft.
-- `completed_closure_evidence` (object, optional) — caller-supplied closure note fields to include in the generated completed evidence section.
+- `completed_closure_evidence` (object, optional) — caller-supplied closure fields. Supported keys:
+  - `affected_surfaces` (string or list of strings, optional): repo-relative paths or globs, with or without backticks. When omitted, archive uses the reviewed plan body `Affected surfaces` tokens.
+  - `note` (string, optional): compact closure note.
 - `oracle_evidence` (object, optional) — caller-supplied oracle note fields to include in the generated oracle evidence section.
 
 **Returns**

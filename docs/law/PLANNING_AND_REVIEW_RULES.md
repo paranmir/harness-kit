@@ -467,8 +467,11 @@ all-or-nothing: every acceptance criterion in
 the move into `docs/plans/completed/` is permitted. The archive tool also
 writes `Completed Closure Evidence` and `Plan Oracle Evidence` before the
 move and refuses archive when the resulting completed body fails closure
-shape checks. Sessions never advanced to `oracle_evaluation` bypass this
-gate for backward compatibility.
+shape checks. `Completed Closure Evidence` must include parseable affected
+surfaces. The archive tool should use `completed_closure_evidence.
+affected_surfaces` when supplied; otherwise it should copy backticked
+affected-surface tokens from the reviewed plan body. Sessions never advanced
+to `oracle_evaluation` bypass this gate for backward compatibility.
 
 Acceptance criteria in plans that activate the second diamond must
 adopt the `(criterion id, oracle)` paired shape — each `crit-*`

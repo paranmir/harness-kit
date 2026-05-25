@@ -92,6 +92,13 @@ conditions, acceptance criteria, user gates, ordering constraints, safety
 warnings, permission boundaries, legal/security impact, and next actions
 remain explicit.
 
+LLM-facing current-state artifacts must keep only certain, reusable,
+load-bearing information. Preserve invariants, contracts, failure conditions,
+execution order, verification commands, user decisions, identifiers, paths,
+and exact command syntax. Remove authoring history, process narration,
+release timing, speculative rationale, and decorative explanation unless the
+artifact's purpose is historical recordkeeping.
+
 ## Application Scope
 
 This law applies in three modes, distinguished by the work's
