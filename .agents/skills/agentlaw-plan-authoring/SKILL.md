@@ -22,15 +22,15 @@ own the format, review method, persona selection, and oracle rules.
 Read the relevant law and protocol sources before drafting, amending,
 reviewing, executing, or archiving a plan:
 
-- `docs/law/PLANNING_AND_REVIEW_RULES.md`
-- `docs/law/REPOSITORY_ARTIFACT_RULES.md`
-- `docs/planning-protocol/task-classification.md`
-- `docs/planning-protocol/plan-template.md`
-- `docs/planning-protocol/review-method.md`
-- `docs/planning-protocol/persona-decks-core.md`
-- `docs/planning-protocol/persona-decks-specialized.md`
-- `docs/planning-protocol/persona-section-map.md`
-- `docs/contracts/agentlaw-mcp-tools.md`
+- `agentlaw_docs/law/PLANNING_AND_REVIEW_RULES.md`
+- `agentlaw_docs/law/REPOSITORY_ARTIFACT_RULES.md`
+- `agentlaw_docs/planning-protocol/task-classification.md`
+- `agentlaw_docs/planning-protocol/plan-template.md`
+- `agentlaw_docs/planning-protocol/review-method.md`
+- `agentlaw_docs/planning-protocol/persona-decks-core.md`
+- `agentlaw_docs/planning-protocol/persona-decks-specialized.md`
+- `agentlaw_docs/planning-protocol/persona-section-map.md`
+- `agentlaw_docs/contracts/agentlaw-mcp-tools.md`
 
 ## Pre-Write Checks
 
@@ -39,14 +39,14 @@ documents above:
 
 1. Classify the task and cite matched non-trivial triggers.
 2. Fill the active-plan preflight fields required by
-   `docs/law/REPOSITORY_ARTIFACT_RULES.md`.
+   `agentlaw_docs/law/REPOSITORY_ARTIFACT_RULES.md`.
 3. Mark Domain Coverage according to the plan content, not convenience.
 4. Keep acceptance criteria parser-compatible:
    `- \`crit-N\`:` followed by an indented `Oracle:` line.
 5. Use runnable Oracle markers for mechanically checkable criteria.
 6. Keep `user_confirms` only for genuinely subjective confirmation.
 7. Include `Plan Review Evidence` and `Separate Persona Review Passes` in
-   the shape required by `docs/planning-protocol/review-method.md`.
+   the shape required by `agentlaw_docs/planning-protocol/review-method.md`.
 8. Run the MCP persona-review loop before execution for non-trivial plans.
 9. Do not edit reviewed contract sections after review unless the changed
    sections are re-reviewed.
@@ -56,5 +56,5 @@ documents above:
 ## Operating Rule
 
 This skill is a reminder and router only. If this file conflicts with
-`docs/law/*` or `docs/planning-protocol/*`, the law and protocol documents
+`agentlaw_docs/law/*` or `agentlaw_docs/planning-protocol/*`, the law and protocol documents
 win.

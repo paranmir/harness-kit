@@ -36,15 +36,15 @@ package as the install source and then complete the project bootstrap:
 
 1. Read `AGENTS.md` for the repository routing map.
 2. Read `AGENTLAW_CONSTITUTION.md` for the highest-level agreement.
-3. Read `docs/references/project-overview.md` for this project's purpose,
+3. Read `agentlaw_docs/references/project-overview.md` for this project's purpose,
    audience, structure, and architecture map.
 
 ### Daily-use path
 
-1. Restore the current session from `memory/working-set.md`.
-2. Use `memory/LOOKUP_RULES.md` to decide which memory files or logs to read.
-3. Keep durable project facts in approved artifacts such as `docs/law/*`,
-   `docs/references/*`, `docs/plans/*`, and `memory/*`.
+1. Restore the current session from `agentlaw_memory/working-set.md`.
+2. Use `agentlaw_memory/LOOKUP_RULES.md` to decide which memory files or logs to read.
+3. Keep durable project facts in approved artifacts such as `agentlaw_docs/law/*`,
+   `agentlaw_docs/references/*`, `agentlaw_docs/plans/*`, and `agentlaw_memory/*`.
 
 ## Commands Users Should Know
 
@@ -96,7 +96,7 @@ each gap.
 When `setup-status` prints `LLM disclosure required`, the agent must tell the
 user the harness is not fully active before doing substantive work. Until MCP
 tools, Agent Skills, hooks, and runtime restore are confirmed, the agent follows
-`AGENTS.md`, the root control documents, and `docs/law/*` manually; non-trivial
+`AGENTS.md`, the root control documents, and `agentlaw_docs/law/*` manually; non-trivial
 plans stay non-executable unless the required plan-review path has run.
 
 When an LLM installs agentlaw for a user, it should not stop at "installed."
@@ -247,8 +247,8 @@ This scaffold includes Agent Skills in both common host locations:
   or chat-only outcomes.
 
 The duplicated directories are host compatibility paths, not separate rule
-systems. Governing content remains in `AGENTLAW_*`, `docs/law/*`, and
-`docs/planning-protocol/*`.
+systems. Governing content remains in `AGENTLAW_*`, `agentlaw_docs/law/*`, and
+`agentlaw_docs/planning-protocol/*`.
 
 ### Fix/update path
 
@@ -263,26 +263,26 @@ Before consequential governance work, use the matching root control document:
 
 ### Advanced-reference path
 
-Use `docs/law/*` for governing rules, `docs/contracts/*` for tool and update
-contracts, and `docs/planning-protocol/*` for plan format, review method, and
+Use `agentlaw_docs/law/*` for governing rules, `agentlaw_docs/contracts/*` for tool and update
+contracts, and `agentlaw_docs/planning-protocol/*` for plan format, review method, and
 persona decks.
 
 ## Memory Layout
 
-The canonical memory layer is plain Markdown under `memory/*`:
+The canonical memory layer is plain Markdown under `agentlaw_memory/*`:
 
-- `memory/working-set.md` — current goal, next actions, open questions, and
+- `agentlaw_memory/working-set.md` — current goal, next actions, open questions, and
   handoff state.
-- `memory/LOOKUP_RULES.md` — how to choose between memory tools and current
+- `agentlaw_memory/LOOKUP_RULES.md` — how to choose between memory tools and current
   repository reads.
-- `memory/known-facts/` — durable facts about the project.
-- `memory/logs/` — append-only decisions, corrections, session saves, and
+- `agentlaw_memory/known-facts/` — durable facts about the project.
+- `agentlaw_memory/logs/` — append-only decisions, corrections, session saves, and
   verification notes.
-- `memory/rules/` — durable behavioral rules that do not belong in law.
-- `memory/preferences.md` — user or maintainer preferences.
+- `agentlaw_memory/rules/` — durable behavioral rules that do not belong in law.
+- `agentlaw_memory/preferences.md` — user or maintainer preferences.
 
-Derived runtime state belongs under `.harness/`, including the SQLite index at
-`.harness/index/meta.db` and any downloaded embedding model. `.harness/` is
+Derived runtime state belongs under `.agentlaw/`, including the SQLite index at
+`.agentlaw/index/meta.db` and any downloaded embedding model. `.agentlaw/` is
 rebuildable runtime state, not the source of truth.
 
 ## Multi-project note
@@ -290,10 +290,10 @@ rebuildable runtime state, not the source of truth.
 Codex uses a user-level MCP registration, so registering agentlaw with Codex
 only makes the command available globally. It is not project setup. When Codex
 is opened in a project that has not explicitly run `agentlaw init`,
-`agentlaw run-mcp` exits instead of creating `.harness`.
+`agentlaw run-mcp` exits instead of creating `.agentlaw`.
 
 ## Project Specialization
 
 After initialization, specialize the starter law and reference files for this
-project. Derived runtime state belongs under `.harness/` and is recreated by
+project. Derived runtime state belongs under `.agentlaw/` and is recreated by
 the `agentlaw` package.

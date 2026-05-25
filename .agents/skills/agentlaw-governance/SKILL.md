@@ -88,5 +88,5 @@ When activated, the agent must:
 - `AGENTLAW_UPDATE_TOOL.md` — kit upgrade procedure.
 - `AGENTLAW_ALIGN_TOOL.md` — local routing/readme alignment procedure.
 - `AGENTS.md` — project-root agent routing map.
-- `docs/law/PLANNING_AND_REVIEW_RULES.md` § before_action_authority_check —
+- `agentlaw_docs/law/PLANNING_AND_REVIEW_RULES.md` § before_action_authority_check —
   the law-layer obligation this skill surfaces as a channel.

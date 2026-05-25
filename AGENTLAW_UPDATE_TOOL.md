@@ -26,10 +26,10 @@ replacement for project-specific governance.
 
 Before mutating governance content, inventory the protected local authority:
 
-- `docs/law/*`
-- `memory/rules/*`
-- `docs/plans/tech-debt-tracker.md`
-- `docs/contracts/shared-agentlaw-baseline.md`
+- `agentlaw_docs/law/*`
+- `agentlaw_memory/rules/*`
+- `agentlaw_docs/plans/tech-debt-tracker.md`
+- `agentlaw_docs/contracts/shared-agentlaw-baseline.md`
 - `AGENTS.md` routing and other execution-entry routing surfaces
 - any local stricter rule, local exemption, known mismatch, or behavioral
   oracle content already recorded in the project
@@ -60,7 +60,7 @@ Refuse to present the update as complete when the merge would:
 
 The full update cycle has three steps. Steps 1 and 3 are user-driven (terminal commands). Step 2 is LLM-driven and is the substance of this document.
 
-1. **Infrastructure update (terminal)**: `pipx upgrade agentlaw`. Replaces the PyPI package code (CLI, MCP server, schema files), brings the new bundled shared kit into the package's `scaffold/` directory, and automatically applies any pending schema migrations to `.harness/index/meta.db`. If an older 0.1.x environment still reports 0.1.5 as current, run `pipx upgrade agentlaw --pip-args "--no-cache-dir --index-url https://pypi.org/simple"` and verify with `agentlaw --version`; this forces pipx to query PyPI directly instead of a stale cache or mirror. The public seed repository at `https://github.com/paranmir/agentlaw` is a readable distribution view of the shared starter tree; it is not the package source a target project upgrades from. Immediately after the upgrade, run `agentlaw setup-status --target . --after-update` and surface any `not installed`, `not activated`, or `unknown` entries before claiming the updated harness is ready.
+1. **Infrastructure update (terminal)**: `pipx upgrade agentlaw`. Replaces the PyPI package code (CLI, MCP server, schema files), brings the new bundled shared kit into the package's `scaffold/` directory, and automatically applies any pending schema migrations to `.agentlaw/index/meta.db`. If an older 0.1.x environment still reports 0.1.5 as current, run `pipx upgrade agentlaw --pip-args "--no-cache-dir --index-url https://pypi.org/simple"` and verify with `agentlaw --version`; this forces pipx to query PyPI directly instead of a stale cache or mirror. The public seed repository at `https://github.com/paranmir/agentlaw` is a readable distribution view of the shared starter tree; it is not the package source a target project upgrades from. Immediately after the upgrade, run `agentlaw setup-status --target . --after-update` and surface any `not installed`, `not activated`, or `unknown` entries before claiming the updated harness is ready.
 2. **Governance content merge (LLM-driven)**: invoke an LLM with this document. The LLM follows the Direct Procedure below — read the recorded baseline, inventory protected local authority, compare the new shared kit against the baseline, replace root mirrors, merge new requirements into local law/rules without losing local facts or stricter local obligations, refresh the baseline record.
 3. **Verification (terminal)**: run `agentlaw align --check --target .`, resolve any routing/readme issues with `agentlaw align --write --target .` where safe, then run `agentlaw verify`. Confirms root mirrors match the new shared kit, local facts and behavioral oracle content were preserved, new shared requirements are present, and the shared baseline record matches.
 
@@ -70,16 +70,16 @@ The Direct Procedure below is a self-contained version of step 2 that begins wit
 Before using this document, read:
 - `AGENTLAW_CONSTITUTION.md`
 - `references/shared-agentlaw-baseline.md` when it exists
-- the current localized law layer in `docs/law/*`
-- local rule memory under `memory/rules/*` when it exists
-- `docs/plans/tech-debt-tracker.md`
+- the current localized law layer in `agentlaw_docs/law/*`
+- local rule memory under `agentlaw_memory/rules/*` when it exists
+- `agentlaw_docs/plans/tech-debt-tracker.md`
 - the new shared-kit versions of the root and law documents
 - `AGENTS.md` when routing may need to change
 
 ## Direct Procedure
 Use this document as a direct procedure even if no prompt block is reused.
 
-0. Run `pipx upgrade agentlaw` first when the project is using the PyPI package distribution. If an older 0.1.x environment still reports 0.1.5 as current, run `pipx upgrade agentlaw --pip-args "--no-cache-dir --index-url https://pypi.org/simple"` and verify with `agentlaw --version`. This step (a) replaces the package code (CLI, MCP server, schema files), (b) brings the new bundled shared kit into the package's `scaffold/` directory, and (c) automatically applies any pending schema migrations to `.harness/index/meta.db`. The public seed repository is `https://github.com/paranmir/agentlaw`; use it to inspect the shared starter content, not as a substitute for upgrading the installed package. Then run `agentlaw setup-status --target . --after-update` and explicitly report what was not installed, what is not activated, what could not be inspected, and the next actions. After this completes, proceed with the LLM-driven steps below. Skip step 0 only when the project does not use the pip package and the shared kit is delivered through another channel (git clone, manual copy).
+0. Run `pipx upgrade agentlaw` first when the project is using the PyPI package distribution. If an older 0.1.x environment still reports 0.1.5 as current, run `pipx upgrade agentlaw --pip-args "--no-cache-dir --index-url https://pypi.org/simple"` and verify with `agentlaw --version`. This step (a) replaces the package code (CLI, MCP server, schema files), (b) brings the new bundled shared kit into the package's `scaffold/` directory, and (c) automatically applies any pending schema migrations to `.agentlaw/index/meta.db`. The public seed repository is `https://github.com/paranmir/agentlaw`; use it to inspect the shared starter content, not as a substitute for upgrading the installed package. Then run `agentlaw setup-status --target . --after-update` and explicitly report what was not installed, what is not activated, what could not be inspected, and the next actions. After this completes, proceed with the LLM-driven steps below. Skip step 0 only when the project does not use the pip package and the shared kit is delivered through another channel (git clone, manual copy).
 1. Read the recorded shared baseline if available.
 2. Inventory protected local authority before comparing or editing: localized law, local rules, tracker decisions, baseline record, execution-entry routing, local stricter rules, local exemptions, known discrepancies, and behavioral oracle content.
 3. Identify shared-kit changes relative to the prior baseline, or fall back to law-gap comparison if no precise baseline exists.
@@ -137,11 +137,11 @@ Follow these rules:
 
 Procedure:
 
-0. If the project uses the pip-package distribution, run `pipx upgrade agentlaw` before invoking the LLM-driven steps. The pipx upgrade replaces pip package code, brings the new bundled shared kit into the package, and automatically applies any pending schema migrations to `.harness/index/meta.db`. Skip this step only when the shared kit is delivered through another channel.
+0. If the project uses the pip-package distribution, run `pipx upgrade agentlaw` before invoking the LLM-driven steps. The pipx upgrade replaces pip package code, brings the new bundled shared kit into the package, and automatically applies any pending schema migrations to `.agentlaw/index/meta.db`. Skip this step only when the shared kit is delivered through another channel.
 
 1. Identify what changed in the shared kit.
    - First read `references/shared-agentlaw-baseline.md` if it exists.
-   - Before comparing, inventory existing `docs/law/*`, `memory/rules/*`, tracker entries, local exemptions, stricter local requirements, known discrepancies, and behavioral oracle content.
+   - Before comparing, inventory existing `agentlaw_docs/law/*`, `agentlaw_memory/rules/*`, tracker entries, local exemptions, stricter local requirements, known discrepancies, and behavioral oracle content.
    - Compare the new shared kit files against the baseline commit or tag the project was last bootstrapped or updated from.
    - If the baseline file is missing or incomplete, read the new shared kit files and compare their requirements against the current project law layer to identify gaps.
    - Categorize each change as: new requirement, strengthened requirement, relaxed requirement, structural change, or wording-only clarification.
@@ -152,11 +152,11 @@ Procedure:
    - These are shared scaffolding, not localized content, so direct replacement is correct.
 
 3. Merge changes into the localized law layer.
-   - For each file in `docs/law/*`, compare the new shared starter template against the current project-specific version.
+   - For each file in `agentlaw_docs/law/*`, compare the new shared starter template against the current project-specific version.
    - Add new sections or requirements from the shared template that the project law does not yet address.
    - Strengthen existing sections when the shared template now requires more than the project law currently provides.
    - Preserve all existing local facts, local examples, local mismatches, and project-specific behavioral oracle content.
-   - Preserve local rules in `memory/rules/*` and reconcile them with new shared requirements rather than deleting or overwriting them.
+   - Preserve local rules in `agentlaw_memory/rules/*` and reconcile them with new shared requirements rather than deleting or overwriting them.
    - Do not weaken local rules that are already stricter than the new shared requirement.
    - Do not erase local exemptions or known discrepancies; either preserve them, resolve them explicitly, or record the conflict.
    - Do not revert project-specific wording back to generic starter wording.
@@ -164,7 +164,7 @@ Procedure:
 4. Review tracker and enforcement entries.
    - Check whether any existing tracker entries are now governed by the new shared rules and can be promoted or resolved.
    - Check whether new shared requirements create new tracker candidates for the project.
-   - Update `docs/law/MECHANICAL_ENFORCEMENT_POLICY.md` if new enforcement-relevant requirements appeared.
+   - Update `agentlaw_docs/law/MECHANICAL_ENFORCEMENT_POLICY.md` if new enforcement-relevant requirements appeared.
 
 5. Refresh the shared baseline record.
    - Update `references/shared-agentlaw-baseline.md` to record the shared source repository and the commit or tag now reflected in the project.
@@ -216,9 +216,9 @@ It should not:
 | Layer | Owner | What it does |
 | --- | --- | --- |
 | PyPI package code (CLI, MCP server) | `pipx upgrade agentlaw` | Replaces binaries / Python source |
-| Binary schema migration on `.harness/index/meta.db` | Pip package startup hook | Runs migration scripts in lexical order |
+| Binary schema migration on `.agentlaw/index/meta.db` | Pip package startup hook | Runs migration scripts in lexical order |
 | Bundled new shared kit delivery | `pipx upgrade agentlaw` | Updates `scaffold/` inside the package |
-| Local governance content merge (`docs/law/*`, root mirrors, `AGENTS.md`, tracker, baseline) | LLM via this document | Incremental merge, preserves local facts |
+| Local governance content merge (`agentlaw_docs/law/*`, root mirrors, `AGENTS.md`, tracker, baseline) | LLM via this document | Incremental merge, preserves local facts |
 | Final integrity verification | User via verify command | Confirms the update produced a valid state |
 
 The split is hard: the LLM does not perform binary DB ALTER directly under any circumstance, and the pip package does not perform governance content merges. Step 2 of the cycle (LLM merge) must run only after step 1 (pipx upgrade) has completed cleanly — running step 2 over a half-migrated database produces silent inconsistencies between the binary state and the law layer.

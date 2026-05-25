@@ -1,6 +1,6 @@
 # Claude Code Routing
 
-This file is auto-loaded by Claude Code every session. Routing only — governing content lives in `docs/law/*` and root control documents.
+This file is auto-loaded by Claude Code every session. Routing only — governing content lives in `agentlaw_docs/law/*` and root control documents.
 
 ## Governance Reminder
 

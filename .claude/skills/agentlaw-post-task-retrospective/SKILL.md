@@ -35,7 +35,7 @@ needs any durable route at all.
    - `skill`: reusable agent procedure that teaches future agents what to do.
    - `law/contract`: rule, public contract, authority, or policy boundary.
    - `test/verifier`: invariant that should fail mechanically when broken.
-   - `memory/reference`: durable fact, preference, decision, source, or context.
+   - `memory/reference`: durable memory item or reference artifact.
    - `tracker`: known debt or future lifecycle metric that is not fixed now.
    - `chat-only`: low-risk, one-off, or already covered by existing artifacts.
 4. If the route is a real correction, gap, bypass, or repeated failure, start

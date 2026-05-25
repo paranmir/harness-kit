@@ -19,8 +19,8 @@ Use this document when one or more of the following is true:
 - a known rule exists but seems too weak, too hidden, or too easy to bypass
 - a localized law document retains generic starter placeholder content despite concrete project facts being available
 - installer, memory, or continuity state appears to be bypassing file-based governance
-- the MCP memory tool surface is being bypassed (raw SQL against `.harness/index/meta.db`, direct file reads where a memory tool exists, or hand-rolled walks where `agentlaw_session_restore` / `agentlaw_session_save` should be used)
-- the canonical Markdown layer under `memory/*` and the index under `.harness/index/meta.db` have drifted apart
+- the MCP memory tool surface is being bypassed (raw SQL against `.agentlaw/index/meta.db`, direct file reads where a memory tool exists, or hand-rolled walks where `agentlaw_session_restore` / `agentlaw_session_save` should be used)
+- the canonical Markdown layer under `agentlaw_memory/*` and the index under `.agentlaw/index/meta.db` have drifted apart
 - a post-task retrospective identifies a reusable agent behavior correction and the owning layer is unclear
 - you need to decide whether the response belongs in law, tracker, `AGENTS.md`, an agent skill, or enforcement
 
@@ -36,8 +36,8 @@ For distribution or setup-related fixes, use the current public distribution mod
 ## Required Inputs
 Before using this document, read:
 - `AGENTLAW_CONSTITUTION.md`
-- the relevant file in `docs/law/*`
-- `docs/plans/tech-debt-tracker.md` when repetition or promotion may already be tracked
+- the relevant file in `agentlaw_docs/law/*`
+- `agentlaw_docs/plans/tech-debt-tracker.md` when repetition or promotion may already be tracked
 - `AGENTS.md` when entry routing is part of the problem
 
 ## Direct Procedure
@@ -139,11 +139,11 @@ Do not treat a discrepancy as law-worthy by default when it is:
 ## Step 4. Check Existing Rules First
 Before adding a new rule, review:
 - `AGENTLAW_CONSTITUTION.md`
-- the relevant file in `docs/law/*`
+- the relevant file in `agentlaw_docs/law/*`
 - `AGENTS.md` if the issue concerns read-first order or short entry guardrails
-- `docs/plans/tech-debt-tracker.md` if the issue may already be tracked
+- `agentlaw_docs/plans/tech-debt-tracker.md` if the issue may already be tracked
 
-The review must use **multiple synonym variants of the proposed rule's title and intent**, not a single keyword pass. A search that uses only the phrasing the agent has in mind will systematically miss rules whose original authors used different phrasing for the same intent. Concrete example: a proposed `Comment Self-Narration Prohibition` rule must also grep for `implementation history`, `changelog`, `narration`, `rename history`, `historical context`, and the specific anti-patterns the proposed rule would prohibit. Without the synonym sweep, near-duplicate § s land and the law layer drifts into self-contradiction. The full version of this obligation lives in `docs/law/REPOSITORY_ARTIFACT_RULES.md` `§New Section / Rule Addition Rule`.
+The review must use **multiple synonym variants of the proposed rule's title and intent**, not a single keyword pass. A search that uses only the phrasing the agent has in mind will systematically miss rules whose original authors used different phrasing for the same intent. Concrete example: a proposed `Comment Self-Narration Prohibition` rule must also grep for `implementation history`, `changelog`, `narration`, `rename history`, `historical context`, and the specific anti-patterns the proposed rule would prohibit. Without the synonym sweep, near-duplicate § s land and the law layer drifts into self-contradiction. The full version of this obligation lives in `agentlaw_docs/law/REPOSITORY_ARTIFACT_RULES.md` `§New Section / Rule Addition Rule`.
 
 Ask:
 1. Does an existing rule already govern this problem?
@@ -166,28 +166,28 @@ A sufficiency contract answers:
 5. What oracle, negative test, verifier check, review evidence, or explicit infeasibility rationale will prove the correction?
 6. What extension path must remain open so future work does not need to undo this correction before improving the system?
 
-For code, verifier, CLI, MCP, schema, installer, or runtime changes, the sufficiency contract must respect `docs/law/CODE_AUTHORSHIP_AND_STEWARDSHIP_RULES.md`: maintainability and testability are part of correctness. "Smallest" does not authorize one-off branching, responsibility mixing, missing tests, or avoidable technical debt.
+For code, verifier, CLI, MCP, schema, installer, or runtime changes, the sufficiency contract must respect `agentlaw_docs/law/CODE_AUTHORSHIP_AND_STEWARDSHIP_RULES.md`: maintainability and testability are part of correctness. "Smallest" does not authorize one-off branching, responsibility mixing, missing tests, or avoidable technical debt.
 
 If the chosen correction does not satisfy the sufficiency contract, it is not a fix. It is a workaround, cleanup, tracker-only record, or partial fix.
 
 ## Step 6. Choose The Owning Layer Or Abstraction
 Use this ownership map:
 - constitutional structure and invariant starter protections -> `AGENTLAW_CONSTITUTION.md`
-- starter carry-forward and project-instance preservation rules -> `docs/law/STARTER_SPECIALIZATION_RULES.md`
-- scope and repository boundary -> `docs/law/SCOPE.md`
-- inputs, outputs, execution flow, regression expectations, readiness -> `docs/law/INPUT_OUTPUT_CONTRACT.md`
-- structural and behavioral judgment -> `docs/law/ORACLE_AND_JUDGMENT.md`
-- failure classes and recovery interpretation -> `docs/law/FAILURE_TAXONOMY.md`
-- artifact structure, approval, synchronization, directory growth, law/artifact/entry separation -> `docs/law/REPOSITORY_ARTIFACT_RULES.md`
-- installer behavior and runtime input/output expectations -> `docs/law/INPUT_OUTPUT_CONTRACT.md`
-- memory authority, layout, conflict handling, and session restore behavior -> `docs/law/MEMORY_AND_CONTINUITY_RULES.md`
-- MCP memory tool surface bypass and `.harness/index/meta.db` source-drift -> `docs/law/MEMORY_AND_CONTINUITY_RULES.md`
-- memory authority, installer judgment, and recursive promotion judgment -> `docs/law/ORACLE_AND_JUDGMENT.md`
-- installer drift, memory authority failure, and recursive promotion failure classes -> `docs/law/FAILURE_TAXONOMY.md`
+- starter carry-forward and project-instance preservation rules -> `agentlaw_docs/law/STARTER_SPECIALIZATION_RULES.md`
+- scope and repository boundary -> `agentlaw_docs/law/SCOPE.md`
+- inputs, outputs, execution flow, regression expectations, readiness -> `agentlaw_docs/law/INPUT_OUTPUT_CONTRACT.md`
+- structural and behavioral judgment -> `agentlaw_docs/law/ORACLE_AND_JUDGMENT.md`
+- failure classes and recovery interpretation -> `agentlaw_docs/law/FAILURE_TAXONOMY.md`
+- artifact structure, approval, synchronization, directory growth, law/artifact/entry separation -> `agentlaw_docs/law/REPOSITORY_ARTIFACT_RULES.md`
+- installer behavior and runtime input/output expectations -> `agentlaw_docs/law/INPUT_OUTPUT_CONTRACT.md`
+- memory authority, layout, conflict handling, and session restore behavior -> `agentlaw_docs/law/MEMORY_AND_CONTINUITY_RULES.md`
+- MCP memory tool surface bypass and `.agentlaw/index/meta.db` source-drift -> `agentlaw_docs/law/MEMORY_AND_CONTINUITY_RULES.md`
+- memory authority, installer judgment, and recursive promotion judgment -> `agentlaw_docs/law/ORACLE_AND_JUDGMENT.md`
+- installer drift, memory authority failure, and recursive promotion failure classes -> `agentlaw_docs/law/FAILURE_TAXONOMY.md`
 - short read-first routing and short entry guardrails -> `AGENTS.md`
 - reusable agent procedure reminders or workflow execution guidance -> agent skill (`.agents/skills/*` / `.claude/skills/*`) when the correction teaches agents how to perform a recurring action without changing law, public contract, verifier behavior, or project state
-- repeated debt, unresolved drift, promotion candidates -> `docs/plans/tech-debt-tracker.md`
-- multi-step active corrective work -> `docs/plans/active/*`
+- repeated debt, unresolved drift, promotion candidates -> `agentlaw_docs/plans/tech-debt-tracker.md`
+- multi-step active corrective work -> `agentlaw_docs/plans/active/*`
 - durable non-authoritative supporting context -> `references/*`
 
 Do not move a local project problem into the constitution unless it exposes a genuinely shared structural gap.
@@ -242,7 +242,7 @@ Use this ladder after the sufficiency contract and candidate review:
 4. short `AGENTS.md` guardrail addition
 5. agent skill creation or update
 6. constitutional amendment
-7. enforcement follow-up under `docs/law/MECHANICAL_ENFORCEMENT_POLICY.md`
+7. enforcement follow-up under `agentlaw_docs/law/MECHANICAL_ENFORCEMENT_POLICY.md`
 
 Use:
 - `tracker only` when the issue is real but not stable enough for a governing rule
@@ -251,7 +251,7 @@ Use:
 - `agent skill creation or update` when the correction is reusable agent-facing procedure support, such as how to perform a recurring workflow, choose review inputs, or remember to consult a root control tool
 - `constitutional amendment` only for shared structural gaps or starter invariants
 
-Do not use a skill when the failure belongs to the constitution, root control documents, `docs/law/*`, tests, verifier, lint, CI, public setup documentation, release metadata, or a tracker. A skill may remind an agent to follow those authorities, but it must not become a lower-authority substitute for them. A post-task retrospective can recommend a skill only when the observed failure is a reusable agent-action pattern rather than a one-time chat correction or a higher-authority governance gap.
+Do not use a skill when the failure belongs to the constitution, root control documents, `agentlaw_docs/law/*`, tests, verifier, lint, CI, public setup documentation, release metadata, or a tracker. A skill may remind an agent to follow those authorities, but it must not become a lower-authority substitute for them. A post-task retrospective can recommend a skill only when the observed failure is a reusable agent-action pattern rather than a one-time chat correction or a higher-authority governance gap.
 
 Before choosing any rule-adding option, explicitly check whether the better correction is:
 - merging overlapping rules
@@ -274,7 +274,7 @@ Label the correction honestly:
 
 Do not call a cleanup, workaround, or tracker-only record a fix. It can still be the right action, but its label must preserve the residual risk.
 
-**Owning-layer presence enforcement.** When applying FIX_TOOL, output lands in the owning layer per the Step 9 ladder above — tracker entry, local law amendment, AGENTS.md guardrail, agent skill, constitutional amendment, or mechanical enforcement. Output MUST NOT land in agent-local memory (host-private feedback files, conversation-only notes, scratch files outside `docs/` / `src/` / `tests/`). Lighter-alternative output channels bypass the ladder's owning-layer escalation and are an instance of the false-readiness meta-family (form-correct "fix-tool applied" with substance-incomplete output channel). See `docs/law/MECHANICAL_ENFORCEMENT_POLICY.md` §"form-vs-substance detection check" for the mechanical check.
+**Owning-layer presence enforcement.** When applying FIX_TOOL, output lands in the owning layer per the Step 9 ladder above — tracker entry, local law amendment, AGENTS.md guardrail, agent skill, constitutional amendment, or mechanical enforcement. Output MUST NOT land in agent-local memory (host-private feedback files, conversation-only notes, scratch files outside `agentlaw_docs/` / `src/` / `agentlaw_tests/`). Lighter-alternative output channels bypass the ladder's owning-layer escalation and are an instance of the false-readiness meta-family (form-correct "fix-tool applied" with substance-incomplete output channel). See `agentlaw_docs/law/MECHANICAL_ENFORCEMENT_POLICY.md` §"form-vs-substance detection check" for the mechanical check.
 
 ## Step 10. Verify Completion
 After making the correction, check:
@@ -293,17 +293,17 @@ After making the correction, check:
 If document movement, splitting, renaming, or relocation happened, also check:
 - `AGENTS.md`
 - `AGENTLAW_CONSTITUTION.md`
-- the affected files in `docs/law/*`
+- the affected files in `agentlaw_docs/law/*`
 - tracker or plan references
 
 Detailed structural synchronization rules live in:
-- `docs/law/REPOSITORY_ARTIFACT_RULES.md`
+- `agentlaw_docs/law/REPOSITORY_ARTIFACT_RULES.md`
 
 ## When To Escalate To Enforcement
 If the same problem keeps recurring and is mechanically detectable, do not keep solving it only with prose.
 
 Use:
-- `docs/law/MECHANICAL_ENFORCEMENT_POLICY.md`
+- `agentlaw_docs/law/MECHANICAL_ENFORCEMENT_POLICY.md`
 
 Especially when:
 - the problem is repeated

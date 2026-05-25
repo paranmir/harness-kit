@@ -8,7 +8,7 @@ the correct order and routes work into the governing files.
 ## Required Inputs
 Before using this document, read:
 - `AGENTLAW_CONSTITUTION.md`
-- `docs/law/STARTER_SPECIALIZATION_RULES.md`
+- `agentlaw_docs/law/STARTER_SPECIALIZATION_RULES.md`
 - the current target repository files that expose actual product or runtime meaning
 - `AGENTS.md` when a short execution-entry map already exists
 
@@ -17,7 +17,7 @@ Before using this document, read:
 The bootstrap cycle has five steps: infrastructure setup, law specialization,
 runtime context load, local surface alignment, and verification.
 
-0. **Infrastructure setup (terminal)**: install the CLI from PyPI with `pipx install agentlaw` (once, globally), then `cd <target-project>` and run `agentlaw init [--skip-model] [--setup-agents prompt|auto|codex|claude|gemini|none]`. The public seed repository for users who want to inspect the shared starter tree is `https://github.com/paranmir/agentlaw`; the installable package is the PyPI project named `agentlaw`. The pip package unpacks the bundled scaffold (constitution, root control documents, generic starter `docs/law/*`, `memory/*` seed) into the target repository and creates the runtime tree at `.harness/index/meta.db`. Optional sub-steps: allow the embedding model download by installing `agentlaw[embeddings]` and omitting `--skip-model`, and register the agentlaw-memory MCP server with the agent host depending on `--setup-agents` mode. Immediately after init, the LLM must surface the setup status summary from init output or run `agentlaw setup-status --target .` and report what was not installed, what is not activated, and the listed next actions.
+0. **Infrastructure setup (terminal)**: install the CLI from PyPI with `pipx install agentlaw` (once, globally), then `cd <target-project>` and run `agentlaw init [--skip-model] [--setup-agents prompt|auto|codex|claude|gemini|none]`. The public seed repository for users who want to inspect the shared starter tree is `https://github.com/paranmir/agentlaw`; the installable package is the PyPI project named `agentlaw`. The pip package unpacks the bundled scaffold (constitution, root control documents, generic starter `agentlaw_docs/law/*`, `agentlaw_memory/*` seed) into the target repository and creates the runtime tree at `.agentlaw/index/meta.db`. Optional sub-steps: allow the embedding model download by installing `agentlaw[embeddings]` and omitting `--skip-model`, and register the agentlaw-memory MCP server with the agent host depending on `--setup-agents` mode. Immediately after init, the LLM must surface the setup status summary from init output or run `agentlaw setup-status --target .` and report what was not installed, what is not activated, and the listed next actions.
 1. **Law specialization (LLM-driven)**: invoke an LLM with this document. The LLM follows the Direct Procedure below — classify the target, specialize the generic starter law (already on disk from step 0) into project-specific law, record the shared baseline, document scope/contract/oracle/failure/execution/regression/memory authority before implementation. This is the substance of the bootstrap.
 2. **Runtime context load (LLM-driven, applicable when MCP is registered)**: after registration in step 0 (if `--setup-agents prompt` or `auto`) and after specialization in step 1, the LLM calls `agentlaw_session_restore` (MCP) or `agentlaw session-restore` (CLI fallback). The response carries the runtime reminder packet — authority recall, write discipline, memory intent rule with multilingual trigger keywords. Until this step has run, the agent has the law layer specialized but no runtime reminders loaded into working context.
 3. **Local surface alignment (terminal or LLM-invoked CLI)**: `agentlaw align --check --target .`; if it reports safe routing drift, run `agentlaw align --write --target .` and re-check. Confirms `AGENTS.md` and user-facing README routing mention the present law/root-control/command surface instead of leaving the new scaffold half-discoverable.
@@ -29,9 +29,9 @@ Responsibility Split section covers non-default situations.
 ## Direct Procedure
 Use this direct procedure even if no prompt block is reused.
 
-0. Run `pipx install agentlaw` (once, globally) and `agentlaw init` in the target project directory before invoking the LLM-driven steps. The current public distribution has two user-facing surfaces: the PyPI package `agentlaw` for installation, and `https://github.com/paranmir/agentlaw` as the public seed repository for reading the shared starter tree. The pip package places the bundled scaffold (constitution, root control documents, generic starter `docs/law/*`, `memory/*` seed) on disk and creates `.harness/index/meta.db`. Before proceeding, read the init output's `setup status` section or run `agentlaw setup-status --target .`; explicitly tell the user any optional component that was not installed, any MCP/runtime component that is not activated, and the next action. The LLM-driven steps below specialize that scaffold for the target project.
+0. Run `pipx install agentlaw` (once, globally) and `agentlaw init` in the target project directory before invoking the LLM-driven steps. The current public distribution has two user-facing surfaces: the PyPI package `agentlaw` for installation, and `https://github.com/paranmir/agentlaw` as the public seed repository for reading the shared starter tree. The pip package places the bundled scaffold (constitution, root control documents, generic starter `agentlaw_docs/law/*`, `agentlaw_memory/*` seed) on disk and creates `.agentlaw/index/meta.db`. Before proceeding, read the init output's `setup status` section or run `agentlaw setup-status --target .`; explicitly tell the user any optional component that was not installed, any MCP/runtime component that is not activated, and the next action. The LLM-driven steps below specialize that scaffold for the target project.
 1. Classify the repository as `empty or near-empty project` or `existing project with meaningful code or runtime artifacts`.
-2. Specialize the starter law layer (the pip package's scaffold copy in step 0 placed the generic starter on disk; this step specializes that text without deleting starter protections). For empty / near-empty projects, fill `docs/law/*` around the intended first-release boundary while keeping unknowns explicit. For existing projects, rewrite `docs/law/*` from current repository facts rather than from legacy planning prose.
+2. Specialize the starter law layer (the pip package's scaffold copy in step 0 placed the generic starter on disk; this step specializes that text without deleting starter protections). For empty / near-empty projects, fill `agentlaw_docs/law/*` around the intended first-release boundary while keeping unknowns explicit. For existing projects, rewrite `agentlaw_docs/law/*` from current repository facts rather than from legacy planning prose.
 3. For existing projects, derive project law from current repository facts rather than legacy planning prose.
 4. Record the shared-harness baseline in `references/shared-agentlaw-baseline.md` when the repository is being bootstrapped from a shared-kit commit or tag that can be identified.
 5. Document scope, contract, oracle, failure handling, execution flow, regression expectations, and memory authority before implementation.
@@ -75,7 +75,7 @@ You are initializing this repository with the Harness kit.
 Your job is to set up or refresh the harness governance before implementation work.
 
 Follow these rules:
-- Treat `AGENTLAW_CONSTITUTION.md` and `docs/law/*` as the governing scaffold you are instantiating, not as disposable prose.
+- Treat `AGENTLAW_CONSTITUTION.md` and `agentlaw_docs/law/*` as the governing scaffold you are instantiating, not as disposable prose.
 - Project-specific specialization is an overlay on the starter structure, not a replacement of starter protections.
 - Keep `AGENTS.md` short. Do not turn it into a rule store.
 - Use the current target repository itself as the authoritative product source.
@@ -89,7 +89,7 @@ First classify the target repository:
 
 If the repository is empty or near-empty:
 - specialize the starter law layer (the pip package's scaffold copy already placed the generic starter on disk; this step specializes that text)
-- fill `docs/law/*` around the intended first-release boundary
+- fill `agentlaw_docs/law/*` around the intended first-release boundary
 - keep unknowns explicit
 - do not invent extra structure unless the starter rules require it
 
@@ -97,10 +97,10 @@ If the repository already has meaningful code or runtime artifacts:
 - specialize the starter law layer (the pip package's scaffold copy already placed the generic starter on disk; this step specializes that text)
 - preserve the starter structure and starter protections while specializing it into project law
 - treat the current code and file structure as the authoritative behavioral baseline
-- rewrite `docs/law/*` from current repository facts rather than from legacy planning prose
+- rewrite `agentlaw_docs/law/*` from current repository facts rather than from legacy planning prose
 - extract concrete project-specific runtime facts into the law layer instead of leaving the result at generic starter wording
 - make known mismatches between code, interface, docs, and expectations explicit
-- record concrete known drift in `docs/plans/tech-debt-tracker.md` when the repository already contains repeated, material, or mechanically detectable mismatches
+- record concrete known drift in `agentlaw_docs/plans/tech-debt-tracker.md` when the repository already contains repeated, material, or mechanically detectable mismatches
 - use `plans/*` only when the recovery or implementation work is genuinely multi-step
 - use `references/*` only for durable non-authoritative material
 
@@ -147,11 +147,11 @@ A correct bootstrap should produce:
 
 - `AGENTLAW_CONSTITUTION.md`
 - `AGENTS.md`
-- `docs/law/*`
+- `agentlaw_docs/law/*`
 - `plans/*` only when complexity justifies them
 - `references/*` only when durable repository-local references are needed
 
-A correct bootstrap may also produce the canonical memory path `memory/*` — the human-reviewable Markdown layer (working-set, known-facts, logs, preferences, lookup rules) seeded from the shared kit. The derived runtime tree `.harness/*` (SQLite index `meta.db`, embedding model artifacts, caches, jobs) is produced by the `agentlaw` pip package's install/init step, not by this LLM-driven tool. Do not author or edit `.harness/*` contents directly from this flow; see the Responsibility Split section below for the boundary between the pip package and the LLM-driven bootstrap.
+A correct bootstrap may also produce the canonical memory path `agentlaw_memory/*` — the human-reviewable Markdown layer (working-set, known-facts, logs, preferences, lookup rules) seeded from the shared kit. The derived runtime tree `.agentlaw/*` (SQLite index `meta.db`, embedding model artifacts, caches, jobs) is produced by the `agentlaw` pip package's install/init step, not by this LLM-driven tool. Do not author or edit `.agentlaw/*` contents directly from this flow; see the Responsibility Split section below for the boundary between the pip package and the LLM-driven bootstrap.
 
 When the shared-kit source baseline is identifiable, a correct bootstrap should also produce:
 - `references/shared-agentlaw-baseline.md`
@@ -191,16 +191,16 @@ Reuse this prompt when:
 | Layer | Owner | What it does |
 | --- | --- | --- |
 | Pip package install | `pipx install agentlaw` | Makes the CLI / MCP entry points available globally |
-| Scaffold copy onto disk (`AGENTLAW_CONSTITUTION.md`, `AGENTLAW_*_TOOL.md`, generic starter `docs/law/*`, `memory/*` seed) | `agentlaw init` | Lays down shared scaffolding without project specialization |
-| Runtime tree creation (`.harness/index/meta.db`, embedding artifacts, caches) | `agentlaw init` | Initializes the binary memory subsystem at the canonical location |
+| Scaffold copy onto disk (`AGENTLAW_CONSTITUTION.md`, `AGENTLAW_*_TOOL.md`, generic starter `agentlaw_docs/law/*`, `agentlaw_memory/*` seed) | `agentlaw init` | Lays down shared scaffolding without project specialization |
+| Runtime tree creation (`.agentlaw/index/meta.db`, embedding artifacts, caches) | `agentlaw init` | Initializes the binary memory subsystem at the canonical location |
 | Optional embedding model download | `agentlaw init` (when the embedding extra is installed and `--skip-model` is omitted) | Pre-warms semantic search; skipping it leaves the system in FTS-only mode until the model arrives |
 | Optional MCP server registration with the agent host | `agentlaw init --setup-agents prompt\|auto\|codex\|claude\|gemini` | Either emits LLM-actionable instructions (`prompt`) or writes the chosen host config directly when paired with `--yes` |
-| Law specialization (`docs/law/*` rewrite from project facts), shared baseline record, scope/contract/oracle/failure/execution/regression/memory authority documentation | LLM via this document | Project-specific specialization on top of the generic starter |
+| Law specialization (`agentlaw_docs/law/*` rewrite from project facts), shared baseline record, scope/contract/oracle/failure/execution/regression/memory authority documentation | LLM via this document | Project-specific specialization on top of the generic starter |
 | Runtime context load (`agentlaw_session_restore`) | LLM (after MCP registration) | Pulls authority recall, write discipline, memory intent reminders into the agent's working context |
 | Local routing/readme alignment | User or LLM-invoked CLI via `agentlaw align --check --target .` and, when safe, `agentlaw align --write --target .` | Reconciles `AGENTS.md` and user-facing command surfaces with the present law/root-control scaffold |
 | Final integrity verification | User via `agentlaw verify` | Confirms the bootstrap produced a coherent state |
 
-The split is hard: the LLM does not create or alter `.harness/index/meta.db` directly under any circumstance, and the pip package does not perform law specialization. Step 1 of the cycle (LLM specialization) must run only after step 0 (pipx install + agentlaw init) has completed cleanly — running step 1 without the scaffold on disk produces files that drift from the shared starter structure.
+The split is hard: the LLM does not create or alter `.agentlaw/index/meta.db` directly under any circumstance, and the pip package does not perform law specialization. Step 1 of the cycle (LLM specialization) must run only after step 0 (pipx install + agentlaw init) has completed cleanly — running step 1 without the scaffold on disk produces files that drift from the shared starter structure.
 
 ## Next Update Trigger
 Update this document when:
