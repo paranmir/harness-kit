@@ -6,8 +6,8 @@ New persona mandates should follow the recommended structure in
 `docs/planning-protocol/review-method.md` § Mandate Authoring Pattern
 (sub-check decomposition + illustrative anchors + structured output
 schema + recommend-not-require framing). Existing prose-only
-mandates in this deck are grandfathered and remain valid; future
-retrofitting is a separate plan candidate. The Domain 5 test-adequacy
+mandates in this deck remain valid; retrofitting them is a separate
+plan candidate. The Domain 5 test-adequacy
 subset and Domain 6 Security output schema already exemplify the
 pattern.
 
@@ -99,6 +99,13 @@ combined gives 12.5pp detection over either alone (arxiv 2510.25297)
 and matches the 4-5 specialized-agent count common in production
 multi-agent review systems (Qodo, Galileo Luna-2, From-Law-to-Gherkin
 4-dim rubric).
+
+These personas are not a global project test-file requirement. They apply
+to code-modification-related review only: plans that touch executable
+runtime behavior, tests, scripts, CLI/MCP code paths, schema/runtime
+state behavior, or that explicitly mark `substance: code`. Documentation-only,
+law-only, memory-only, and reference-only plans remain outside this
+persona family unless they govern a code-touching implementation path.
 
 #### Test Specification Reviewer
 

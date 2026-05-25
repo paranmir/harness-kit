@@ -2,10 +2,10 @@
 
 ## Purpose
 
-Use this document when an initialized project needs its agentlaw routing and
-starter-facing documentation reconciled with local harness structure.
+Use when an initialized project needs agentlaw routing and starter-facing
+documentation reconciled with local harness structure.
 
-This document helps you:
+Use it to:
 - detect when entry documents no longer mention present root controls or law files
 - refresh safe routing references without re-running a full bootstrap
 - distinguish local alignment from upstream kit update and corrective fix work

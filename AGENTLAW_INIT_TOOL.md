@@ -1,9 +1,9 @@
 # Harness Init Tool
 
 ## Purpose
-Use this document when a coding agent is asked to initialize Harness governance in a target repository.
-
-This document is a shared bootstrap entry point for any coding agent. It is not itself a law document. Its role is to start the repository in the correct order and route work into the real governing files.
+Use when a coding agent initializes Harness governance in a target repository.
+This is a shared bootstrap entry point, not law; it starts the repository in
+the correct order and routes work into the governing files.
 
 ## Required Inputs
 Before using this document, read:
@@ -14,7 +14,8 @@ Before using this document, read:
 
 ## Full Bootstrap Cycle
 
-The full bootstrap cycle has five steps. Step 0 is user-driven (terminal command). Steps 1-2 are LLM-driven and form the substance of this document. Step 3 is local surface alignment. Step 4 is verification.
+The bootstrap cycle has five steps: infrastructure setup, law specialization,
+runtime context load, local surface alignment, and verification.
 
 0. **Infrastructure setup (terminal)**: install the CLI from PyPI with `pipx install agentlaw` (once, globally), then `cd <target-project>` and run `agentlaw init [--skip-model] [--setup-agents prompt|auto|codex|claude|gemini|none]`. The public seed repository for users who want to inspect the shared starter tree is `https://github.com/paranmir/agentlaw`; the installable package is the PyPI project named `agentlaw`. The pip package unpacks the bundled scaffold (constitution, root control documents, generic starter `docs/law/*`, `memory/*` seed) into the target repository and creates the runtime tree at `.harness/index/meta.db`. Optional sub-steps: allow the embedding model download by installing `agentlaw[embeddings]` and omitting `--skip-model`, and register the agentlaw-memory MCP server with the agent host depending on `--setup-agents` mode. Immediately after init, the LLM must surface the setup status summary from init output or run `agentlaw setup-status --target .` and report what was not installed, what is not activated, and the listed next actions.
 1. **Law specialization (LLM-driven)**: invoke an LLM with this document. The LLM follows the Direct Procedure below — classify the target, specialize the generic starter law (already on disk from step 0) into project-specific law, record the shared baseline, document scope/contract/oracle/failure/execution/regression/memory authority before implementation. This is the substance of the bootstrap.
@@ -22,10 +23,11 @@ The full bootstrap cycle has five steps. Step 0 is user-driven (terminal command
 3. **Local surface alignment (terminal or LLM-invoked CLI)**: `agentlaw align --check --target .`; if it reports safe routing drift, run `agentlaw align --write --target .` and re-check. Confirms `AGENTS.md` and user-facing README routing mention the present law/root-control/command surface instead of leaving the new scaffold half-discoverable.
 4. **Verification (terminal)**: `agentlaw verify`. Confirms the law layer, baseline record, and memory subsystem are coherent.
 
-The Direct Procedure below is a self-contained version of step 1, beginning with a step 0 reminder. The Responsibility Split section at the bottom of this document supplements the cycle for non-default situations.
+The Direct Procedure is the LLM-driven path with a step 0 setup reminder. The
+Responsibility Split section covers non-default situations.
 
 ## Direct Procedure
-Use this document as a direct procedure even if no prompt block is reused.
+Use this direct procedure even if no prompt block is reused.
 
 0. Run `pipx install agentlaw` (once, globally) and `agentlaw init` in the target project directory before invoking the LLM-driven steps. The current public distribution has two user-facing surfaces: the PyPI package `agentlaw` for installation, and `https://github.com/paranmir/agentlaw` as the public seed repository for reading the shared starter tree. The pip package places the bundled scaffold (constitution, root control documents, generic starter `docs/law/*`, `memory/*` seed) on disk and creates `.harness/index/meta.db`. Before proceeding, read the init output's `setup status` section or run `agentlaw setup-status --target .`; explicitly tell the user any optional component that was not installed, any MCP/runtime component that is not activated, and the next action. The LLM-driven steps below specialize that scaffold for the target project.
 1. Classify the repository as `empty or near-empty project` or `existing project with meaningful code or runtime artifacts`.
@@ -98,7 +100,7 @@ If the repository already has meaningful code or runtime artifacts:
 - rewrite `docs/law/*` from current repository facts rather than from legacy planning prose
 - extract concrete project-specific runtime facts into the law layer instead of leaving the result at generic starter wording
 - make known mismatches between code, interface, docs, and expectations explicit
-- record concrete known drift in `plans/tech-debt-tracker.md` when the repository already contains repeated, material, or mechanically detectable mismatches
+- record concrete known drift in `docs/plans/tech-debt-tracker.md` when the repository already contains repeated, material, or mechanically detectable mismatches
 - use `plans/*` only when the recovery or implementation work is genuinely multi-step
 - use `references/*` only for durable non-authoritative material
 

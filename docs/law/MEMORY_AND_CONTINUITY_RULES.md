@@ -123,6 +123,8 @@ The current default embedding model is `intfloat/multilingual-e5-small` (384-dim
 
 The declared item types are exactly three: `fact`, `preference`, and `rule`. Each type has a defined write path under `memory_save_item`. No other types are declared; calls with any other `type` value return `memory.invalid_params`.
 
+Memory scopes are local to the current target project. Write tools advertise only `repository` and `session`. Durable local facts, rules, and preferences use `scope="repository"`; session-local records use `scope="session"`. `scope="user"` is invalid: preferences are represented by `type="preference"`. Legacy `global` rows may be read for compatibility, but new writes must not create cross-project memory semantics.
+
 `memory/LOOKUP_RULES.md` stores retrieval policy. It tells agents and tools how to choose memory sources; it does not create higher authority than the memory layer.
 
 ## Local Rule Memory Type
@@ -154,7 +156,7 @@ Every rule file under `memory/rules/` must carry the following front matter:
 id: rule/<kebab-case-slug>
 type: rule
 status: active            # follows memory status values (active, stale, superseded, ...)
-scope: repository         # allowed: global | repository | user | session
+scope: repository         # allowed write scopes: repository | session
 summary: <one-line what-this-rule-says>
 applies_when: [always]    # list of opaque string tags; `always` is the default
 source:
@@ -328,7 +330,7 @@ Minimum section format:
 
 - id: preference/concise-final-answers
 - status: active
-- scope: user
+- scope: repository
 - source: conversation
 - last_checked: 2026-04-20
 - applies_to: final_response
@@ -337,7 +339,7 @@ Minimum section format:
 The user prefers concise final answers that emphasize completed work, verification, and next steps.
 ```
 
-Preferences may remain active globally while being `suppressed` for a specific request.
+Preferences may remain active across the repository while being `suppressed` for a specific request.
 
 #### Machine-Writable Grammar
 
@@ -482,7 +484,7 @@ authority_warnings:
   - Memory is lower authority than law and approved artifacts.
 current_goal: string
 active_plans:
-  - path: plans/active/example.md
+  - path: docs/plans/active/example.md
     status: active
 last_decisions:
   - summary: string
@@ -748,13 +750,16 @@ Once a write passes the Log Write Criterion, body discipline applies:
 Target shape: roughly 200–400 characters of body and 5–8 tags per log entry.
 
 ### Consult-Before-Answer Rule
-For question shapes that depend on prior judgment, decision, rationale, or cross-session continuity, the agent **should consult memory before composing the answer**, not as a follow-up after the answer is delivered. This rule is the read-side counterpart of the §Log-Before-Answer Rule on the write side: both sides require that the memory layer is part of the response, not an afterthought.
+For questions that depend on prior judgment, decisions, rationale, or
+cross-session continuity, consult memory before answering. Trigger signals
+include "we", "previously", "earlier", "왜", "근거", "어디까지",
+"outstanding", and multilingual equivalents, unless the user already pins an
+exact known id.
 
-The trigger signal is the same vocabulary that drives the §Read Routing Criterion's Q1 and Q2 paths: "we", "previously", "earlier", "왜", "근거", "어디까지", "outstanding", and the multilingual analogues. A question that includes any of these signals **and** is not already pinned to a known id by the user's exact phrasing should pass through `memory_search` (or `memory_recent_logs` for time-bounded recall) before the agent commits to an answer. A question that maps to Q3 of the Read Routing Criterion (current source / law fact, signaled by "지금", "현재", "what does X do") does **not** trigger this rule — `Grep` / `Read` is the right read surface there, and consulting memory first would create noise.
-
-The discriminator from §Read Routing Criterion: that rule chooses the **right read surface** for any question; this rule pins the **timing** at which a memory-routed question must consult memory (before answering, not after). The two rules compose — Read Routing Criterion picks the surface, Consult-Before-Answer Rule pins when to use it.
-
-This rule does not require consulting memory for every turn or for routine acknowledgements. It applies when the question's shape places the answer's correctness in the memory layer's path (prior decisions, prior judgments, cross-session continuity). Silence remains a valid answer when the memory query returns nothing relevant — failing to find prior judgment is itself a finding the agent can surface.
+Use `memory_search` or `memory_recent_logs` for memory-routed questions. Use
+`Grep` / `Read` first for current source or law facts signaled by "지금",
+"현재", or "what does X do". Routine acknowledgements do not require memory
+lookup. A relevant empty memory result is reportable evidence.
 
 ### Ambiguity Dissolver
 The earlier "when in doubt, log" shortcut is superseded by criterion-first selection. The agent should apply the Log Write Criterion. If the content does not pass, the agent should write nothing — silence is a valid answer. If the content passes the log criterion but not the item applicability gate, log only. If both pass, write an item.
@@ -861,13 +866,9 @@ Both families enforce four invariants:
   operation, mode, candidate ids, cascade chain, the
   user_authorization_note, and (for hard mode) the
   irreversibility_ack text. The trail allows post-hoc inspection
-  even when the pruned rows themselves are gone. The `prune` kind
-  value was added to the `memory_logs.kind` CHECK enum in v009
-  (`src/agentlaw/schema/v009_memory_logs_prune_kind.sql`); prior to
-  v009 the same audit row was written as `kind='correction'` with an
-  inline note. v009 also backfills historical rows that match the
-  prune-workaround predicate (body contains `'Pruned ids:'` OR tag
-  `'prune'`) to the corrected `kind='prune'`.
+  even when the pruned rows themselves are gone. Prune audit rows use
+  `kind='prune'`; migration code may normalize older prune-shaped audit
+  rows to that kind when repairing or upgrading runtime state.
 
 ### Threshold Rationale
 
@@ -890,7 +891,7 @@ Both thresholds remain caller-overridable on the `_prune_proposal`
 tools; the constants name the default behavior and the law text
 records the rationale.
 
-### Cascade Authorization (D3)
+### Cascade Authorization
 
 The cross-reference cascade-only protection above is the runtime
 mechanism that closes the soft-delete-with-references concern. The

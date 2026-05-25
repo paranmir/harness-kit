@@ -11,6 +11,27 @@ starter content that gets installed into projects.
 
 ## Start Here
 
+### First install bootstrap
+
+When an LLM is asked to install agentlaw for this project, use the PyPI
+package as the install source and then complete the project bootstrap:
+
+1. Install or update the CLI with `pipx install agentlaw` or
+   `pipx upgrade agentlaw`. Use `pipx install "agentlaw[embeddings]"` only
+   when local semantic embeddings are wanted.
+2. Run `agentlaw init . --skip-model --setup-agents prompt` in the chosen
+   project root. For an already-initialized project, use
+   `agentlaw init . --merge --skip-model`.
+3. Follow the emitted MCP registration instructions, then restart the agent
+   host so the `agentlaw-memory` server is visible.
+4. In the next session, call `agentlaw_session_restore` through MCP or run
+   `agentlaw session-restore --target . --json` as the CLI fallback.
+5. Run `agentlaw setup-status --target . --client auto` and report any
+   `not installed`, `not activated`, or `unknown` next action before
+   describing the harness as ready.
+6. If MCP is still missing after restart, run
+   `agentlaw mcp-recover --target . --client auto --json`.
+
 ### Entry path
 
 1. Read `AGENTS.md` for the repository routing map.
@@ -72,14 +93,80 @@ ready. The status report names optional pieces that were not installed,
 host/MCP pieces that are not activated yet, and the concrete next action for
 each gap.
 
+When `setup-status` prints `LLM disclosure required`, the agent must tell the
+user the harness is not fully active before doing substantive work. Until MCP
+tools, Agent Skills, hooks, and runtime restore are confirmed, the agent follows
+`AGENTS.md`, the root control documents, and `docs/law/*` manually; non-trivial
+plans stay non-executable unless the required plan-review path has run.
+
+When an LLM installs agentlaw for a user, it should not stop at "installed."
+It should explain the installed command path, whether optional embeddings were
+installed or skipped, whether this project was initialized, what `setup-status`
+reports about MCP, skills, hooks, and session restore, how the user can restore
+the next session, and which commands are most likely to matter:
+`agentlaw setup-status --target . --client auto` for readiness,
+`agentlaw session-restore --target . --json` when MCP is not visible,
+`agentlaw mcp-recover --target . --client auto --json` for integration
+diagnosis, `agentlaw verify .` for scaffold integrity, and
+`agentlaw align --check --target .` before claiming routing or README surfaces
+are current.
+
+## What The Main Pieces Do
+
+`agentlaw init` gives this project its governance scaffold. It writes the
+constitution, law documents, contracts, planning protocol, memory files, skills,
+and optional host-registration instructions into the project. Installing the
+CLI alone is not enough; this project becomes governed only after init or merge
+has placed the scaffold here.
+
+`setup-status` is the readiness check. It tells the agent whether the scaffold
+exists, whether the local runtime database is usable, whether optional
+embeddings are installed, whether host MCP registration appears active, whether
+skills and reminder hooks are present, and whether session restore can work. It
+exists to prevent the common false-readiness failure where an agent assumes the
+harness is active just because the package is installed.
+
+Session restore and session save are the continuity path. Restore loads the
+working set, current rules, active plans, recent decisions, and memory lookup
+guidance before the agent answers. Save records the current goal, decisions,
+warnings, and next actions before handoff or context loss. They exist so the
+agent does not rely on chat memory or stale local impressions.
+
+The memory layer has two parts: Markdown files are the source of truth, and the
+runtime index makes those files searchable through MCP. If the index drifts or
+is missing, repair commands rebuild derived state from the Markdown files. This
+keeps project memory inspectable, versionable, and recoverable.
+
+Hooks and Agent Skills are reminder channels. Hooks fire when the host supports
+prompt-time reminders, and skills route common work such as fix, update,
+planning, and retrospective closeout to the right documents. They do not replace
+the law layer; they make it harder for an agent to forget to read it.
+
+`agentlaw verify` is the drift detector. It checks that the governance scaffold
+and runtime shape are intact before the project is treated as harness-ready.
+
+## Ideas And Influences
+
+agentlaw is not a fork or reimplementation of these projects. The links below
+name ideas that shaped the product:
+
+- [OpenAI's in-house data agent](https://openai.com/index/inside-our-in-house-data-agent/) influenced the layered context model: combine code, institutional context, memory, runtime checks, clarification, and evals so an always-on agent can improve without silently drifting.
+- [OpenAI Agent evals](https://developers.openai.com/api/docs/guides/agent-evals) influenced the oracle/check design: treat agent behavior as something that needs traces, graders, datasets, and repeatable regression checks, not only prose confidence.
+- [Ouroboros: What is an agent harness?](https://ouroboros.bot/what-is-an-agent-harness/) influenced the word "harness" here: the goal is a stable operating environment for long-lived agents, with memory, tools, logs, context, and recovery paths the agent can reason about from inside the work. The same line of thinking also shaped agentlaw's two-step review/delivery flow: first validate the plan, then verify the delivered work before archive.
+- [Hermes Agent](https://hermes-agent.nousresearch.com/docs/) and its [learning loop](https://hermes-agent.ai/features/learning-loop) influenced the post-task retrospective route: after meaningful work, the agent should decide whether the lesson belongs in a skill, law/contract, test/verifier, memory/reference, tracker entry, or chat-only note. agentlaw keeps this decision explicit and reviewable instead of automatically creating skills from every task.
+- [Wang et al., "Label Words are Anchors"](https://arxiv.org/abs/2305.14160) influenced the review-method wording around rubric anchors: examples and labels help calibration, but anchors must stay illustrative rather than narrowing the reviewer to only the listed cases.
+- [JuliusBrussee/caveman](https://github.com/juliusbrussee/caveman) influenced the concise-accuracy rule: keep the useful identifiers, paths, commands, and failure conditions, while cutting filler and self-narrating history from current-state docs.
+- [Agent Skills](https://agentskills.io/) influenced the reminder-channel design: keep small task descriptions discoverable up front, then load full procedural instructions only when the task actually calls for them.
+- [Model Context Protocol](https://modelcontextprotocol.io/specification/2024-11-05/index) influenced the runtime boundary: expose tools, resources, prompts, logging, and explicit trust/consent expectations through a structured protocol rather than hidden chat memory.
+
 ## Harness Workflow
 
 Use agentlaw as an operating loop, not only as a command list:
 
 1. Restore context at the start of a session with `agentlaw_session_restore` or `agentlaw session-restore --target . --json`.
 2. State the task and let the agent classify whether it is trivial, plan-required, fix/init/update, or release/deploy-adjacent.
-3. For non-trivial work, require a reviewed plan before implementation. The plan review selects the right persona review passes, records user gates, and names acceptance oracles.
-4. Implement from the reviewed plan, then run the listed oracle checks, `agentlaw verify .`, and any focused tests before archiving the plan.
+3. For non-trivial work, require a reviewed plan before execution. The plan review selects the right persona review passes, records user gates, and names acceptance oracles.
+4. Execute the reviewed plan, then run the listed oracle checks, `agentlaw verify .`, and any focused tests before archiving the plan.
 5. Save session state with `agentlaw_session_save` at milestones and before context compaction.
 
 ### When to use init, update, fix, and align
@@ -89,9 +176,31 @@ Use agentlaw as an operating loop, not only as a command list:
 - Use `AGENTLAW_FIX_TOOL.md` when the harness is drifting, a tracker-policy violation happened, the agent bypassed a rule, MCP/memory state looks inconsistent, or the same governance failure repeats.
 - Use `AGENTLAW_ALIGN_TOOL.md` and `agentlaw align --check --target .` when local laws, root controls, directories, or command surfaces changed and routing/README surfaces may be stale. Use `agentlaw align --write --target .` only for safe routing updates reported as autofixable.
 
+These four root tools exist because different work needs different safeguards.
+Init creates a first scaffold. Update merges a newer shared kit into an
+already-localized project without erasing local law. Fix closes observed
+governance gaps by choosing the owning layer and the least sufficient
+correction. Align repairs routing surfaces after the rules or command surface
+move, so agents and humans keep entering through the same path.
+
 ### Plan, persona, and oracle review
 
-The normal non-trivial path is plan first, implementation second, oracle last. A plan states the task contract, affected surfaces, user gates, risks, rollback paths, and acceptance criteria. The persona review checks that plan from specific lenses such as trigger coverage, acceptance criteria, affected surfaces, external contracts, user gates, and form-vs-substance. The oracle phase checks whether the completed work satisfies the plan's criteria before the plan is archived.
+The normal non-trivial path is plan first, execution second, oracle last. A plan states the task contract, affected surfaces, user gates, risks, rollback paths, and acceptance criteria. The persona review checks that plan from specific lenses such as trigger coverage, acceptance criteria, affected surfaces, external contracts, user gates, and form-vs-substance. The oracle phase checks whether the completed work satisfies the plan's criteria before the plan is archived.
+
+The plan-review gate is intentionally strict. The interview step must be based
+on a real user touchpoint, and persona review starts only when the agent can
+defend very high clarity about the goal, constraints, success conditions, and
+context. Self-challenge is allowed to change the plan before it becomes final;
+it is not just a note-taking step. After implementation, oracle checks can run
+normally or be started and checked later for long-running work, so the agent
+does not need to repeat expensive checks in one blocking call. The archive step
+writes closure evidence into the completed plan and refuses to move the plan if
+checks are still pending, failing, or recorded in an unauditable shape.
+
+For code changes, the expected evidence loop is focused tests while editing,
+then one full project pytest run at final readiness before commit, release, or
+any public-ready claim. Evidence-only closeout work should use the harness
+verifier and the relevant focused checks instead of rerunning the full suite.
 
 ### If the harness looks broken
 

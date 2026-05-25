@@ -180,21 +180,25 @@ or re-questioning. Agents must not ask follow-up questions for every ordinary
 unknown; they must ask when the missing fact materially changes safety,
 contract, scope, cost, irreversible action, or the user's intended outcome.
 
-If the agent discovers during implementation that:
+If the agent discovers during execution that:
 
 - review was skipped or compressed,
 - a plan was falsely marked reviewed before persona passes ran,
+- the planned file set is not represented by parseable backticked paths
+  or globs in `Affected surfaces`,
 - a trivial classification was wrong (a non-trivial trigger matches but was
   not cited), or
 - the scope has expanded mid-execution to match a non-trivial trigger that
   was not present at the original classification,
 
-implementation must stop. The agent must reclassify under the current plan
-content, update the plan's preflight fields and Domain Coverage to match the
-reclassification, re-run persona review per the new classification (full
-review for non-trivial; Trigger Coverage Verifier only for trivial), record
-the correction in the active plan when governance-relevant, and resume
-execution only from the revised plan.
+execution must stop. The agent must reclassify under the current plan
+content, update the plan's preflight fields, affected-surface list, and
+Domain Coverage to match the reclassification or changed surface set, re-run
+persona review per the new classification (full review for non-trivial;
+Trigger Coverage Verifier only for trivial), record the correction in the
+active plan when governance-relevant, and resume execution only from the
+revised plan. Verification failure is not the normal discovery mechanism for
+missing plan coverage; parseable coverage belongs before execution.
 
 ## Persona Review Loop Tool Sequence
 
@@ -207,11 +211,12 @@ beyond the sequence the tools enforce.
 Required tool sequence:
 
 1. `agentlaw_plan_review_session_start` opens a session for the plan path
-   and returns the first interview question and the ambiguity threshold.
+   and returns the first interview question and the clarity threshold.
 2. `agentlaw_plan_review_interview_answer_submit` records each interview
    turn (user answer, host clarity scores, opposite scenario).
 3. `agentlaw_plan_review_interview_self_verify_submit` advances to persona
-   review when the host's own counter-scoring confirms ambiguity ≤ 0.2.
+   review when the host's own counter-scoring confirms weighted clarity
+   and every scored axis are at least 0.995.
 4. `agentlaw_plan_review_finding_submit` records each persona's finding,
    carrying a verbatim mandate quote from the persona deck and exact-byte
    plan-line citations.
@@ -221,8 +226,9 @@ Required tool sequence:
 6. `agentlaw_plan_review_session_finalize` writes the `Plan reviewed: yes`
    block to the plan body and sets phase `finalized` once convergence and
    Self-Challenge requirements are satisfied.
-7. `agentlaw_plan_archive` moves the plan to `docs/plans/completed/` when
-   the work it governs is complete.
+7. `agentlaw_plan_archive` writes required completed-plan evidence and
+   moves the plan to `docs/plans/completed/` when the work it governs is
+   complete.
 
 Completed plans must carry enough closure evidence to be audited without
 reconstructing the whole session from chat history. For new plans under the
@@ -233,6 +239,14 @@ satisfied or explicitly user-confirmed. Work that has only an unreviewed
 draft plan may be local work-in-progress, but it must not be represented as
 completed, archived, pushed, released, or otherwise public-ready.
 
+Implementation verification uses the smallest sufficient loop until final
+readiness: run focused checks for the changed behavior while editing, then
+run the full project pytest suite once before commit, push, release, or
+other public-ready representation. Evidence-only plan/archive closeout steps
+use the harness verifier and the relevant focused document/tool checks; they
+do not require rerunning full pytest unless source behavior changed after the
+final suite run.
+
 Plans authored after the Review Coverage Matrix rule lands, and older plans
 that opt in with `Review Coverage Matrix required: yes`, must close a
 `## Review Coverage Matrix` before `Plan reviewed: yes` is written. The matrix
@@ -241,20 +255,29 @@ is a review-completeness contract: every review axis must be classified as
 `out_of_scope`. Unknowns do not become assumptions by default. A
 `needs_user_answer` row blocks finalization until the user answers and the row
 is updated. `covered` and `accepted_risk` rows require evidence and a `crit-*`
-link; `not_applicable` and `out_of_scope` rows require rationale. This rule is
-prospective for plans authored after 2026-05-18 unless a future plan revises
-the cutoff through the bootstrap transitional protocol.
+link; `not_applicable` and `out_of_scope` rows require rationale. This rule
+applies prospectively unless a future reviewed plan changes the application
+boundary through the bootstrap transitional protocol.
 
 The verifier check `_test_plan_review_session_consistency` cross-references
 each active plan's `Plan reviewed` field against the persistent session
 state. For sessions carrying `plan_contract_hash`, reviewed contract
 sections must match that stored contract hash; mutable status/evidence
-sections may change as execution evidence accumulates. Legacy sessions
-without `plan_contract_hash` retain the older whole-body content-hash
+sections may change as execution evidence accumulates. Sessions without
+`plan_contract_hash` retain the whole-body content-hash compatibility
 check. An active plan that claims `Plan reviewed: yes` without a finalized
 session, or with changed reviewed contract sections, fails verification.
 Plans that predate this mechanism and have not yet been re-reviewed must
 live under `docs/plans/draft/` until they pass through the loop.
+
+The plan path stored on the finalized `plan_review_session` row is part of
+the reviewed-plan identity. Do not rename, move, or duplicate a reviewed
+active plan with ordinary filesystem operations. A path change requires the
+plan to return to the review lifecycle: restore the original path, or
+invalidate/archive the old session and re-review the plan at the new path
+through the MCP plan-review tools. The verifier treats a reviewed plan at a
+new path as unreviewed and treats the old non-archived session row as an
+orphan until the lifecycle is repaired.
 
 When a runtime is unavailable (offline-only environments, partial
 installs, or while bootstrapping the loop itself), the agent must record
@@ -390,7 +413,7 @@ current-source dependence, high-stakes consequences, or durable process
 impact, it escalates into the planning workflow.
 
 If a trivial-classified task gains complexity mid-execution that would have
-matched a non-trivial trigger, implementation must stop and the task is
+matched a non-trivial trigger, execution must stop and the task is
 reclassified per § Required Planning Workflow.
 
 ## Bootstrap Transitional Exemption
@@ -407,8 +430,7 @@ operational details, the plan may invoke transitional exemption:
   that the plan introduces.
 - After the introducing plan lands, the new rules apply prospectively. The
   introducing plan and any other plans authored before the new rules land
-  are grandfathered: they are not retroactively re-reviewed under the new
-  rules.
+  are not retroactively re-reviewed under the new rules.
 - The Bootstrap & Transition Reviewer persona verifies that the exemption
   declaration is explicit, well-formed, and limited to the rule revisions
   the plan actually introduces.
@@ -440,12 +462,13 @@ before archiving. The MCP tool sequence is
 `agentlaw_plan_review_oracle_check` →
 `agentlaw_plan_review_oracle_user_confirm` (for criteria the plan body
 marks `user_confirms`) → `agentlaw_plan_archive`. The archive gate is
-all-or-nothing per Q6=a — every acceptance criterion in
+all-or-nothing: every acceptance criterion in
 `oracle_results` must resolve to `pass` or `user_confirmed` before
-the move into `docs/plans/completed/` is permitted. Sessions never
-advanced to `oracle_evaluation` (legacy plans, or simple plans that
-deliberately skip the second diamond) bypass this gate for backward
-compatibility.
+the move into `docs/plans/completed/` is permitted. The archive tool also
+writes `Completed Closure Evidence` and `Plan Oracle Evidence` before the
+move and refuses archive when the resulting completed body fails closure
+shape checks. Sessions never advanced to `oracle_evaluation` bypass this
+gate for backward compatibility.
 
 Acceptance criteria in plans that activate the second diamond must
 adopt the `(criterion id, oracle)` paired shape — each `crit-*`
@@ -464,8 +487,8 @@ substance binds pytest + mutmut + hypothesis, with the configured
 thresholds). The MCP tool `agentlaw_substance_deck_list` lists the
 loaded decks so the host can verify which substances are available.
 A new substance deck file lands via a follow-up plan; modifying an
-existing deck's commands or thresholds requires Q7=c authorization
-because the change reaches every plan that has bound to it.
+existing deck's commands or thresholds requires explicit plan-amendment
+authorization because the change reaches every plan that has bound to it.
 
 ## Entry-Gate Clarification (Interview Cross-Check)
 
@@ -479,12 +502,11 @@ contain `user_answer` verbatim, and requires the entry's
 `recorded_at` to be at least 5 seconds AFTER the plan's authoring
 timestamp — the plan body's `- Date authored:` line, with git
 first-commit fallback when absent or unparseable (anti-self-
-fabrication friction). When omitted, the tool
-records the `user_answer_source: llm-self-submitted` marker and the
-verifier's `_test_plan_review_session_consistency` sub-check 5
-emits a warn-only signal naming the session_id and plan_path. The
-warning preserves backward compatibility for plans authored before
-this enhancement landed.
+fabrication friction). When omitted, the tool records the
+`user_answer_source: llm-self-submitted` marker. The plan-review session
+consistency check rejects active reviewed plans with that marker and reports
+the `session_id` and `plan_path`. Archived compatibility rows may remain
+warning-compatible as migration records.
 
 ## Bootstrap Exemption Recording
 
@@ -494,7 +516,7 @@ plan is reviewed under the rule version current at authoring time
 (pre-this-plan), and the new mechanisms apply prospectively to plans
 authored after this plan archives. Every invocation must include a
 `## Bootstrap Transitional Exemption` section that names (a) the
-specific mechanisms exempted, (b) the prospective-application cutoff,
+specific mechanisms exempted, (b) the prospective application boundary,
 and (c) the revision-protocol re-invocation pattern (how a future
 plan that revises the same mechanism re-invokes the exemption
 without infinite regress). Verifier checks plan-body amendment
@@ -528,5 +550,6 @@ agent-authored hypothesis not yet checked against code. The
 Code-Fact Claim Verifier persona (universal core deck, Domain 17 —
 Substance Coherence) enforces this at plan-review time; missing
 traces are must-change findings. This rule is prospective: plans
-authored before the rule lands are grandfathered, and the rule
-applies to plans authored after the introducing plan archives.
+authored before the rule lands are not retroactively required to carry
+traces, and the rule applies to plans authored after the introducing plan
+archives.

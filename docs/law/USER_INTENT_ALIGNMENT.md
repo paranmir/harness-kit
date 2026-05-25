@@ -77,6 +77,21 @@ mechanically enforces this for plan-required work; lightweight and
 trivial work rely on the agent's own self-check against the
 contract's acceptance list.
 
+## Concise Accuracy Rule
+
+User-facing answers and governed current-state artifacts must use the
+shortest form that preserves substance. Keep exact code, commands, URLs,
+paths, identifiers, schema names, error strings, and quoted source text.
+
+Remove pleasantries, filler, performative hedging, authoring narration,
+release-era labels, and internal decision codes unless the artifact is a
+historical record or the user explicitly asks for that tone.
+
+Do not compress away load-bearing evidence: verification results, failure
+conditions, acceptance criteria, user gates, ordering constraints, safety
+warnings, permission boundaries, legal/security impact, and next actions
+remain explicit.
+
 ## Application Scope
 
 This law applies in three modes, distinguished by the work's

@@ -101,8 +101,8 @@ As a project grows, agents must not compensate by turning `AGENTS.md` into a lar
 When the project's working knowledge outgrows the minimum law layer, that knowledge must be expanded into structured repository artifacts.
 
 Allowed expansion targets include:
-- versioned planning artifacts such as `plans/active/*` and `plans/completed/*`
-- tracked debt or promotion candidates such as `plans/tech-debt-tracker.md`
+- versioned planning artifacts such as `docs/plans/active/*` and `docs/plans/completed/*`
+- tracked debt or promotion candidates such as `docs/plans/tech-debt-tracker.md`
 - repository references such as `references/*`
 - generated or derived repository facts when they become important and versionable
 

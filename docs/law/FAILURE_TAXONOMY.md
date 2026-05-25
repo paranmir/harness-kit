@@ -34,7 +34,7 @@ Work crosses the project boundary incorrectly.
 Examples:
 - a shared/public artifact becomes project-specific without explicit intent
 - `docs/references/*` is treated as the active output target
-- implementation starts before scope is clarified
+- execution starts before scope is clarified
 
 Expected recovery:
 - restate the project boundary
@@ -61,7 +61,7 @@ The project lacks enough judgment criteria to decide correctness.
 
 Examples:
 - acceptance conditions are not documented
-- implementation or packaging starts without a complete documentation gate
+- execution or packaging starts without a complete documentation gate
 - regression expectations are missing or ambiguous
 
 Expected recovery:

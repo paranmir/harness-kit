@@ -12,7 +12,7 @@ This directory stores repository-local reference material that agents may need r
 ## What Does Not Belong Here
 - temporary chat context
 - project rules that belong in `docs/law/*`
-- active plans that belong in `plans/active/*`
+- active plans that belong in `docs/plans/active/*`
 
 ## Usage Rule
 If an important reference is repeatedly needed and only exists outside the repository, create or store a repository-local reference here rather than relying on external recall.

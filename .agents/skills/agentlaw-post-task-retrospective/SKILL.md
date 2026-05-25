@@ -65,6 +65,8 @@ creation, deletion, archive, quarantine, or file rewrites.
 
 ## Completion Note
 
-In the final response, report only the durable route taken and the verification
-performed. If no durable route was warranted, say that the retrospective found
-no promotion target.
+In the final response, report the durable route taken, the skill create/update
+decision, and the verification performed. The skill decision must be explicit:
+state whether a skill was created, updated, or deliberately left unchanged, and
+give the short reason. If no durable route was warranted, say that the
+retrospective found no promotion target and that no skill change was made.

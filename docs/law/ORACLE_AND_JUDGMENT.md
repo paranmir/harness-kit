@@ -5,7 +5,7 @@ This document defines how work in the current project is judged as acceptable, i
 
 ## Known
 - Early judgment is based on harness readiness before product correctness.
-- Implementation is blocked until the law layer contains enough criteria to govern the work.
+- Execution is blocked until the law layer contains enough criteria to govern the work.
 
 ## Unknown
 - product-specific acceptance thresholds
@@ -22,14 +22,14 @@ This document defines how work in the current project is judged as acceptable, i
 - What regression boundaries matter first?
 
 ## Blocked Until Clarified
-- implementation that claims correctness without an explicit oracle
+- execution that claims correctness without an explicit oracle
 - pass or fail decisions that rely on undocumented judgment rules
 
 ## Structural Oracle
 The structural oracle checks whether the governed document system is sound:
 - the minimum law-layer files exist
 - `Known`, `Unknown`, and `Assumptions` are separated
-- implementation blockers are explicit
+- execution blockers are explicit
 - open questions are visible
 
 The structural oracle remains active throughout the project and does not disappear when product behavior becomes clearer.
@@ -84,6 +84,14 @@ If a test intentionally covers multiple contracts, its assertions must make the 
 
 When the shipped surface grows large enough that coverage is hard to see from test names alone, add or update a structured coverage matrix under an approved repository artifact path such as `docs/references/*` or `docs/plans/*`. The matrix is supporting evidence, not a replacement for executable tests.
 
+Code-substance test rigor is scoped to code-modification-related review.
+The stricter test-mapping, risk-weighting, mutation-applicability, and
+PBT/invariant questions belong to plans that touch executable behavior,
+tests, scripts, CLI/MCP runtime paths, schema/runtime state behavior, or
+that explicitly declare `substance: code`. They must not be converted
+into a blanket requirement that every project or every documentation-only
+plan create test files.
+
 ### Code Authorship Oracle
 Code work is governed by `docs/law/CODE_AUTHORSHIP_AND_STEWARDSHIP_RULES.md`.
 
@@ -103,7 +111,7 @@ citations, previews, calculations, or other task-appropriate evidence.
 Test comments should explain the protected regression or contract only when that oracle is not obvious from the test name and assertions.
 
 ### Affected Surface Preflight
-Before non-trivial implementation, refactoring, public-contract documentation, package, runtime, configuration, or cross-component work begins, the agent must identify the affected surfaces.
+Before non-trivial execution begins, including code implementation, refactoring, public-contract documentation, package, runtime, configuration, or cross-component work, the agent must identify the affected surfaces.
 
 The preflight gate applies when work changes behavior, public contract, verification expectations, runtime state, package or install behavior, user or agent configuration, persistence, schema, cross-platform behavior, or cross-component structure.
 
@@ -199,34 +207,34 @@ A change is acceptable when:
 - it keeps both structural and behavioral judgment explicit enough for another agent to follow
 
 ## Documentation Gate Judgment
-Implementation is documentation-incomplete until the law layer defines:
+Execution is documentation-incomplete until the law layer defines:
 - scope boundaries
 - contract expectations
 - judgment criteria
 - failure classification
 - execution flow and regression expectations
 
-## Implementation Readiness Rule
-Implementation may begin when the project has:
+## Execution Readiness Rule
+Execution may begin when the project has:
 - a usable structural oracle that another agent could follow with reasonable consistency
 - a usable behavioral oracle for the current first-release boundary
 
 Open questions may remain if they do not prevent correct judgment of the current first-release boundary.
 
-Implementation must remain blocked if correctness still depends on undocumented assumptions or if either oracle is too weak to judge the first-release boundary safely.
+Execution must remain blocked if correctness still depends on undocumented assumptions or if either oracle is too weak to judge the first-release boundary safely.
 
 ## Change Judgment
 When a request arrives, judge it in this order:
 1. Does it change governance meaning?
 2. Does it require law-document updates?
-3. Is implementation still blocked?
+3. Is execution still blocked?
 
 ## Consistency Judgment
 If documents conflict, restore consistency at the layer that owns the meaning before proceeding.
 
 ## Regression Expectations
 Regression includes:
-- implementation starting before the documentation gate is satisfied
+- execution starting before the documentation gate is satisfied
 - assumptions being treated as facts
 - open questions disappearing without resolution
 - lower-order documents overriding higher-order documents
@@ -237,7 +245,7 @@ Regression includes:
 Initial governance completion requires:
 - the minimum law-layer set exists
 - unresolved items are visible
-- implementation blockers are accurately stated
+- execution blockers are accurately stated
 
 Once the first-release boundary is materially known, completion evidence must also include a product-facing oracle that another agent could apply without inferring missing behavior.
 
@@ -289,4 +297,4 @@ When one or more of these conditions appears, the correct response is to expand 
 Update this document when:
 - product-specific judgment becomes clearer
 - regression expectations change
-- implementation readiness changes
+- execution readiness changes

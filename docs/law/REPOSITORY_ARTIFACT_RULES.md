@@ -262,7 +262,7 @@ Examples:
 - `task-filtering-followup.md`
 
 ### Active Plan Preflight Fields
-For active plans that govern non-trivial or high-risk implementation work, the plan must include these fields or explicitly mark them as not applicable:
+For active plans that govern non-trivial or high-risk execution work, the plan must include these fields or explicitly mark them as not applicable:
 
 - scope
 - affected surfaces
@@ -279,7 +279,7 @@ For active plans that govern non-trivial or high-risk implementation work, the p
 
 Plans for trivial cleanup may stay smaller, but they must not hide public-contract, runtime, package, configuration, schema, or cross-component impact.
 
-The `Affected surfaces` bullet list must contain repo-relative paths or globs as inline-code (backticks). Free-form prose may surround each path, but each bullet must include at least one path or glob in backticks. The verifier extracts the backticked tokens and matches them against changed-file paths via Python's `pathlib.PurePath.match`, with directory-prefix shortcut: a token ending in `/` matches any descendant. This is the parseable contract that a mechanical plan-coverage check relies on; bullets that name no path in backticks contribute nothing to coverage.
+The `Affected surfaces` bullet list must contain repo-relative paths or globs as inline-code (backticks). Free-form prose may surround each path, but each bullet must include at least one path or glob in backticks. The verifier extracts the backticked tokens and matches them against changed-file paths via Python's `pathlib.PurePath.match`, with directory-prefix shortcut: a token ending in `/` matches any descendant. This is the parseable contract that a mechanical plan-coverage check relies on; bullets that name no path in backticks contribute nothing to coverage. Parseable affected-surface coverage is a pre-execution condition: if the intended file set is not represented by backticked paths or globs, update and re-review the plan before continuing execution.
 
 Active plans must also carry compact review evidence fields:
 
@@ -498,13 +498,22 @@ When the repository must later compare against an earlier shared harness version
 - `docs/references/shared-agentlaw-baseline.md`
 
 ## Self-Narration Prohibition
-Governed artifact bodies — law documents under `docs/law/*`, root control documents, contract documents under `docs/contracts/*`, and reference documents under `docs/references/*` — must describe the **current state** only. They must not narrate their own revision history inside the body. Phrases like "previously declared but never implemented", "renamed from X on YYYY-MM-DD", "added on YYYY-MM-DD", "the earlier formulation was Y", "as of YYYY-MM-DD this section was strengthened", or any equivalent in-body changelog narration are prohibited.
+Governed current-state artifact bodies — law documents under `docs/law/*`,
+root control documents, contract documents under `docs/contracts/*`, and
+active reference documents under `docs/references/*` — must state current
+contracts only. Keep invariants, failure conditions, execution order,
+verification commands, and still-binding user decisions.
 
-The reason: artifact bodies are read by every new agent on every session restore. Self-narration inflates the read budget on signal that is operationally irrelevant for the current state, biases the agent toward the historical formulation, and pollutes search retrieval with timestamps that should belong to a different layer.
+Do not include authoring history, release-era labels, dated rationale,
+promotion cutoffs, "this was fixed" narration, internal decision codes, or
+in-body changelog prose such as "previously declared but never implemented",
+"renamed from X on YYYY-MM-DD", "added on YYYY-MM-DD", or equivalent wording.
 
-History lives in the layers built for it. Plan documents under `docs/plans/active/*` and `docs/plans/completed/*` are themselves narratives of work and may carry their own Revision History sections. Tracker entries in `docs/plans/tech-debt-tracker.md` carry per-entry status changes. Memory log entries under `memory/logs/*` record dated decisions. Git commit history captures every artifact diff. The reader who genuinely needs "why was this rule changed?" follows pointers into those layers; they do not read the rule's own body for the answer.
-
-This rule does not prohibit example anti-patterns shown inside fenced quotes (a body may demonstrate "do not write entries shaped like this" with a quoted example), reference-style cross-pointers ("see `docs/plans/completed/...` for the change history"), or stable terminology that incidentally contains a year (a feature name like `2024-rollover-spec` is naming, not narration). The rule prohibits in-body sentences that describe the artifact's own revision arc as part of the artifact's content.
+Historical record artifacts may carry history: active/completed plans, tracker
+entries, memory logs, changelogs, release notes, and deprecated/completed
+reference files. Stable names that contain a year and fenced anti-pattern
+examples are also allowed when they do not narrate the artifact's own revision
+arc.
 
 The same prohibition extends to source-code comments and docstrings under `src/*` and to test comments under `tests/*` — see `docs/law/CODE_AUTHORSHIP_AND_STEWARDSHIP_RULES.md` §"Reasoning-Critical Inline Comments" (the self-narration bullet) for the parallel ruling on the code side.
 

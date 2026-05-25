@@ -5,7 +5,7 @@ This document defines the minimum working contract for requests, inputs, outputs
 
 ## Known
 - The current project must follow a document-first workflow.
-- New requests must be checked for document impact before implementation begins.
+- New requests must be checked for document impact before execution begins.
 - Installable distribution, if used, is a bootstrap convenience and not a semantic judge.
 - Continuity and memory are official default Harness capability classes; indexed memory runtime is derived infrastructure below canonical memory files.
 - Session continuity uses Harness Memory as the canonical path.
@@ -22,12 +22,12 @@ This document defines the minimum working contract for requests, inputs, outputs
 - More project-specific inputs will be added later.
 
 ## Open Questions
-- What inputs are mandatory before implementation can begin?
+- What inputs are mandatory before execution can begin?
 - What outputs count as the first meaningful project deliverables?
 - Which interfaces or external dependencies must be governed?
 
 ## Blocked Until Clarified
-- implementation that depends on undefined inputs or outputs
+- execution that depends on undefined inputs or outputs
 - automation that assumes contracts not yet written down
 
 ## Required Inputs
@@ -62,7 +62,7 @@ Before making meaningful changes, classify the request as one or more of:
 - `shared-artifact-affecting`: changes shared artifact sets or how derived outputs relate to them
 - `governance-affecting`: changes constitutional or law-layer meaning
 
-This classification must be made before implementation or restructuring work proceeds.
+This classification must be made before execution or restructuring work proceeds.
 
 Planning classification is a separate gate. For non-trivial, high-risk,
 state-changing, current-source-dependent, or governance-affecting work, follow
@@ -72,8 +72,8 @@ classification and persona-review details live in `docs/planning-protocol/*`.
 ## Expected Outputs
 - clarified law-layer documents
 - visible open questions
-- explicit implementation blockers when criteria are missing
-- governed implementation only after the documentation gate is satisfied
+- explicit execution blockers when criteria are missing
+- governed execution only after the documentation gate is satisfied
 - updated `memory/working-set.md` when session state changes
 
 ## Output Quality Requirements
@@ -97,15 +97,15 @@ At minimum, check the relevant combination of:
 A change is not complete if it leaves known related governing artifacts outdated without explicitly recording the deferred impact.
 
 ## Minimum Documentation Gate
-Implementation must not begin until the law layer documents:
+Execution must not begin until the law layer documents:
 - scope boundaries
 - required inputs and expected outputs
 - judgment criteria
 - failure classification
 - execution flow and regression expectations
 
-## Implementation Readiness Rule
-Implementation may begin when the current project has:
+## Execution Readiness Rule
+Execution may begin when the current project has:
 - a stable first-release boundary
 - a usable input and output contract for that boundary
 - explicit judgment criteria
@@ -114,14 +114,14 @@ Implementation may begin when the current project has:
 
 Open questions may remain if they do not materially change the current runtime contract.
 
-Implementation must remain blocked if unresolved questions change what inputs, outputs, or interfaces the first release depends on.
+Execution must remain blocked if unresolved questions change what inputs, outputs, or interfaces the first release depends on.
 
-Implementation does not need every runtime detail to be final if:
+Execution does not need every runtime detail to be final if:
 - the first-release meaning is already stable
 - the remaining runtime choice stays within the documented boundary
 - the current runner flow can still describe how the chosen behavior will be exercised and checked at the present level of detail
 
-Implementation should remain blocked on runtime details only when those details materially change what the first release is, how correctness is judged, or what round-trip behavior must exist.
+Execution should remain blocked on runtime details only when those details materially change what the first release is, how correctness is judged, or what round-trip behavior must exist.
 
 ## Runtime Input Contract
 The first implementation must document:
@@ -174,7 +174,7 @@ The command must not infer time from model context, prior logs, or repository st
 1. Read the governing documents.
 2. Judge document impact before coding.
 3. Update the law layer when meaning changes.
-4. Keep implementation blocked until the minimum documentation gate is satisfied.
+4. Keep execution blocked until the minimum documentation gate is satisfied.
 
 ## Runner Flow
 The default runner flow should document:
@@ -237,4 +237,4 @@ A `structure-affecting`, `shared-artifact-affecting`, or `governance-affecting` 
 Update this document when:
 - required inputs become clearer
 - expected outputs or interfaces change
-- the implementation gate changes
+- the execution gate changes

@@ -7,10 +7,9 @@ seed_reference: true
 # Harness Update Workflow
 
 ## Authority
-This document is a contract document. It is the source of truth
-for the update procedure propagating upstream harness changes into target projects, shared with target projects via the bundled scaffold,
-and its consistency with `AGENTLAW_UPDATE_TOOL.md` procedural alignment is mechanically enforced
-by `agentlaw verify` (`_test_package_data_in_sync`).
+Source of truth for propagating upstream harness changes into target projects.
+The bundled scaffold shares this contract, and `agentlaw verify` checks
+alignment with `AGENTLAW_UPDATE_TOOL.md` through package-data sync.
 
 Governing law: `docs/law/REPOSITORY_ARTIFACT_RULES.md`. Amendments land
 through a plan that updates this file and any dependent law
@@ -18,9 +17,10 @@ clause in the same change.
 
 ## Purpose
 
-Single reference describing the full update cycle for a Harness-governed project that uses the `agentlaw` pip-package distribution. It explains how the binary infrastructure update (pipx) and the governance content update (`AGENTLAW_UPDATE_TOOL.md`) fit together.
-
-This document is operational reference, not law. The governing procedure for the LLM-driven step is [`AGENTLAW_UPDATE_TOOL.md`](../AGENTLAW_UPDATE_TOOL.md). Authority order applies as usual: constitution > law > approved artifacts > memory.
+Full update cycle for a Harness-governed project using the `agentlaw`
+pip-package distribution. It separates the binary infrastructure update
+(`pipx upgrade agentlaw`) from the governance content merge
+(`AGENTLAW_UPDATE_TOOL.md`). This is operational reference, not law.
 
 ## When To Update
 

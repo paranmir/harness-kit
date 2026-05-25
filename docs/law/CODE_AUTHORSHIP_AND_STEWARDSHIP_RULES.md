@@ -176,7 +176,7 @@ Agents must make non-trivial code understandable to future reviewers. Context mu
 - **Prohibited:** Redundant comments that merely restate type signatures or variable names.
 
 ### 2. Formal API Documentation Specification
-All public modules, classes, and functions—as well as non-trivial internal boundaries—must carry formal, tooling-compatible API documentation.
+All public modules, exported API boundaries, classes, functions, constants with nontrivial semantics, and non-trivial internal boundaries must carry formal, tooling-compatible API documentation at the boundary where downstream readers encounter them.
 - **Summary Line:** The first sentence must be a concise summary in the imperative mood.
 - **Detailed Description:** Provide context on *why* this abstraction exists and explicitly define any invariants, critical edge cases, or failure modes.
 - **Parameters/Arguments:** List and describe what each parameter controls or affects. Do not repeat the type if the language signature already enforces it.

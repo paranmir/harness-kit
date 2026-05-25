@@ -106,7 +106,7 @@ may use a one-line no-question record.
 - Reason for proceeding without further user questions: [why the
   remaining unknowns do not materially change scope, safety, contract,
   cost, irreversible action, or intended outcome]
-- TBDs deferred to implementation: [items that will be resolved during
+- TBDs deferred to execution: [items that will be resolved during
   execution, with a stop condition naming when each TBD must escalate
   back to user]
 - Stop conditions if a TBD turns into a hard requirement: [pause-and-ask
@@ -158,11 +158,21 @@ Every `crit-*` carries an `Oracle:` marker for
   semantic accuracy, aesthetic match, taste, or corpus completeness a tool
   cannot scan. Mechanically-checkable criteria using `user_confirms` trigger an
   oracle_check WARN and Acceptance Criteria Reviewer scrutiny.
+- Long-running runnable commands should use oracle-check background mode and
+  poll mode rather than repeating the same command inside a blocking call.
+- While editing implementation behavior, use focused checks for the changed
+  surface. Run the full project pytest suite once at final readiness before
+  commit, push, release, or any public-ready claim.
 
 ## Scope
 
-- Affected surfaces: [list every surface type the plan touches; bullet list
-  with backticked paths/identifiers per docs/law/REPOSITORY_ARTIFACT_RULES.md]
+- Affected surfaces: [list every surface type the plan touches before
+  execution; use a bullet list with backticked paths/globs per
+  docs/law/REPOSITORY_ARTIFACT_RULES.md]
+- Project-overview impact: [when the plan creates, removes, renames, or
+  reshapes a source/application root, name the required
+  `docs/references/project-overview.md` update; otherwise record the no-impact
+  rationale]
 - Stakeholders (segmented): [people/roles affected, by segment]
 - Downstream consumers: [systems/artifacts/agents that depend on outputs]
 - Indirect effects: [enumerated by category — related artifacts, stored
@@ -483,17 +493,16 @@ tests, dependencies, build, deployment, or generated code.]
 
 ## Plan Amendment Authorizations
 
-[Two-diamond completion plan addition. Required for plans whose body
-is amended after Plan reviewed: yes — every Q7=c amendment is recorded
-here; verifier checks plan-body amendment provenance against this
-section.]
+[Required for plans whose body is amended after `Plan reviewed: yes`.
+Every reviewed-contract amendment is recorded here; verifier checks
+plan-body amendment provenance against this section.]
 
 ```text
 ### Authorization YYYY-MM-DD-<letter> — <short title>
 
 - Authorizer: user (<user-name>), session of YYYY-MM-DD.
-- Authorization gate: Q7=c (plan-body amendment requires explicit user
-  gate). User instruction verbatim: "<quoted text>".
+- Authorization gate: explicit plan-body amendment approval. User
+  instruction verbatim: "<quoted text>".
 - Scope of authorized changes:
   1. <change 1>
   2. <change 2>
@@ -503,10 +512,10 @@ section.]
 
 ## Plan Oracle Evidence
 
-[Two-diamond completion plan addition. Populated during the
-oracle_evaluation phase by the agentlaw_plan_review_oracle_check tool;
-the verifier compares this section against plan_review_session.oracle_results
-and FAILs verify on mismatch.]
+[Populated during the `oracle_evaluation` phase by
+`agentlaw_plan_review_oracle_check` and written during archive by
+`agentlaw_plan_archive`. The verifier compares this section against
+`plan_review_session.oracle_results` and fails on mismatch.]
 
 ```text
 - Last oracle run: YYYY-MM-DDThh:mm:ss.fffZ
@@ -546,8 +555,6 @@ authorization and re-review.]
 - Section names are stable. Verifiers and the persona-section-map depend on
   exact section headers; do not rename them.
 - Sub-bullets within a section may be added or omitted as the plan needs.
-- The legacy `Active Plan Preflight Fields` style of bullet-listed fields
-  (used by plans authored before this template lands) remains valid for
-  pre-existing plans per the bootstrap transitional exemption; new plans
-  authored after this template lands must follow the section structure
-  above.
+- Older `Active Plan Preflight Fields` bullet-listed plans remain valid
+  when they predate this template structure. New plans must follow the
+  section structure above.

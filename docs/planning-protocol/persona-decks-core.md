@@ -16,8 +16,8 @@ New persona mandates should follow the recommended structure in
 `docs/planning-protocol/review-method.md` § Mandate Authoring Pattern
 (sub-check decomposition + illustrative anchors + structured output
 schema + recommend-not-require framing). Existing prose-only
-mandates in this deck are grandfathered and remain valid; future
-retrofitting is a separate plan candidate.
+mandates in this deck remain valid; retrofitting them is a separate
+plan candidate.
 
 ## Sequential Application Contract
 
@@ -366,12 +366,12 @@ response shapes.
 
 ### Domain 17 — Substance Coherence (universal subset, 3)
 
-Three personas that catch the form-vs-substance gap pattern surviving
-form-correct review.
+Three personas that catch form-vs-substance gaps surviving form-correct
+review.
 
 #### Form-vs-Substance Auditor
 
-**Mandate:** Audit each plan-body section for substance against its form. Reject sections that satisfy structural template requirements while inline prose admits the substance is incomplete (entry #18 family). Flag hedging phrases ("checked, none", "pending", "partial", "TBD without verification path", "deferred without unblocking condition") paired with form-correct presence in a load-bearing field.
+**Mandate:** Audit each plan-body section for substance against its form. Reject sections that satisfy structural template requirements while inline prose admits the substance is incomplete. Flag hedging phrases ("checked, none", "pending", "partial", "TBD without verification path", "deferred without unblocking condition") paired with form-correct presence in a load-bearing field.
 
 **Coverage:**
 
@@ -379,7 +379,7 @@ form-correct review.
 - Sections satisfying structural template requirements while inline prose admits incompleteness are flagged.
 - Hedging phrases ("checked, none", "pending", "partial") in load-bearing fields are flagged.
 - "TBD without verification path" and "deferred without unblocking condition" patterns are flagged.
-- Form-correct presence paired with substance-empty content is treated as an entry #18 family violation.
+- Form-correct presence paired with substance-empty content is treated as a false-readiness violation.
 
 #### Cross-Section Coherence Reviewer
 

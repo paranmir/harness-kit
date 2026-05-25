@@ -1,9 +1,8 @@
 # Harness Fix Tool
 
 ## Purpose
-Use this document as a practical decision tool when a current problem, harness escape, repeated mistake, or governance gap appears.
-
-This document helps you:
+Use this practical decision tool when a current problem, harness escape,
+repeated mistake, or governance gap appears. Use it to:
 - describe the problem clearly
 - decide whether it is already governed
 - choose the right target document
@@ -38,7 +37,7 @@ For distribution or setup-related fixes, use the current public distribution mod
 Before using this document, read:
 - `AGENTLAW_CONSTITUTION.md`
 - the relevant file in `docs/law/*`
-- `plans/tech-debt-tracker.md` when repetition or promotion may already be tracked
+- `docs/plans/tech-debt-tracker.md` when repetition or promotion may already be tracked
 - `AGENTS.md` when entry routing is part of the problem
 
 ## Direct Procedure
@@ -142,7 +141,7 @@ Before adding a new rule, review:
 - `AGENTLAW_CONSTITUTION.md`
 - the relevant file in `docs/law/*`
 - `AGENTS.md` if the issue concerns read-first order or short entry guardrails
-- `plans/tech-debt-tracker.md` if the issue may already be tracked
+- `docs/plans/tech-debt-tracker.md` if the issue may already be tracked
 
 The review must use **multiple synonym variants of the proposed rule's title and intent**, not a single keyword pass. A search that uses only the phrasing the agent has in mind will systematically miss rules whose original authors used different phrasing for the same intent. Concrete example: a proposed `Comment Self-Narration Prohibition` rule must also grep for `implementation history`, `changelog`, `narration`, `rename history`, `historical context`, and the specific anti-patterns the proposed rule would prohibit. Without the synonym sweep, near-duplicate § s land and the law layer drifts into self-contradiction. The full version of this obligation lives in `docs/law/REPOSITORY_ARTIFACT_RULES.md` `§New Section / Rule Addition Rule`.
 
@@ -187,8 +186,8 @@ Use this ownership map:
 - installer drift, memory authority failure, and recursive promotion failure classes -> `docs/law/FAILURE_TAXONOMY.md`
 - short read-first routing and short entry guardrails -> `AGENTS.md`
 - reusable agent procedure reminders or workflow execution guidance -> agent skill (`.agents/skills/*` / `.claude/skills/*`) when the correction teaches agents how to perform a recurring action without changing law, public contract, verifier behavior, or project state
-- repeated debt, unresolved drift, promotion candidates -> `plans/tech-debt-tracker.md`
-- multi-step active corrective work -> `plans/active/*`
+- repeated debt, unresolved drift, promotion candidates -> `docs/plans/tech-debt-tracker.md`
+- multi-step active corrective work -> `docs/plans/active/*`
 - durable non-authoritative supporting context -> `references/*`
 
 Do not move a local project problem into the constitution unless it exposes a genuinely shared structural gap.

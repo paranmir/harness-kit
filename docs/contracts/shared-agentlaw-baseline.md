@@ -1,19 +1,16 @@
 # Shared Harness Baseline
 
 ## Authority
-This document is a contract document. It is the source of truth
-for the distribution contract between agentlaw and target projects, shared with target projects via the bundled scaffold,
-and its consistency with the scaffold tree and target project layout is mechanically enforced
-by `agentlaw verify` (`_test_package_data_in_sync`).
+Source of truth for the distribution contract between `agentlaw` and target
+projects. The bundled scaffold shares this record, and `agentlaw verify`
+checks consistency with the scaffold tree and target layout.
 
 Governing law: `docs/law/REPOSITORY_ARTIFACT_RULES.md`. Amendments land
 through a plan that updates this file and any dependent law
 clause in the same change.
 
 ## Purpose
-This local workspace is itself a bootstrapped project instance of the shared Harness kit.
-
-This file records the shared-kit baseline currently reflected in the workspace.
+Current shared-kit baseline reflected in this bootstrapped workspace.
 
 ## Baseline Record
 - Shared source repository: `https://github.com/paranmir/agentlaw.git`

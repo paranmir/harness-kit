@@ -38,9 +38,12 @@ Use this sequence when `task-classification.md` says planning is required:
    trigger.
 4. Draft the plan using `plan-template.md`. For non-trivial work, self-mark
    the applicable conditional domains in the Domain Coverage section.
-5. Run plan-lint checks. Until a standalone `plan-lint` command exists, the
-   active-plan checks in `agentlaw verify` are the repository's mechanical
-   enforcement surface.
+5. Run plan-lint checks before review and execution. The plan's
+   `Affected surfaces` field must name intended changed files as backticked
+   repo-relative paths or globs; prose-only entries are not executable
+   coverage. Until a standalone `plan-lint` command exists, the active-plan
+   checks shared by `agentlaw verify` and review finalization are the
+   repository's mechanical enforcement surface.
 6. Run the **Trigger Coverage Verifier** first in an isolated review pass. It
    validates the trigger marking and the Domain Coverage self-mark against the
    plan content.
@@ -73,11 +76,13 @@ machine rather than by host self-discipline:
    question, and locks the plan body's content hash for the session.
 2. `agentlaw_plan_review_interview_answer_submit(user_answer,
    clarity_scores, opposite_scenario)` records each interview turn. The
-   tool computes ambiguity from the host's clarity scores and the
-   greenfield or brownfield weights.
+   tool computes weighted clarity and the minimum per-axis clarity from
+   the host's scores. The host still supplies the scores, so the required
+   opposite scenario remains load-bearing evidence for the self-check.
 3. `agentlaw_plan_review_interview_self_verify_submit(verdict, reason)`
    confirms or rejects the host's own scoring. Persona review begins
-   only when verdict is `pass` and ambiguity is at or below 0.2.
+   only when verdict is `pass`, weighted clarity is at least `0.995`,
+   and every scored axis is at least `0.995`.
 4. `agentlaw_plan_review_finding_submit(persona, mandate_quote,
    finding_text, plan_line_citations, severity)` is called once per
    selected persona per round. The tool checks the persona matches the
@@ -95,13 +100,17 @@ machine rather than by host self-discipline:
    `## Review Coverage Matrix` is closed: no `needs_user_answer` rows,
    no invalid statuses, evidence on `covered` / `accepted_risk`, rationale on
    `not_applicable` / `out_of_scope`, and `crit-*` linkage for rows that claim
-   coverage. Only then does it set phase `finalized`, write
+   coverage. It also validates the would-be-finalized active plan against the
+   same preflight and review-evidence readiness checks enforced by
+   `agentlaw verify`. Only then does it set phase `finalized`, write
    `Plan reviewed: yes` and `Plan contract hash` into the plan body, then
    refresh both the whole-body content hash and reviewed-contract-section
    hash.
-7. `agentlaw_plan_archive(plan_path)` moves the plan to
-   `docs/plans/completed/` and archives the session row in one
-   operation when the work the plan governs is done.
+7. `agentlaw_plan_archive(plan_path, completed_closure_evidence?,
+   oracle_evidence?)` writes completed closure/oracle evidence, validates
+   the completed body shape, moves the plan to `docs/plans/completed/`,
+   and archives the session row in one operation when the work the plan
+   governs is done.
 
 ### Plan-review session atomicity
 
@@ -122,6 +131,9 @@ Auxiliary tools handle exceptional flow:
 - `agentlaw_plan_review_session_invalidate` archives a session without
   writing review evidence. Use after a plan-body change the host does
   not want to carry forward.
+- `agentlaw_plan_review_session_lookup` returns matching session ids by
+  plan path. Use it after restart or handoff instead of reading the
+  runtime SQLite database directly.
 - `agentlaw_plan_review_session_reconcile` updates the content hash to
   match the current body while preserving accumulated findings. For
   finalized or `oracle_evaluation` sessions with `plan_contract_hash`,
@@ -137,9 +149,14 @@ Auxiliary tools handle exceptional flow:
 The verifier's `_test_plan_review_session_consistency` check enforces
 that any active plan claiming `Plan reviewed: yes` is backed by a
 finalized session. With `plan_contract_hash`, reviewed contract sections must
-match while mutable evidence/status sections may change; legacy sessions keep
-the older whole-body hash check. Failing active plans return to
-`docs/plans/draft/` until re-reviewed.
+match while mutable evidence/status sections may change. Sessions without
+`plan_contract_hash` use the whole-body hash check. Failing active plans
+return to `docs/plans/draft/` until re-reviewed.
+
+The reviewed plan's path is a session identity field. Do not rename or move a
+reviewed active plan with ordinary file operations. If the path itself must
+change, use the review lifecycle: restore the reviewed path, or invalidate /
+archive the old session and run a fresh review for the new path.
 
 ## Review Coverage Matrix Closure
 
@@ -234,7 +251,7 @@ persona passes found no must-change or should-change items.
 Do not mark `Plan reviewed: yes` until the separate persona passes are
 actually performed and recorded.
 
-Stop implementation if review was skipped, `Plan reviewed: yes` was written
+Stop execution if review was skipped, `Plan reviewed: yes` was written
 before persona passes, trivial classification was wrong, or scope expands into
 a non-trivial trigger. Reclassify, update fields and Domain Coverage, rerun the
 required review depth, record governance-relevant correction, then resume only
@@ -356,7 +373,7 @@ Examples already following the pattern include Trigger Coverage Verifier,
 Premise & Source Reviewer, Cross-Section Coherence Reviewer, Rule-on-Self
 Reviewer, Code-Fact Claim Verifier, Form-vs-Substance Auditor, Confidence Label
 Reviewer, and the Domain 5 test-adequacy personas in
-`persona-decks-specialized.md`. Other existing personas are grandfathered.
+`persona-decks-specialized.md`. Other existing personas remain valid.
 
 ## Selection Rule
 
@@ -439,7 +456,7 @@ that translate this bar into rejection codes.
 
 The MCP server enforces a sentence-count and field-presence shape
 on every persona finding to keep the false-readiness pattern from
-recurring (entry 18 family in tech-debt-tracker.md).
+recurring.
 
 - `finding_submit` returns
   `error: "finding_text_below_prescriptive_mandate"` with a
@@ -464,7 +481,7 @@ recurring (entry 18 family in tech-debt-tracker.md).
   is a non-empty string. Missing `amend_proposal` on
   must-change / should-change calls yields a non-blocking
   `amend_proposal_missing_legacy_warning` in the success
-  payload (Phase 1).
+  payload while the parameter remains optional.
 - `round_check` aggregates each round's amend ops, calls
   `detect_op_conflicts`, and on no-conflict batch-applies via
   `apply_ops_to_plan`, updating `plan_content_hash` on the
@@ -475,14 +492,25 @@ recurring (entry 18 family in tech-debt-tracker.md).
 - `session_finalize` refuses with
   `error: "self_challenge_required"` unless
   `agentlaw_plan_review_self_challenge_submit` has recorded a
-  response. The response is either path-A
+  response. The response is either a plan-amending challenge
   (`type="weakest_with_amend"` carrying `weakest_finding_id`,
-  `weakness_sentence`, and a `strengthening_amend_op`) or
-  path-B (`type="full_justification"` whose `entries` cover
-  every persisted must-change / should-change finding with a
-  `plan_body_citation` plus a `justification` of at least 3
-  sentences). Empty body or the literal string `"none"` is
-  rejected with `self_challenge_invalid`.
+  `weakness_sentence`, and a `strengthening_amend_op` that
+  finalize applies to the plan body before writing reviewed
+  state) or a no-amend justification (`type="full_justification"`
+  whose `entries` cover every persisted must-change /
+  should-change finding with a `plan_body_citation` plus a
+  `justification` of at least 3 sentences; use it only when the
+  current plan body already covers the findings and does not need
+  an edit). When there are no persisted must-change / should-change
+  findings, the no-amend justification must carry
+  `all_clear_challenge` with `weakest_review_axis`,
+  `plan_body_citation`, `challenge_question`, and a `justification`
+  of at least 3 sentences, so all-clear sessions still leave a
+  substantive adversarial review artifact. Empty body or the
+  literal string `"none"` is rejected with
+  `self_challenge_invalid`. A plan-amending challenge whose edit
+  cannot be applied blocks finalize with
+  `self_challenge_amend_apply_failed`.
 - `finding_submit` success payloads carry a `transparency_echo:
   str` field shaped
   `[round R / Persona / severity / first 80 chars / amend_ops=N]`

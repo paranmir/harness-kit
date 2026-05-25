@@ -5,7 +5,7 @@ This document defines the scope boundaries for the current project.
 
 ## Known
 - This repository is using the Harness document structure.
-- Scope must be clarified before implementation begins.
+- Scope must be clarified before execution begins.
 - Harness includes default memory and continuity subsystems when applied to a repository.
 - Continuity and memory are official Harness capability classes, but runtime memory state is derived context rather than law.
 
@@ -17,7 +17,7 @@ This document defines the scope boundaries for the current project.
 
 ## Assumptions
 - The current project is in an early setup or definition stage.
-- The law layer must be completed before meaningful implementation begins.
+- The law layer must be completed before meaningful execution begins.
 
 ## Open Questions
 - What is the project trying to build or govern?
@@ -26,7 +26,7 @@ This document defines the scope boundaries for the current project.
 - Are there repository or subsystem boundaries that matter immediately?
 
 ## Blocked Until Clarified
-- implementation work that depends on unresolved scope
+- execution work that depends on unresolved scope
 - feature commitments that require explicit in-scope or out-of-scope decisions
 
 ## Governed Target
@@ -36,10 +36,10 @@ This document defines the scope boundaries for the current project.
 - harness setup
 - project-definition work
 - requirement clarification
-- documentation needed to govern implementation
+- documentation needed to govern execution
 
 ## Out of Scope
-- production implementation before the law layer is clarified
+- production execution before the law layer is clarified
 - undocumented feature work
 - silent expansion of scope without document updates
 - treating memory or installer metadata as project authority above file-based governance
@@ -71,12 +71,12 @@ Rules:
 - memory must not silently expand project scope or override repository files
 - runtime memory paths belong in artifact rules before they become normal practice
 
-## Implementation Readiness Rule
+## Execution Readiness Rule
 Open questions may remain after this document is updated.
 
-Initial implementation may still begin if those open questions do not invalidate the current first-release boundary.
+Initial execution may still begin if those open questions do not invalidate the current first-release boundary.
 
-Implementation must remain blocked if unresolved scope questions could materially change what the first release is supposed to do.
+Execution must remain blocked if unresolved scope questions could materially change what the first release is supposed to do.
 
 ## Next Update Trigger
 Update this document when:
