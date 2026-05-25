@@ -93,6 +93,13 @@ ready. The status report names optional pieces that were not installed,
 host/MCP pieces that are not activated yet, and the concrete next action for
 each gap.
 
+MCP host registration uses the installed `agentlaw` app executable with
+`run-mcp` arguments. Do not register a pipx internal venv `python.exe` or a
+generic `python -m agentlaw`; those paths drift when pipx changes its managed
+environment location. If a host cannot resolve `agentlaw`, use the absolute
+path from `where agentlaw` or `which agentlaw` and rerun
+`agentlaw agent-setup --client <host> --target . --apply --yes`.
+
 When `setup-status` prints `LLM disclosure required`, the agent must tell the
 user the harness is not fully active before doing substantive work. Until MCP
 tools, Agent Skills, hooks, and runtime restore are confirmed, the agent follows
