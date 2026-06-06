@@ -17,7 +17,9 @@ When an LLM is asked to install agentlaw for this project, use the PyPI
 package as the install source and then complete the project bootstrap:
 
 1. Install or update the CLI with `pipx install agentlaw`
-   or `pipx upgrade agentlaw`.
+   or `pipx upgrade agentlaw`. If `pipx` is unavailable on the host,
+   use the supported fallback `uv tool install agentlaw` or
+   `uv tool upgrade agentlaw`.
 2. Run `agentlaw init . --setup-agents prompt` in the chosen
    project root. For an already-initialized project, use
    `agentlaw init . --merge`. Use `--skip-model` only when the target already
@@ -56,6 +58,9 @@ are not already in the initialized project root.
 # Install or update the CLI
 pipx install agentlaw
 pipx upgrade agentlaw
+# Fallback when pipx is unavailable on the host:
+uv tool install agentlaw
+uv tool upgrade agentlaw
 agentlaw --version
 
 # If an older 0.1.x install still reports 0.1.5 as current, force pipx
@@ -94,9 +99,10 @@ each gap.
 
 MCP host registration uses the installed `agentlaw` app executable with
 `run-mcp` arguments. Do not register a pipx internal venv `python.exe` or a
-generic `python -m agentlaw`; those paths drift when pipx changes its managed
-environment location. If a host cannot resolve `agentlaw`, use the absolute
-path from `where agentlaw` or `which agentlaw` and rerun
+generic `python -m agentlaw`; those paths drift when pipx or uv changes its
+managed environment location. If a host cannot resolve `agentlaw`, first make
+the app executable visible to host-spawned processes (`pipx ensurepath` for
+pipx, or ensure `~/.local/bin` is on PATH for uv tool), restart the host, and rerun
 `agentlaw agent-setup --client <host> --target . --apply --yes`.
 
 When `setup-status` prints `LLM disclosure required`, the agent must tell the

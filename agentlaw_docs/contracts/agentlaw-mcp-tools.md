@@ -75,11 +75,21 @@ questions.
 
 The skill is a procedural reminder and routing aid only. It tells the agent to
 choose among skill, law/contract, test/verifier, memory/reference, tracker, or
-chat-only outcomes; it does not make skill creation the default. Real
+chat-only outcomes; it does not make skill creation the default. The route uses
+a Promotion Score so repeated friction, user correction, command/tool friction,
+boundary risk, compaction risk, or ignored existing guidance cannot be dismissed
+as chat-only merely because some related artifact already exists. Real
 corrections, repeated failures, governance gaps, or rule bypasses still route
 through `AGENTLAW_FIX_TOOL.md` before file changes. Both deployment paths
 receive identical SKILL.md content (byte-equal); directory difference is
 platform convention.
+
+The score treats command/tool friction as promotion evidence when wrong
+commands, wrong shell forms, wrong Python invocations, wrong pytest selectors,
+wrong working directories, MCP/raw-tool route confusion, schema mistakes, or
+repeated retries create future-prevention value. `chat-only` remains valid only
+for low-risk one-off issues that are already covered with no meaningful
+recurrence risk.
 
 At closeout, the final response reports both the durable route and the
 `skill create/update decision`. The skill decision is explicit even when no
