@@ -133,7 +133,13 @@ Auxiliary tools handle exceptional flow:
   not want to carry forward.
 - `agentlaw_plan_review_session_lookup` returns matching session ids by
   plan path. Use it after restart or handoff instead of reading the
-  runtime SQLite database directly.
+  runtime SQLite database directly. A lookup miss is not sole proof that
+  the work is unverified: with `include_archived=true`, the tool can
+  return `relocation_candidates` when an archived session still records a
+  prior draft/active path whose plan name and/or content hash matches the
+  requested completed path. Hosts must treat this as a recovery signal and
+  prefer lookup on the original path, reconcile, and oracle continuation
+  before making a readiness judgment.
 - `agentlaw_plan_review_session_reconcile` updates the content hash to
   match the current body while preserving accumulated findings. For
   finalized or `oracle_evaluation` sessions with `plan_contract_hash`,
@@ -332,6 +338,15 @@ current attempt findings, resets `round_number` to `1`, sets
 Sessions with no selected personas are treated as `not_applicable` for
 backward compatibility and pass the gate.
 
+### Oracle Definition And Timeout Errors
+
+The oracle phase distinguishes implementation failure from oracle-definition
+failure. A pytest command exiting with code `5` means no test matched the
+selector, so `agentlaw_plan_review_oracle_check` records
+`pytest_no_tests_selected` as an archive-blocking error. Timeout results are
+also archive-blocking errors, not evidence of pass/fail; background mode
+preserves stdout/stderr paths for operator inspection.
+
 ### Oracle Marker WARN
 
 `agentlaw_plan_review_oracle_check` emits a non-blocking WARN when an
@@ -345,6 +360,15 @@ can amend the criterion to runnable form, or accept the
 subjective criterion that happens to mention "verifier" semantically
 rather than mechanically). See `agentlaw_docs/planning-protocol/plan-template.md`
 § Oracle Marker Selection for the authoring rule the WARN derives from.
+
+### Execution Stratum WARN
+
+Reviewers must reject a readiness claim when its oracle proves only a different
+execution stratum than the claim depends on. Examples include source tests for a
+package-install claim, package smoke for a live installed CLI/MCP claim, or
+schema/source checks for persisted runtime state. Plans may proceed only when
+the relevant stratum has a runnable oracle or the omitted stratum is recorded as
+an explicit `accepted-risk` row.
 
 ## Mandate Authoring Pattern
 
@@ -388,6 +412,10 @@ Reviewer, and the Domain 5 test-adequacy personas in
    and apply step 4.
 6. If the class is conditional, use the corresponding deck per the
    triggers in `task-classification.md`.
+   For `substance: code`, reviewers must also check the Code Plan Fidelity
+   Profile: repository discovery, behavior contract, change matrix,
+   test/check pairing, runnable oracles, and stop conditions. Missing
+   profile substance is a required plan change, not a style note.
 7. If a task has multiple classes, union applicable personas, deduplicate, and
    run sequentially.
 8. Universal concerns are always checked, but not always isolated turns.

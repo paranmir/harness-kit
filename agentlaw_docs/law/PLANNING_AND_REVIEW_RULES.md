@@ -493,6 +493,17 @@ A new substance deck file lands via a follow-up plan; modifying an
 existing deck's commands or thresholds requires explicit plan-amendment
 authorization because the change reaches every plan that has bound to it.
 
+Plans that mark `- substance: code` must also satisfy the Code Plan Fidelity
+Profile before execution. The plan body must expose the repository evidence
+used to choose the implementation surface, the current and target behavior,
+unchanged behavior, public-contract impact, failure or negative cases, a
+change matrix that pairs code surfaces with tests or checks, focused and
+broader verification, and explicit stop conditions. Acceptance criteria that
+assert code behavior must carry both a verification trace and a `runnable
+Oracle:` marker. Use `user_confirms` only for judgment that cannot be checked
+mechanically. Completed legacy plans are not retroactively failed solely for
+missing the profile.
+
 ## Entry-Gate Clarification (Interview Cross-Check)
 
 The `interview` phase of `agentlaw_plan_review_session_start` is the

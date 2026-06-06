@@ -29,9 +29,9 @@ pip-package distribution. It separates the binary infrastructure update
 - A new shared requirement (law clause, MCP tool, schema migration) is needed for current work.
 
 Do not invoke this workflow for:
-- First-time setup → use [`AGENTLAW_INIT_TOOL.md`](../AGENTLAW_INIT_TOOL.md).
-- Fixing local drift where the agent escaped harness rules → use [`AGENTLAW_FIX_TOOL.md`](../AGENTLAW_FIX_TOOL.md).
-- Reconciling routing/readme surfaces after local harness structure changed → use [`AGENTLAW_ALIGN_TOOL.md`](../AGENTLAW_ALIGN_TOOL.md) and `agentlaw align --check --target .`.
+- First-time setup → use [`AGENTLAW_INIT_TOOL.md`](../../AGENTLAW_INIT_TOOL.md).
+- Fixing local drift where the agent escaped harness rules → use [`AGENTLAW_FIX_TOOL.md`](../../AGENTLAW_FIX_TOOL.md).
+- Reconciling routing/readme surfaces after local harness structure changed → use [`AGENTLAW_ALIGN_TOOL.md`](../../AGENTLAW_ALIGN_TOOL.md) and `agentlaw align --check --target .`.
 
 ## Full Update Cycle
 
@@ -61,21 +61,31 @@ The LLM must report any `not installed`, `not activated`, or `unknown` entry bef
 
 ### Step 2 — Governance content merge (LLM-driven)
 
-Invoke the LLM with [`AGENTLAW_UPDATE_TOOL.md`](../AGENTLAW_UPDATE_TOOL.md). Typical prompt: "Run the harness update procedure in AGENTLAW_UPDATE_TOOL.md."
+Invoke the LLM with [`AGENTLAW_UPDATE_TOOL.md`](../../AGENTLAW_UPDATE_TOOL.md). Typical prompt: "Run the harness update procedure in AGENTLAW_UPDATE_TOOL.md."
 
 The LLM follows the procedure in that document:
 
-1. Reads `references/shared-agentlaw-baseline.md` to identify the prior baseline.
+1. Reads `agentlaw_docs/references/shared-agentlaw-baseline.md` to identify the prior baseline.
 2. Compares the new shared kit against the baseline.
 3. Replaces root mirror files with the new versions.
 4. Merges new shared requirements into the local `agentlaw_docs/law/*` layer without losing local facts.
 5. Reviews tracker and enforcement implications.
-6. Refreshes `references/shared-agentlaw-baseline.md` with the new baseline.
+6. Refreshes `agentlaw_docs/references/shared-agentlaw-baseline.md` with the new baseline.
 7. Updates `AGENTS.md` routing if the read path changed.
 8. Verifies that every new shared requirement is traceable in the local law.
 9. Runs `agentlaw align --check --target .`, uses `agentlaw align --write --target .` only for safe autofixable routing updates, then re-runs `agentlaw setup-status --target .` and reports remaining readiness gaps before handoff. The `--after-update` form is reserved for the immediate post-`pipx upgrade` / pre-merge checkpoint.
 
 The LLM is not allowed to skip these steps or to treat the operation as a fresh bootstrap.
+
+During path-migration updates, the LLM also applies the cleanup and runtime
+alignment contract from `AGENTLAW_UPDATE_TOOL.md`: old agentlaw-owned
+`docs/law`, `docs/contracts`, `docs/planning-protocol`, `docs/plans`, and
+`memory` trees are verified and removed as migration residue; product
+references are preserved unless explicitly migrated; hybrid memory is verified
+as the expected runtime state; FTS-only memory is reported as degraded rather
+than ready; setup-status findings are reconciled with direct host evidence such
+as `codex mcp get agentlaw-memory --json`, `claude mcp get agentlaw-memory
+--json`, and a successful `agentlaw_session_restore`.
 
 ### Step 3 — Verification (terminal)
 
@@ -96,7 +106,7 @@ If verification fails, treat the update as incomplete and resolve the gap before
 | Pip package code (CLI, MCP server) | `pipx upgrade agentlaw` | Replaces binaries / Python source |
 | Binary schema migration on `.agentlaw/index/meta.db` | Pip package startup hook | Runs migration scripts in lexical order |
 | Bundled new shared kit delivery | `pipx upgrade agentlaw` | Updates `scaffold/` inside the package |
-| Local governance content merge | LLM via [`AGENTLAW_UPDATE_TOOL.md`](../AGENTLAW_UPDATE_TOOL.md) | Incremental merge, preserves local facts |
+| Local governance content merge | LLM via [`AGENTLAW_UPDATE_TOOL.md`](../../AGENTLAW_UPDATE_TOOL.md) | Incremental merge, preserves local facts |
 | Post-update readiness report | CLI + LLM | CLI detects install/activation gaps; LLM reports them with next actions |
 | Final integrity verification | User via verify command | Confirms the update produced a valid state |
 
@@ -110,8 +120,8 @@ If verification fails, treat the update as incomplete and resolve the gap before
 
 ## Related
 
-- [`AGENTLAW_UPDATE_TOOL.md`](../AGENTLAW_UPDATE_TOOL.md) — governing procedure for step 2.
-- [`AGENTLAW_INIT_TOOL.md`](../AGENTLAW_INIT_TOOL.md) — first-time setup; not for updates.
-- [`AGENTLAW_FIX_TOOL.md`](../AGENTLAW_FIX_TOOL.md) — for fixing local drift, not for upstream updates.
-- [`AGENTLAW_ALIGN_TOOL.md`](../AGENTLAW_ALIGN_TOOL.md) — for local routing/readme alignment after structure changes.
-- [`references/shared-agentlaw-baseline.md`](shared-agentlaw-baseline.md) — baseline record consulted in step 2.
+- [`AGENTLAW_UPDATE_TOOL.md`](../../AGENTLAW_UPDATE_TOOL.md) — governing procedure for step 2.
+- [`AGENTLAW_INIT_TOOL.md`](../../AGENTLAW_INIT_TOOL.md) — first-time setup; not for updates.
+- [`AGENTLAW_FIX_TOOL.md`](../../AGENTLAW_FIX_TOOL.md) — for fixing local drift, not for upstream updates.
+- [`AGENTLAW_ALIGN_TOOL.md`](../../AGENTLAW_ALIGN_TOOL.md) — for local routing/readme alignment after structure changes.
+- [`agentlaw_docs/references/shared-agentlaw-baseline.md`](shared-agentlaw-baseline.md) — baseline record consulted in step 2.

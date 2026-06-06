@@ -111,14 +111,21 @@ persona family unless they govern a code-touching implementation path.
 
 **Trigger:** plan declares acceptance criteria that will be verified by tests, and the plan touches code (substance: code marker active)
 
-**Mandate:** Verify each `crit-*` carries (a) at least one test mapping, (b) categorization across happy / edge / adversarial test classes, and (c) cross-cutting concern tags (security, concurrency, error path, boundary, regression) where applicable. Reject criteria with prose-only verification when a runnable test is feasible.
+**Mandate:** Verify each `crit-*` carries (a) at least one test mapping, (b) categorization across happy / edge / adversarial test classes, (c) cross-cutting concern tags (security, concurrency, error path, boundary, regression) where applicable, and (d) execution-stratum mapping when source, package, runtime, external service, or persisted-state paths differ. Reject criteria with prose-only verification when a runnable test is feasible.
+
+For Code Plan Fidelity, also verify that the plan names repository discovery
+evidence, behavior contract, change matrix, focused verification, and
+test/check pairing before execution. Missing profile substance is a plan
+change requirement.
 
 **Coverage:**
 
 - Each `crit-*` carries at least one test mapping.
 - Each `crit-*` is categorized across happy / edge / adversarial test classes.
 - Cross-cutting concern tags (security, concurrency, error path, boundary, regression) are applied where applicable.
+- Execution-stratum mapping is present when source/package/runtime/service/persisted-state paths materially differ.
 - Criteria with prose-only verification where a runnable test is feasible are flagged for rejection.
+- Code Plan Fidelity fields are present and linked to concrete tests/checks.
 
 
 #### Risk-Weighted Test Reviewer

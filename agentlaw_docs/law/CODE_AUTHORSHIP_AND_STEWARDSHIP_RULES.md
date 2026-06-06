@@ -59,6 +59,13 @@ When code work is non-trivial, the planning workflow in
 the code-specific affected surfaces, oracle, verification target, risk, slice,
 and non-goals that the revised plan must carry.
 
+Reviewed plans for non-trivial code work must apply the Code Plan Fidelity
+Profile. The profile records repository discovery evidence, behavior contract,
+change matrix, test/check pairing, focused verification, and stop conditions.
+It constrains the outcome and verification contract; it must not freeze
+unnecessary implementation details before the agent has read the existing
+repository structure.
+
 ## Test-Anchored Development Rule
 All non-trivial code work must be anchored by executable verification.
 

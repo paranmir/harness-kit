@@ -291,7 +291,7 @@ response shapes.
 
 #### Verification Reviewer
 
-**Mandate:** Verify the plan names pre-action and post-action checks at execution boundaries, and a verification strategy (tests, oracles, controlled checks) matched to risk level, including negative or adversarial cases for new mechanisms. Reject normal-case-only strategies.
+**Mandate:** Verify the plan names pre-action and post-action checks at execution boundaries, and a verification strategy (tests, oracles, controlled checks) matched to risk level, including negative or adversarial cases for new mechanisms. Reject normal-case-only strategies. Reject runtime/package/live readiness claims whose oracles prove only a different execution stratum unless the omitted stratum is recorded as accepted-risk.
 
 **Coverage:**
 
@@ -300,6 +300,7 @@ response shapes.
 - The verification strategy (tests, oracles, controlled checks) is matched to risk level.
 - The strategy includes negative or adversarial cases for new mechanisms.
 - Normal-case-only verification strategies are flagged for rejection.
+- Runtime/package/live claims require matching execution-stratum oracles, or explicit accepted-risk for the omitted stratum.
 
 ### Domain 12 — Continuity (universal subset, 1)
 

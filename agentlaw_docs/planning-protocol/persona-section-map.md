@@ -79,6 +79,10 @@ not trigger re-invocation.
 | Confidence-Shift Reviewer | substance-triggered (Confidence) | Confidence | Risk, Verification |
 | Coherent Example Reviewer | substance-triggered (Self-Application) | Self-Application | Governance |
 | Rule Lifecycle Reviewer | substance-triggered (Self-Application) | Self-Application | Bootstrap Transitional Declaration, Governance |
+| Test Specification Reviewer | substance-triggered (code) | Code Plan Fidelity, Verification | Acceptance Criteria |
+| Risk-Weighted Test Reviewer | substance-triggered (code) | Code Plan Fidelity, Risk | Verification |
+| Defect Detection Adequacy Reviewer | substance-triggered (code) | Code Plan Fidelity, Verification | Acceptance Criteria |
+| Invariant Specification Reviewer | substance-triggered (code) | Code Plan Fidelity, Verification | Acceptance Criteria |
 
 ## Sensitive-Domain Field Personas
 

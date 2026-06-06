@@ -103,7 +103,7 @@ quarantine, or file rewrites.
 
 - All timestamps are ISO 8601 UTC unless stated otherwise.
 - All ids are stable slugs persisted in markdown front matter (see schema reference).
-- All tools return a `runtime_status` field reporting whether the index, vector store, and embedding model are available. The `runtime_status` block contains: `mcp_server`, `meta_db`, `fts_index`, `vector_index`, `memory_items_index` (`ready` when the items table matches on-disk Markdown under `agentlaw_memory/{known-facts,rules}/`, `stale_relative_to_disk` when on-disk count exceeds items table count; `agentlaw_session_restore` triggers items-only auto-rebuild on stale before assembling the packet so the returned packet reflects post-rebuild state), `embedding_model`, `embedding_model_on_disk`, `schema_version`, `kit_version`, and `embedding_runtime`.
+- All tools return a `runtime_status` field reporting whether the index, vector store, and embedding model are available. The `runtime_status` block contains: `mcp_server`, `meta_db`, `fts_index`, `vector_index`, `memory_items_index` (`ready` when the items table matches on-disk Markdown under `agentlaw_memory/{known-facts,rules}/`, `stale_relative_to_disk` when on-disk count exceeds items table count; `agentlaw_session_restore` triggers items-only auto-rebuild on stale before assembling the packet so the returned packet reflects post-rebuild state), `embedding_model`, `embedding_model_on_disk`, `embedding_model_load`, `vector_alignment`, `schema_version`, `kit_version`, and `embedding_runtime`.
 - When a tool cannot complete due to missing runtime, it returns a structured `degraded` result rather than raising; the caller decides how to fall back.
 - Closed-set parameters (`type`, `scope`, `status`, `to_status`, `kind`, `mode`, `order_by`, `target_kind`, skill lifecycle `event_kind`, `source`, and `outcome`) advertise their permitted values via JSON Schema `enum` constraints. MCP hosts may reject invalid values at the schema layer before the tool is invoked. The server still validates every closed-set parameter at runtime — schema enforcement is advisory; the server remains authoritative.
 
@@ -169,9 +169,9 @@ If per-agent attribution is needed later, a `created_by` field may be added thro
 ## Read Tools
 
 ### `memory_search`
-Hybrid FTS + vector search across memory items and logs. Use for prior judgment, decisions, rationale, or cross-session continuity questions; for current source/law facts use Grep / Read instead. Routing criterion: `agentlaw_docs/law/MEMORY_AND_CONTINUITY_RULES.md` §Read Routing Criterion.
+Hybrid FTS + vector search across memory items by default. Use for prior judgment, decisions, rationale, or cross-session continuity questions; for current source/law facts use Grep / Read instead. Routing criterion: `agentlaw_docs/law/MEMORY_AND_CONTINUITY_RULES.md` §Read Routing Criterion.
 
-Logs are historical records and are not default vector-search targets in v1. Results from the FTS5 path and the sqlite-vec path are blended via **Reciprocal Rank Fusion (RRF, k=60)** at query time. RRF uses each hit's rank in the two lists; absolute score scales are ignored, so no normalization is required and no blended score is stored. RRF score per item: `Σ 1/(k + rank_in_list)` across the FTS and vector lists.
+Logs are historical records. They are not default search targets and are never vector-search targets in v1. Set `include_logs=true` when the caller explicitly wants log/history recall; matching log hits then come from FTS only and carry `type="log:<kind>"`. Results from the item FTS5 path and the sqlite-vec path are blended via **Reciprocal Rank Fusion (RRF, k=60)** at query time. RRF uses each hit's rank in the two lists; absolute score scales are ignored, so no normalization is required and no blended score is stored. RRF score per item: `Σ 1/(k + rank_in_list)` across the FTS and vector lists.
 
 **Parameters**
 - `query` (string, required) — natural-language query, KO/EN mixed allowed.
@@ -183,6 +183,7 @@ Logs are historical records and are not default vector-search targets in v1. Res
 - `limit` (integer, optional, default 10) — maximum hits returned.
 - `mode` (string, optional, one of `hybrid` / `fts` / `vector`, default `hybrid`).
 - `cursor` (string, optional) — opaque pagination cursor from a previous response.
+- `include_logs` (boolean, optional, default `false`) — include log FTS hits in addition to memory item hits. Logs are excluded by default to avoid historical-session noise in ordinary recall.
 
 **Returns**
 - `hits` — array of `{ id, type, scope, status, anchor, snippet, path, rrf_score, ranks: { fts, vector } }`. `ranks` records each item's 0-based rank in the source lists (null when absent from a list).
@@ -193,10 +194,11 @@ Logs are historical records and are not default vector-search targets in v1. Res
 **Errors**
 - `memory.invalid_params` for an empty query, unknown mode, invalid filter value, invalid limit, or malformed cursor.
 - `memory.runtime_unavailable` when `mode="vector"` requires the embedding/vector runtime and it cannot load, encode, or query.
-- In `mode="hybrid"`, vector runtime failures degrade to FTS-only results with a `degraded` note.
+- In `mode="hybrid"`, vector runtime failures degrade to FTS-only results with a `degraded` note. Hybrid vector model load/encode has a 10-second budget; on timeout the tool returns FTS results with `vector_degraded: timeout_after_10s`.
+- MCP startup starts embedding-model warmup in an isolated background worker process by default, but server initialization and tool calls must not block on model load or worker startup. The worker is considered inference-ready only after the parent MCP process successfully round-trips a readiness `encode_query` request and receives a 384-dimensional vector; the child's load-complete signal alone is not enough. The first hybrid search uses vector only if that parent-side validation has completed; while the model is loading, stalled, or failed, it returns FTS results with a visible `vector_degraded: model_not_loaded (...)` note. Worker spawn failures, startup timeouts, process exits, and readiness-validation failures are reported through `embedding_model_load.status="failed"` rather than killing MCP startup. Set `AGENTLAW_MCP_DISABLE_STARTUP_WARMUP=1` only for diagnostics or emergency degraded operation.
 - When the current filters leave no searchable memory item chunks, `memory_search`
   does not load the embedding model. `mode="hybrid"` returns FTS results plus
-  `degraded=["vector_skipped: no_searchable_item_chunks"]`; `mode="vector"`
+  `degraded=["vector_skipped: no_searchable_item_vectors"]`; `mode="vector"`
   returns an empty `hits` list without `memory.runtime_unavailable`.
 
 ---
@@ -533,6 +535,7 @@ All working-set fields below carry the **current snapshot only** — each entry 
 - `plan_discipline_reminder` (object) — save-time planning workflow reminder. Same schema as the `plan_discipline_reminder` field on the `agentlaw_session_restore` packet (see Read Tools section above).
 - `degraded` and `log_error` when the working set was written but a requested log append failed.
 - `runtime_status`.
+- `diagnostics` — `{ duration_ms, stages }`. `stages` is an ordered list of `{ name, duration_ms }` for save substeps such as prior working-set read, working-set write, optional log append, write-summary calculation, skill lifecycle summary, and runtime status assembly.
 
 ---
 
@@ -621,8 +624,9 @@ Report runtime status.
 - `meta_db` — `ready` / `missing` / `corrupt` / `migration_required`.
 - `fts_index` — `ready` / `missing` / `rebuilding` / `stale`.
 - `vector_index` — `ready` / `missing` / `rebuilding` / `stale`.
-- `embedding_model` — `loaded` / `on_disk` / `incomplete` / `missing`. `loaded` means the model is in the MCP server's in-memory cache and ready for inference without a disk read. `on_disk` means the files are fully present but nothing is loaded yet (e.g. startup warmup failed or the server is in a read-only phase). `incomplete` means files exist but the set is partial — run `agentlaw init` (without `--skip-model`) to repair. `missing` means no model directory.
+- `embedding_model` — `loaded` / `on_disk` / `incomplete` / `missing`. `loaded` means the model is in the MCP server's in-memory cache and has completed one warmup encode, so search can use it without first-inference latency. `on_disk` means the files are fully present but the model is not inference-ready yet (for example, startup warmup is still loading, disabled for diagnostics, failed, or the server is in a read-only phase). `incomplete` means files exist but the set is partial — run `agentlaw init` (without `--skip-model`) to repair. `missing` means no model directory.
 - `embedding_model_on_disk` — `present` / `incomplete` / `missing`. Separates the file-presence signal from the in-memory signal above, so a client can tell whether a `missing`-on-memory state is caused by missing files or a failed load.
+- `embedding_model_load` — observable per-process load state without starting a model load: `{ status, elapsed_ms, last_error }`, where status is typically `not_started`, `loading`, `loaded`, `failed`, or `missing`. `loaded` means the MCP parent can use the worker for inference, proven by a parent-side readiness encode round trip. `failed` includes isolated worker spawn failures, startup timeouts, worker exits, readiness-validation failures, and model-load failures. Default hybrid search must not start a cold model load; it returns FTS results with a degraded note until the model is loaded.
 - `schema_version` (integer).
 - `kit_version` (string).
 - `embedding_runtime` — object containing `model_id`, `dimension`, `status`, `last_rebuild_at`, and `last_error` for the active vector-index contract.
@@ -724,6 +728,9 @@ directly.
 - `session_count` — number of returned rows.
 - `include_archived` and `limit` — effective query controls.
 - `sessions` — newest-first array of `{ session_id, plan_path, phase, round_number, current_persona, selected_personas, plan_content_hash, plan_contract_hash, created_at, updated_at, finalized_at, archived_at, pruned_at }`.
+- `recovery_status` — present on include-archived misses. `relocation_candidates_found` means exact path lookup missed, but archived sessions with matching plan name and/or content hash were found; `no_relocation_candidates` means no bounded candidate matched.
+- `relocation_candidates` — present when `recovery_status=relocation_candidates_found`; array of lookup-row payloads plus `candidate_reason`, `confidence` (`hash_and_name`, `hash`, or `name`), and `requested_plan_path`.
+- `next_actions` — present with relocation candidates. Hosts should prefer lookup on the original plan path, reconcile, and oracle continuation over raw SQLite inspection or path-only judgment.
 
 **Errors**
 - `invalid_limit` when `limit` is not integer-like.
@@ -1031,7 +1038,28 @@ Parse the plan body's acceptance criteria (every backticked `crit-*` identifier 
 
 The safe-subprocess runner enforces six trust-boundary mitigations: (1) the executable's basename must be on the `ORACLE_ALLOWED_EXECUTABLES` allowlist (`pytest`, `python`, `mutmut`, `hypothesis`, `agentlaw`); (2) the working directory is pinned to the workspace target and resolved with `Path.resolve()` so symlink / `..` tricks are neutralized at invocation; (3) `shell=False` so shell metacharacters in the oracle text are not interpreted; (4) per-command timeout (default 60 seconds, caller-overridable) kills runaway processes; (5) per-stream output cap (default 1 MiB, caller-overridable) truncates oversized output and stamps `output_truncated=True`; (6) the audit-trail row records the canonical command, exit code, captured I/O, and timestamps. Repeated identical commands in one oracle run execute once and fan out to every matching `crit-*`.
 
+For Python-family oracle commands (`python`, `pytest`, `mutmut`, and
+`hypothesis`), the runner also supplies repository source context when the
+target workspace is an agentlaw authoring checkout: if `src/agentlaw/__init__.py`
+exists under the target cwd, that `src` directory is prepended to `PYTHONPATH`
+while preserving any existing entries. Non-Python commands and workspaces
+without that source-tree marker keep the ordinary environment.
+
 Criteria whose oracle text contains the `user_confirms` marker are recorded with `status: pending` until `agentlaw_plan_review_oracle_user_confirm` marks them confirmed. Criteria with no extractable runnable command are also recorded `pending` with reason `no_runnable_command_extracted` so the host can choose to either rewrite the oracle text or invoke `oracle_user_confirm`.
+
+Pytest commands that exit with code `5` are classified as oracle-definition
+errors, not implementation failures: the per-criterion result is
+`status: error`, `error: pytest_no_tests_selected`. Timeout results are also
+archive-blocking `error` results such as `timeout_after_60s`; background jobs
+preserve `stdout_path` and `stderr_path` so the operator can inspect partial
+output before deciding whether to fix the oracle or rerun with a justified
+timeout.
+
+Pytest commands that cannot run because the oracle execution environment lacks
+pytest are classified as environment errors, not implementation failures:
+`status: error`, `error: oracle_environment_error`. This includes direct
+`pytest` executable resolution failure and `python -m pytest` stderr indicating
+that the `pytest` module is unavailable.
 
 **Parameters**
 - `session_id` (string, required).
@@ -1040,7 +1068,8 @@ Criteria whose oracle text contains the `user_confirms` marker are recorded with
 - `run_mode` (string, optional; default `inline`) — `inline` executes runnable oracles before returning; `background` persists one job per unique runnable command and returns running job ids; `poll` returns current stored job and criterion results without starting new commands.
 
 **Returns**
-- `session_id`, `phase`, `oracle_last_run_at`, `criteria_total`, `results_summary` (status → count map), `oracle_results` (full per-criterion record map). Background and poll responses also include `jobs`.
+- `session_id`, `phase`, `oracle_last_run_at`, `criteria_total`, `results_summary` (status → count map), `oracle_results` (full per-criterion record map). Background and poll responses also include `jobs` and `progress`.
+- `progress` (background/poll) — `{ criteria_total, criteria_completed, criteria_running, criteria_pending, criteria_blocked, percent_complete, jobs_total, jobs_running, jobs_finished }`. This is an operator-facing progress surface for long oracle jobs; it is not an archive gate by itself.
 
 **Errors**
 - `wrong_phase` when the session is not in `oracle_evaluation`.
@@ -1210,14 +1239,17 @@ Move a plan from `agentlaw_docs/plans/active/` or `agentlaw_docs/plans/draft/` t
 
 **Archive gate.** When the active session for the plan is in `oracle_evaluation` phase, the gate refuses the move unless every criterion in `oracle_results` resolves to `pass` or `user_confirmed`. Sessions never advanced to `oracle_evaluation` bypass this gate and archive under the original path for backward compatibility.
 
-For `oracle_evaluation` sessions, archive writes `Completed Closure Evidence` and `Plan Oracle Evidence` before moving the file. `Completed Closure Evidence` must include a parseable `Affected surfaces` line. The archive tool writes that line from `completed_closure_evidence.affected_surfaces` when supplied; otherwise it falls back to the reviewed plan body and copies the backticked tokens from its `Affected surfaces` field. It validates the completed body shape first and leaves the plan in place when closure evidence is invalid.
+For `oracle_evaluation` sessions, archive writes `Completed Closure Evidence` and `Plan Oracle Evidence` before moving the file. `Completed Closure Evidence` must include a parseable `Affected surfaces` line. The archive tool writes that line from `completed_closure_evidence.affected_surfaces` when supplied; otherwise it falls back to the reviewed plan body and copies the backticked tokens from its `Affected surfaces` field. `Plan Oracle Evidence` includes an `Evidence provenance` line. The default provenance for archive-generated oracle results is `mcp_oracle_results`; callers may supply `oracle_evidence.provenance` / `oracle_evidence.evidence_provenance` as `user_manual_confirmation`, `interrupted_manual_recovery`, or `legacy_archive_compatibility` when a manual or recovery path is explicitly justified. It validates the completed body shape first and leaves the plan in place when closure evidence is invalid.
 
 **Parameters**
 - `plan_path` (string, required) — repo-relative POSIX path to the plan file in active or draft.
 - `completed_closure_evidence` (object, optional) — caller-supplied closure fields. Supported keys:
   - `affected_surfaces` (string or list of strings, optional): repo-relative paths or globs, with or without backticks. When omitted, archive uses the reviewed plan body `Affected surfaces` tokens.
   - `note` (string, optional): compact closure note.
-- `oracle_evidence` (object, optional) — caller-supplied oracle note fields to include in the generated oracle evidence section.
+- `oracle_evidence` (object, optional) — caller-supplied oracle note fields to include in the generated oracle evidence section. Supported keys:
+  - `note` (string, optional): compact oracle note.
+  - `provenance` / `evidence_provenance` (string, optional): one of `mcp_oracle_results`, `user_manual_confirmation`, `interrupted_manual_recovery`, `legacy_archive_compatibility`.
+  - `reason` / `evidence_reason` (string, optional): required by convention for manual or interrupted recovery evidence so the evidence cannot masquerade as MCP oracle execution.
 
 **Returns**
 - `phase` — always `archived`.

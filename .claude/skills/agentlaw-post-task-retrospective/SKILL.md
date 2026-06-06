@@ -48,6 +48,31 @@ needs any durable route at all.
    use such as `invoked` or `applied`; do not inflate telemetry for mere
    reminders or unused matches.
 
+## Friction Candidate Loop
+
+During meaningful work, if a strange delay, repeated correction, tool timeout,
+cleanup failure, route ambiguity, or likely-to-repeat agent mistake appears,
+record a compact friction candidate through MCP memory or the next
+`agentlaw_session_save` log entry. Use a short title plus: trigger evidence,
+affected surface, current workaround, whether user approval may be needed, and
+the smallest pointer to the durable artifact or command output.
+
+At closeout, classify each candidate into exactly one outcome:
+
+- `already-covered`: existing law, test, verifier, skill, tracker, or docs cover
+  it; cite the covering artifact.
+- `chat-only`: low-risk local clarification that does not need durable change.
+- `memory/reference`: durable fact or investigation note without a rule change.
+- `tracker`: real debt or future enforcement candidate not fixed now.
+- `bugfix-reference`: concrete defect needing a reference note before planning.
+- `implementation-plan-needed`: approved follow-up work requires a reviewed
+  plan before execution.
+
+Do not auto-create an executable plan, mutate governance files, publish, or
+perform destructive cleanup from a friction candidate alone. For non-skill fixes,
+tell the user the recommended route in chat and ask for approval before turning
+the candidate into a bugfix reference or implementation plan.
+
 ## Skill Decision Rule
 
 Create or update a skill only when the lesson is a reusable agent workflow and

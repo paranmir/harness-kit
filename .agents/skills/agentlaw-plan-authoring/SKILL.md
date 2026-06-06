@@ -47,10 +47,12 @@ documents above:
 6. Keep `user_confirms` only for genuinely subjective confirmation.
 7. Include `Plan Review Evidence` and `Separate Persona Review Passes` in
    the shape required by `agentlaw_docs/planning-protocol/review-method.md`.
-8. Run the MCP persona-review loop before execution for non-trivial plans.
-9. Do not edit reviewed contract sections after review unless the changed
+8. For code-changing plans, mark `- substance: code` and fill the Code Plan
+   Fidelity profile before execution.
+9. Run the MCP persona-review loop before execution for non-trivial plans.
+10. Do not edit reviewed contract sections after review unless the changed
    sections are re-reviewed.
-10. After implementation, run the oracle phase and archive gate before
+11. After implementation, run the oracle phase and archive gate before
     treating the plan as complete.
 
 ## Operating Rule

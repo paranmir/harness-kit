@@ -69,7 +69,7 @@ The Direct Procedure below is a self-contained version of step 2 that begins wit
 ## Required Inputs
 Before using this document, read:
 - `AGENTLAW_CONSTITUTION.md`
-- `references/shared-agentlaw-baseline.md` when it exists
+- `agentlaw_docs/references/shared-agentlaw-baseline.md` when it exists
 - the current localized law layer in `agentlaw_docs/law/*`
 - local rule memory under `agentlaw_memory/rules/*` when it exists
 - `agentlaw_docs/plans/tech-debt-tracker.md`
@@ -91,8 +91,70 @@ Use this document as a direct procedure even if no prompt block is reused.
 9. Refresh the shared baseline record to the shared version now reflected in the project.
 10. Update `AGENTS.md` routing if the read path changed.
 11. Verify that every new shared requirement is traceable in the resulting localized law or explicitly recorded as deferred with an owner and reason.
-12. Run `agentlaw align --check --target .` and use `agentlaw align --write --target .` only for safe routing updates that the command marks autofixable.
-13. Re-run `agentlaw setup-status --target .` before handoff and report remaining gaps. Use `--after-update` only immediately after the terminal package upgrade and before the LLM-driven merge; after the merge, the normal status command is the readiness check. If MCP registration, runtime context restore, schema, optional embedding state, or a governance merge conflict still appears in `not activated`, `not installed`, `unknown`, or unresolved status, name that state and the next action instead of presenting the update as fully active.
+12. Perform the Post-Migration Cleanup and Runtime Alignment checks below when the update changes canonical paths, runtime location, memory behavior, MCP registration, or setup-status output.
+13. Run `agentlaw align --check --target .` and use `agentlaw align --write --target .` only for safe routing updates that the command marks autofixable.
+14. Re-run `agentlaw setup-status --target .` before handoff and report remaining gaps. Use `--after-update` only immediately after the terminal package upgrade and before the LLM-driven merge; after the merge, the normal status command is the readiness check. If MCP registration, runtime context restore, schema, optional embedding state, or a governance merge conflict still appears in `not activated`, `not installed`, `unknown`, or unresolved status, name that state and the next action instead of presenting the update as fully active.
+
+## Post-Migration Cleanup And Runtime Alignment
+
+When a shared-kit update changes canonical target paths, duplicate old and new
+governance trees are not a valid steady state. Inventory old paths, preserve
+non-agentlaw project references, verify the migrated content, then remove only
+confirmed migration residue.
+
+Use this ownership map:
+
+| Legacy path | Current path | Default action |
+| --- | --- | --- |
+| `docs/law/*` | `agentlaw_docs/law/*` | backup if needed, verify migrated, then remove old governance tree |
+| `docs/contracts/*` | `agentlaw_docs/contracts/*` | backup if needed, verify migrated, then remove old governance tree |
+| `docs/planning-protocol/*` | `agentlaw_docs/planning-protocol/*` | backup if needed, verify migrated, then remove old governance tree |
+| `docs/plans/*` | `agentlaw_docs/plans/*` | backup if needed, verify migrated, then remove old governance tree |
+| `memory/*` | `agentlaw_memory/*` | backup if needed, verify MCP/index repair, then remove old memory tree |
+| `references/*` or product `docs/references/*` | project-owned reference layer | preserve unless the user explicitly asks to migrate product references |
+
+Do not delete product WBS files, design notes, product references, or local
+project overview material just because their path begins with `docs/`.
+Only remove agentlaw-owned governance, plan, contract, planning-protocol, or
+memory residue after verifying its current counterpart exists.
+
+Hybrid memory remains the expected runtime target. `memory_search` defaults to
+hybrid behavior; FTS-only search is a degraded state to report unless the user
+explicitly accepts the downgrade. Before declaring an update complete, verify
+runtime state with the available MCP or CLI path:
+
+```powershell
+agentlaw session-restore --target . --json
+agentlaw memory-runtime-repair --target .
+agentlaw verify .
+agentlaw align --check --target .
+```
+
+For local model repair paths, prefer offline execution so a repair does not
+silently fetch from the network:
+
+```powershell
+$env:HF_HUB_OFFLINE='1'
+agentlaw memory-runtime-repair --target .
+```
+
+If pipx vector/model imports fail, repair the pipx environment or install the
+documented package extra instead of accepting FTS-only as final readiness. Do
+not guess dependency pins in project docs; package constraints own the supported
+model stack.
+
+After dependency, registration, or path changes, restart or reload the host
+agent session, call `agentlaw_session_restore` through MCP when available, and
+compare setup-status output against direct host evidence:
+
+```powershell
+codex mcp get agentlaw-memory --json
+claude mcp get agentlaw-memory --json
+```
+
+If setup-status reports inactive registration while direct host checks or a
+successful MCP restore prove the server is active, report a setup-status
+detector discrepancy instead of asking the user to re-register a working host.
 
 ## Completion Checks
 An update run is complete only when:
@@ -132,7 +194,7 @@ Follow these rules:
 - Do not re-derive local facts from code unless a new shared requirement specifically demands new code inspection.
 - Do not replace localized law documents with fresh starter templates.
 - Do not treat this as a bootstrap. The project already has project-specific law.
-- Prefer the recorded shared-harness baseline in `references/shared-agentlaw-baseline.md` when identifying the previous shared version.
+- Prefer the recorded shared-harness baseline in `agentlaw_docs/references/shared-agentlaw-baseline.md` when identifying the previous shared version.
 - When shared starter text conflicts with local authority, preserve the stricter or more specific local rule unless a higher-authority shared requirement explicitly supersedes it; otherwise record the conflict and stop.
 
 Procedure:
@@ -140,7 +202,7 @@ Procedure:
 0. If the project uses the pip-package distribution, run `pipx upgrade agentlaw` before invoking the LLM-driven steps. The pipx upgrade replaces pip package code, brings the new bundled shared kit into the package, and automatically applies any pending schema migrations to `.agentlaw/index/meta.db`. Skip this step only when the shared kit is delivered through another channel.
 
 1. Identify what changed in the shared kit.
-   - First read `references/shared-agentlaw-baseline.md` if it exists.
+   - First read `agentlaw_docs/references/shared-agentlaw-baseline.md` if it exists.
    - Before comparing, inventory existing `agentlaw_docs/law/*`, `agentlaw_memory/rules/*`, tracker entries, local exemptions, stricter local requirements, known discrepancies, and behavioral oracle content.
    - Compare the new shared kit files against the baseline commit or tag the project was last bootstrapped or updated from.
    - If the baseline file is missing or incomplete, read the new shared kit files and compare their requirements against the current project law layer to identify gaps.
@@ -167,7 +229,7 @@ Procedure:
    - Update `agentlaw_docs/law/MECHANICAL_ENFORCEMENT_POLICY.md` if new enforcement-relevant requirements appeared.
 
 5. Refresh the shared baseline record.
-   - Update `references/shared-agentlaw-baseline.md` to record the shared source repository and the commit or tag now reflected in the project.
+   - Update `agentlaw_docs/references/shared-agentlaw-baseline.md` to record the shared source repository and the commit or tag now reflected in the project.
    - If the exact baseline is still uncertain, keep the uncertainty explicit in the notes.
 
 6. Update `AGENTS.md` if needed.
@@ -187,7 +249,7 @@ A correct update should produce:
 - updated root-level mirror files matching the new shared kit
 - localized law documents that incorporate new shared requirements while preserving all prior local facts
 - reviewed tracker entries with promotions or new items when applicable
-- refreshed `references/shared-agentlaw-baseline.md`
+- refreshed `agentlaw_docs/references/shared-agentlaw-baseline.md`
 - updated `AGENTS.md` routing if the read-first order changed
 - when the update introduces or modifies the "Code architecture map" obligation in shared law, populate or refresh the corresponding section in the local `project-overview` reference before the next `agentlaw verify`; leaving the `Map scope:` block undeclared keeps the Layer 2 freshness check in skip mode
 

@@ -16,12 +16,13 @@ starter content that gets installed into projects.
 When an LLM is asked to install agentlaw for this project, use the PyPI
 package as the install source and then complete the project bootstrap:
 
-1. Install or update the CLI with `pipx install agentlaw` or
-   `pipx upgrade agentlaw`. Use `pipx install "agentlaw[embeddings]"` only
-   when local semantic embeddings are wanted.
-2. Run `agentlaw init . --skip-model --setup-agents prompt` in the chosen
+1. Install or update the CLI with `pipx install agentlaw`
+   or `pipx upgrade agentlaw`.
+2. Run `agentlaw init . --setup-agents prompt` in the chosen
    project root. For an already-initialized project, use
-   `agentlaw init . --merge --skip-model`.
+   `agentlaw init . --merge`. Use `--skip-model` only when the target already
+   has a complete embedding model or the user explicitly accepts FTS-only
+   memory search.
 3. Follow the emitted MCP registration instructions, then restart the agent
    host so the `agentlaw-memory` server is visible.
 4. In the next session, call `agentlaw_session_restore` through MCP or run
@@ -54,8 +55,6 @@ are not already in the initialized project root.
 ```bash
 # Install or update the CLI
 pipx install agentlaw
-pipx install "agentlaw[embeddings]"
-pipx inject agentlaw sentence-transformers huggingface_hub
 pipx upgrade agentlaw
 agentlaw --version
 
@@ -64,8 +63,8 @@ agentlaw --version
 pipx upgrade agentlaw --pip-args "--no-cache-dir --index-url https://pypi.org/simple"
 
 # Initialize or merge the harness into a project
-agentlaw init . --skip-model --setup-agents prompt
-agentlaw init . --merge --skip-model
+agentlaw init . --setup-agents prompt
+agentlaw init . --merge
 
 # Register, inspect, or repair agent host integration
 agentlaw agent-setup --client auto --target . --verify

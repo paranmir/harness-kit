@@ -160,9 +160,70 @@ Every `crit-*` carries an `Oracle:` marker for
   oracle_check WARN and Acceptance Criteria Reviewer scrutiny.
 - Long-running runnable commands should use oracle-check background mode and
   poll mode rather than repeating the same command inside a blocking call.
+- Pytest selectors must match at least one test. `pytest` exit code `5`
+  is treated as the oracle-definition error `pytest_no_tests_selected`, not as
+  proof that the implementation failed.
+- Long full-suite oracles should carry an execution plan for timeout handling:
+  use background/poll when host tool-call timeouts are plausible, and treat
+  `timeout_after_*` as archive-blocking until the oracle is narrowed, fixed, or
+  rerun with a justified timeout.
+- Behavior claims must name the execution stratum they depend on when source,
+  package, live runtime, external service, or persisted state paths can differ.
+  Use the phrase `execution stratum` and one of: `source unit`, `package
+  install`, `live installed CLI/MCP`, `external service`, or `persisted runtime
+  state`. Source-only tests may satisfy only source-stratum claims unless the
+  plan records an explicit `accepted-risk` row for the omitted stratum.
+- For source-tree Python checks in the agentlaw authoring workspace, write the
+  oracle as the normal Python or pytest command. The oracle runner supplies the
+  repository source context for an authoring checkout; do not encode
+  shell-specific `PYTHONPATH=src` prefixes in the plan body unless the criterion
+  is explicitly testing shell invocation behavior.
 - While editing implementation behavior, use focused checks for the changed
   surface. Run the full project pytest suite once at final readiness before
   commit, push, release, or any public-ready claim.
+
+## Code Plan Fidelity
+
+[Required only when `## Domain Coverage` marks `- substance: code`. Omit for
+non-code plans.]
+
+### Repository Discovery
+
+- Inspected surfaces: [backticked files, symbols, commands, tests, fixtures,
+  or contracts read before implementation]
+- Existing tests/checks: [what currently verifies related behavior]
+- Existing structure to follow: [local pattern or boundary to preserve]
+- Structure-fit decision: [reuse, extend, or introduce new boundary; reason]
+
+### Behavior Contract
+
+- Current behavior:
+- Target behavior:
+- Explicitly unchanged behavior:
+- Public contract impact:
+- Failure cases:
+- Negative/adversarial cases:
+
+### Change Matrix
+
+| Surface | Symbol/contract | Change intent | Public impact | Verification pairing |
+| --- | --- | --- | --- | --- |
+| `...` | `...` | `...` | yes/no | `...` |
+
+### Test and Verification Contract
+
+- Focused tests/checks:
+- Regression or characterization tests:
+- Broader verification:
+- Manual-only checks, if any:
+- Verification commands:
+
+### Stop Conditions
+
+- Stop if repository discovery contradicts the plan premise.
+- Stop if public contract impact expands.
+- Stop if no runnable oracle can be attached.
+- Stop if required test/check pairing cannot be added.
 
 ## Scope
 
@@ -519,6 +580,8 @@ plan-body amendment provenance against this section.]
 
 ```text
 - Last oracle run: YYYY-MM-DDThh:mm:ss.fffZ
+- Evidence provenance: mcp_oracle_results | user_manual_confirmation | interrupted_manual_recovery | legacy_archive_compatibility
+- Evidence reason: <required for manual or interrupted recovery evidence>
 - Mutmut module list: <comma-separated paths passed to --paths-to-mutate>
 - Mutmut score: <surviving>/<total> = <ratio> (threshold: 0.40)
 - Hypothesis max_examples: <integer>
