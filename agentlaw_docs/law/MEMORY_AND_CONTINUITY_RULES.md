@@ -422,6 +422,29 @@ This discipline matters because the working set is read at every
 `agentlaw_session_restore`. The response packet's token cost scales with every
 additional character, while logs are searchable and not always loaded.
 
+#### Immediate Friction Capture
+
+When command, tool, MCP, hook, plan-review, oracle, archive, commit, push, or
+publish friction is high-impact or likely to repeat, the agent must capture a
+compact friction note when the failure happens. Do not wait until final
+closeout if the retry rule would help the same session or the next session.
+
+Before retrying, search memory/logs for the exact command or tool, shell or
+runtime, working directory or target scope, and error shape. After the search,
+choose exactly one route:
+
+- `covered_by_existing_record`: cite the law, test, verifier, tracker, docs, or
+  memory id that already controls recurrence.
+- `compact_log_required`: if impact or recurrence remains, write a compact log
+  through MCP memory or the next `agentlaw_session_save` `log_entry`.
+- `explicit_non_save_reason`: state why the event is low-risk, one-off, or not
+  useful as durable memory.
+
+Compact notes should include trigger evidence, affected surface, current
+workaround, approval need, and the smallest durable pointer. Do not edit memory
+files directly. Do not promote the note into law, tests, tracker, or a plan
+without the normal authority path.
+
 ## `LOOKUP_RULES.md` Syntax
 `agentlaw_memory/LOOKUP_RULES.md` defines retrieval policy with predictable Markdown sections.
 
@@ -496,6 +519,12 @@ active_rules:
     summary: string
     applies_when: [always]
     status: active
+recent_friction_logs:
+  - id: log/YYYY-MM-DD/example
+    kind: correction
+    title: string
+    path: agentlaw_memory/logs/YYYY-MM/YYYY-MM-DD.md
+    body_included: false
 open_questions:
   - question: string
     source: path-or-memory-id
@@ -521,6 +550,7 @@ Rules:
 - The packet should include compact `authority_recall` guidance for memory subsystem work, artifact structure changes, and promotion decisions. This is runtime guidance only; it must not create durable "authority checked" records.
 - The packet must state which path produced it (MCP or CLI fallback), so that consumers can recognize a degraded session at restore time rather than at first memory write. The agent's restore summary to the user must carry the same disclosure; see the Canonical Memory Operation Path section.
 - The packet must include `active_rules` whenever active rules exist in the packet's scope. Rules with `applies_when: [always]` appear with id, scope, summary, `applies_when`, and status; rules with non-`always` triggers appear with the same compact shape — consumers expand a full body by id only when the trigger matches the current request. The field may be omitted or empty when no active rules are present.
+- The packet should include compact `recent_friction_logs` summaries when recent logs suggest command, tool, MCP, plan-review, oracle, archive, commit, push, or publish friction. Log bodies stay out of this field; consumers fetch by id when substance is needed.
 
 ## Markdown-Only Session Continuity
 Before runtime services, indexes, or MCP tools exist, Harness session continuity uses the canonical Markdown layer directly.
@@ -807,8 +837,8 @@ The full tool surface is exposed as default capabilities. The signature referenc
 - **`memory_propose_promotion`** — create a candidate for reviewed promotion of memory into law, plan, reference, or shared artifact. **Must not** directly promote; only proposes for review through the normal change path.
 
 ### Session Tools
-- **`agentlaw_session_restore`** — implements the Canonical Restore Route above; returns the compact packet and runtime `authority_recall` guidance, including the Memory Intent Rule.
-- **`agentlaw_session_save`** — implements the Canonical Save Route above and returns `promotion_reminder` plus `memory_intent_reminder` reminders without runtime-selected candidates.
+- **`agentlaw_session_restore`** — implements the Canonical Restore Route above; returns the compact packet and runtime guidance including authority recall, memory intent, planning discipline, and friction capture reminders.
+- **`agentlaw_session_save`** — implements the Canonical Save Route above and returns promotion, memory intent, planning discipline, and friction capture reminders without runtime-selected candidates.
 
 ### Operational Tools
 - **`memory_runtime_check`** — preview a memory runtime repair from canonical Markdown without creating a job row or mutating DB, FTS, or vector tables. Use before repair when source drift is suspected and the agent needs counts/warnings only.

@@ -25,6 +25,13 @@ must label the plan `Status: draft (review skipped per user request, not
 executable)`, which downstream verifier and archive paths treat as
 non-executable.
 
+When the user explicitly directs the agent to skip review **and proceed with
+execution or implementation**, the plan may remain active without persona
+passes. Record `Review required: no`, `Plan reviewed: no`, and `Review
+exemption reason: explicit user authorization - <concise request evidence>`.
+Do not write `Plan reviewed: yes` or fabricate persona evidence. A request for
+draft-only output is not an executable bypass.
+
 ## Workflow
 
 Use this sequence when `task-classification.md` says planning is required:
@@ -48,7 +55,9 @@ Use this sequence when `task-classification.md` says planning is required:
    validates the trigger marking and the Domain Coverage self-mark against the
    plan content.
 7. For non-trivial work, run the **Deep Review Selector** and selected
-   deep-review personas sequentially, one persona per turn.
+   deep-review personas through the review state machine. The host may
+   collect persona reviews in parallel, but findings must be submitted in
+   the session's persona order.
 8. Run review-lint checks over review outputs.
 9. Consolidate findings.
 10. Revise the plan. **Section-based re-review**: when revisions affect a
@@ -56,8 +65,8 @@ Use this sequence when `task-classification.md` says planning is required:
    primary or optional sections (per `persona-section-map.md`) include the
    revised sections. Personas whose sections were not revised do not need
    re-invocation.
-11. Execute the revised plan or ask for user approval when required by
-    `Execution Gates`.
+11. Execute the revised plan, or the active user-authorized review-bypass
+    plan, or ask for user approval when required by `Execution Gates`.
 
 For trivial plan-required work, only step 5's Trigger Coverage Verifier
 runs. If it confirms the trivial classification, no further personas
@@ -73,7 +82,8 @@ machine rather than by host self-discipline:
 
 1. `agentlaw_plan_review_session_start(plan_path, intent_text,
    selected_personas?)` opens the session, returns the first interview
-   question, and locks the plan body's content hash for the session.
+   question, locks the plan body's content hash, and initializes observable
+   review-stage and finding-lifecycle state.
 2. `agentlaw_plan_review_interview_answer_submit(user_answer,
    clarity_scores, opposite_scenario)` records each interview turn. The
    tool computes weighted clarity and the minimum per-axis clarity from
@@ -83,20 +93,45 @@ machine rather than by host self-discipline:
    confirms or rejects the host's own scoring. Persona review begins
    only when verdict is `pass`, weighted clarity is at least `0.995`,
    and every scored axis is at least `0.995`.
-4. `agentlaw_plan_review_finding_submit(persona, mandate_quote,
-   finding_text, plan_line_citations, severity)` is called once per
-   selected persona per round. The tool checks the persona matches the
-   current slot, the mandate quote matches the persona deck verbatim
-   (after whitespace canonicalization), and each plan-line citation
-   matches the plan body byte-for-byte.
-5. `agentlaw_plan_review_round_check()` evaluates the round at its
-   boundary. Two consecutive zero-finding rounds run the Review Quality
-   Gate and, when it passes, leave the session in
-   `persona_review_round_check` with a finalize-pending marker; a score
-   below the threshold restarts the review from round 1. Stagnation (same
-   persona citing the same plan line in consecutive rounds) or hitting the
-   round cap stalls it.
-6. `agentlaw_plan_review_session_finalize()` first verifies any applicable
+4. `agentlaw_plan_review_batch_manifest()` and then
+   `agentlaw_plan_review_batch_findings_submit(findings, batch_effort_evidence,
+   review_start_disclosure)` is the default
+   persona-review route. The host fans out each selected persona to a
+   subagent, then submits findings in manifest order with
+   `review_source: subagent` and a reviewer run id. Self-review is a
+   fallback only when the user explicitly requested it or subagents cannot
+   be called; those batch findings must use the matching self-review
+   `review_source` and state the reason. `agentlaw_plan_review_finding_submit`
+   remains the per-persona state-machine submitter. Both submit paths check
+   the persona matches the current slot, the mandate quote matches the
+   persona deck verbatim (after whitespace canonicalization), and each
+   plan-line citation matches the plan body byte-for-byte. The MCP server
+    never runs the external reviewers; it only records validated findings
+    and advances session state. Before or as reviewer work begins, tell the
+    user the actual model or model class, reasoning effort, fallback status,
+    and selected concurrency returned or chosen for that review. Submit the
+    same bounded values with the findings.
+5. After Trigger Coverage, derived specialists remain candidates rather than
+   scheduled reviewers. Run an independent Deep Review Selector and submit one
+   complete selected/N/A decision set through
+   `agentlaw_plan_review_deep_review_selection_submit()`. The tool schedules
+   only selected candidates and rejects partial, duplicate, unknown, or
+   provenance-free decisions. Trigger completion returns an opaque host
+   submission capability. Keep it in the parent host, give selector subagents
+   a bounded context containing candidate data but not the capability, and have
+   them return decisions only. The parent submits the returned decisions with
+   the capability.
+6. `agentlaw_plan_review_round_check()` evaluates the completed review batch.
+   It routes all open substantive findings into one synthesis stage;
+   independent persona amendment operations are not applied directly.
+7. `agentlaw_plan_review_synthesis_submit()` records considered
+   alternatives and one disposition per finding, applies the integrated change
+   atomically against the locked plan hash, and selects only finding owners and
+   primary-section reviewers needed for the changed sections. Targeted review
+   explicitly closes verified finding ids. Once all findings close,
+   `agentlaw_plan_review_outcome_sufficiency_submit()` independently checks the
+   cited user-need-to-result chain and the improvement-quality gate.
+8. `agentlaw_plan_review_session_finalize()` first verifies any applicable
    `## Review Coverage Matrix` is closed: no `needs_user_answer` rows,
    no invalid statuses, evidence on `covered` / `accepted_risk`, rationale on
    `not_applicable` / `out_of_scope`, and `crit-*` linkage for rows that claim
@@ -106,13 +141,76 @@ machine rather than by host self-discipline:
    `Plan reviewed: yes` and `Plan contract hash` into the plan body, then
    refresh both the whole-body content hash and reviewed-contract-section
    hash.
-7. `agentlaw_plan_archive(plan_path, completed_closure_evidence?,
-   oracle_evidence?)` writes completed closure/oracle evidence, validates
-   the completed body shape, moves the plan to `agentlaw_docs/plans/completed/`,
-   and archives the session row in one operation when the work the plan
-   governs is done.
+9. `agentlaw_plan_review_execution_entry_check()` compares the reviewed
+   source/protocol baseline immediately before implementation. When it reports
+   drift, refresh every reported affected section and call
+   `agentlaw_plan_review_execution_entry_refresh()`. The tool opens only the
+   mapped targeted reviewers and clears stale readiness. Repeat targeted review,
+   Outcome Sufficiency, Self-Challenge, and finalize, then rerun the entry check.
+   Drift is not a delivery oracle.
+10. `agentlaw_plan_archive(plan_path, completed_closure_evidence?,
+    oracle_evidence?)` writes completed closure/oracle evidence, validates
+    the completed body shape, moves the plan to `agentlaw_docs/plans/completed/`,
+    and archives the session row in one operation when the work the plan
+    governs is done.
+
+### Reviewer effort policy
+
+`agentlaw_plan_review_batch_manifest` exposes provider-neutral
+`reviewer_effort_policy` version `2`. Reviewer coverage and concurrency stay
+independent from model or reasoning effort. New subagent submissions require
+version-2 evidence; persisted pre-v2 findings remain readable under their
+recorded meaning.
+
+- `standard` is the default tier. For deterministic format, mapping, and schema
+  checks, prefer a fast cost-efficient capability with low or default
+  reasoning. For ordinary semantic or documentation judgment, prefer a
+  balanced capability with middle or default reasoning.
+- `deep` is allowed only for a materially difficult architecture, data-loss,
+  security, concurrency, irreversible-action, or external-contract judgment.
+  Use a higher-capability model or higher reasoning and record the reason.
+- `exceptional` uses the strongest available model and reasoning only when the
+  user explicitly requests it.
+- When the host cannot set or report model or reasoning controls, use the
+  closest host default, disclose the unavailable controls and observable
+  choices, and do not reduce reviewer coverage or accepted concurrency.
+- Unknown additive policy fields may be ignored or reported without changing
+  fallback behavior. An unsupported value in an existing field must be
+  reported and use the documented `standard` fallback or be rejected; it must
+  not be guessed. Incompatible semantics require a policy-version increment
+  and migration guidance.
+- Choose concurrency by reasoning from the current host's observable policy,
+  capacity, availability, and workload. Use the greatest currently safe
+  concurrency without reducing the required reviewer roster. Do not copy a
+  provider-specific or fixed numeric limit into shared policy. Reassess the
+  choice whenever host capability or policy changes.
+- Before or as review begins, report the actual model or model class, reasoning
+  effort, fallback status, and selected concurrency in the user-visible
+  channel. The MCP validates the submitted bounded record and its ordering.
+  These values remain host assertions unless provider or runtime telemetry
+  verifies them; user acknowledgment does not attest their accuracy or gate
+  review readiness.
+- Choose capability from the hardest material judgment in the assigned review
+  task. Persona names do not determine tiers. A mixed task uses the highest
+  materially required class and records the escalation reason when it uses
+  `deep`.
+
+For each reviewer run, retain the persona, selected tier, actual model or model
+class, reasoning effort, escalation reason, and capability fallback when those
+values are observable. Retain one bounded batch record and one linked
+review-start disclosure record. Validate the complete batch before one
+transactional write; a late invalid item leaves findings and convergence state
+unchanged. Do not retain reviewer prompt or response content for effort
+accounting.
 
 ### Plan-review session atomicity
+
+`agentlaw_plan_review_session_start` completes bounded preflight analysis before
+it persists a session. It then writes the fully initialized interview state in
+one transaction. A preflight failure therefore leaves no active session. If a
+successful response is lost, retrying the same untouched request returns the
+existing session; a changed plan, intent, persona selection, or round cap
+remains a conflict.
 
 Once `agentlaw_plan_review_session_start` opens a session, the host drives
 the flow through `agentlaw_plan_review_session_finalize` and
@@ -148,9 +246,22 @@ Auxiliary tools handle exceptional flow:
 - `agentlaw_plan_review_session_resume(user_intervention_note)` exits a
   stalled session and starts a fresh round once the user has resolved
   the stagnation or cap.
-- `agentlaw_plan_review_session_abandon` archives a stalled session
-  without moving the plan file when the host gives up on the current
-  attempt.
+- `agentlaw_plan_review_session_abandon` archives any in-progress review stage
+  without moving the plan file, records the prior stage and reason, and is
+  idempotent on retry. It does not replace final archive for finalized or
+  oracle-evaluation sessions.
+
+Substantive findings use `open`,
+`amend_pending_verification`, `resolved`, `accepted_risk`, or
+`false_positive`. `agentlaw_plan_review_finding_transition` owns these
+transitions. Finalization is blocked while a must-change or should-change
+finding remains open or pending, and accepted risk requires explicit user
+authorization.
+
+Self-Challenge remains a real improvement gate. A material
+weakness does not land as an unreviewed final edit: it reopens synthesis,
+targeted review, and Outcome Sufficiency. A no-amend response must still cite
+and justify the closed finding record.
 
 The verifier's `_test_plan_review_session_consistency` check enforces
 that any active plan claiming `Plan reviewed: yes` is backed by a
@@ -257,11 +368,11 @@ persona passes found no must-change or should-change items.
 Do not mark `Plan reviewed: yes` until the separate persona passes are
 actually performed and recorded.
 
-Stop execution if review was skipped, `Plan reviewed: yes` was written
-before persona passes, trivial classification was wrong, or scope expands into
-a non-trivial trigger. Reclassify, update fields and Domain Coverage, rerun the
-required review depth, record governance-relevant correction, then resume only
-from the revised plan.
+Stop execution if review was skipped without explicit user authorization to
+execute, `Plan reviewed: yes` was written before persona passes, trivial
+classification was wrong, or scope expands into a non-trivial trigger.
+Reclassify, update fields and Domain Coverage, rerun the required review depth,
+record governance-relevant correction, then resume only from the revised plan.
 
 ## Persona Review Contract
 
@@ -338,14 +449,15 @@ current attempt findings, resets `round_number` to `1`, sets
 Sessions with no selected personas are treated as `not_applicable` for
 backward compatibility and pass the gate.
 
-### Oracle Definition And Timeout Errors
+### Project Verification Jobs
 
-The oracle phase distinguishes implementation failure from oracle-definition
-failure. A pytest command exiting with code `5` means no test matched the
-selector, so `agentlaw_plan_review_oracle_check` records
-`pytest_no_tests_selected` as an archive-blocking error. Timeout results are
-also archive-blocking errors, not evidence of pass/fail; background mode
-preserves stdout/stderr paths for operator inspection.
+`agentlaw_plan_review_oracle_check` prepares and reports jobs; it does not run
+project commands. Run each returned `agentlaw verify-run` command in a visible
+project terminal, then call `oracle_check` again to read the recorded result.
+The command after `--` is the plan's exact direct argv. The CLI does not choose
+or rewrite a project runtime. Nonzero exits are test failures; missing tools,
+timeouts, cleanup failure, stale identity, and command mismatch are explicit
+archive-blocking states with bounded stdout/stderr evidence.
 
 ### Oracle Marker WARN
 
@@ -387,7 +499,9 @@ A persona mandate that follows the pattern should specify:
 3. **Structured output schema** — normally Status, Severity, Inspected
    sections, Evidence, Plan risk found, Required plan change, Verification or
    gate to add, and Residual risk if accepted. The MCP tool already enforces
-   `mandate_quote`, `plan_line_citations`, and `severity`.
+   persona identity, plan-line citations, severity, and substantive fields.
+   It derives canonical mandate and cited text from server-owned sources;
+   clients may echo them for validation but do not need to repeat them.
 4. **Recommend-not-require framing** — domains may diverge when a different
    structure is justified; name the reason inline.
 
@@ -407,7 +521,9 @@ Reviewer, and the Domain 5 test-adequacy personas in
    persona and the minimum plan-lint profile.
 4. For non-trivial plan-required work: run Trigger Coverage Verifier first,
    run Deep Review Selector, then run selected universal, substance-triggered,
-   and sensitive-domain personas sequentially; finish with review-lint.
+   and sensitive-domain personas through the review state machine; finish
+   with review-lint. Host-side parallel reviewer execution is allowed when
+   findings are submitted in session order.
 5. If a plan-exempt class escalates, treat it as non-trivial plan-required
    and apply step 4.
 6. If the class is conditional, use the corresponding deck per the
@@ -417,7 +533,7 @@ Reviewer, and the Domain 5 test-adequacy personas in
    test/check pairing, runnable oracles, and stop conditions. Missing
    profile substance is a required plan change, not a style note.
 7. If a task has multiple classes, union applicable personas, deduplicate, and
-   run sequentially.
+   preserve the resulting persona order when submitting findings.
 8. Universal concerns are always checked, but not always isolated turns.
 9. Always isolate trust boundary, permission, sensitive data, state migration,
    external contract, irreversible action, rollback, governance/rule-system
@@ -448,6 +564,18 @@ Activate every persona whose §Selection Rule reason holds. Record each reason
 verbatim; skipped reviewers need an N/A reason such as trigger absent, section
 not touched, or lint passed. Do not use "not run" to hide a triggered
 high-risk concern.
+
+The MCP state machine keeps derived candidates separate from scheduled
+reviewers. After Trigger Coverage, an independent selector must submit exactly
+one `selected` or reasoned `not_applicable` decision for every current candidate
+through `agentlaw_plan_review_deep_review_selection_submit`. Only selected
+candidates become roster members and reviewer turns. If the plan changes the
+candidate's activation reason, its fingerprint changes and the old disposition
+cannot satisfy the new candidate. The Trigger transition's opaque host
+submission capability is required for the mutation and is intentionally absent
+from session lookup and batch manifest responses. Do not include it in selector
+subagent context; this preserves parent-owned ordered submission even when the
+subagent can see the MCP server.
 
 ## Consolidation
 
@@ -482,25 +610,22 @@ that translate this bar into rejection codes.
 
 ## Substance Enforcement (mechanical)
 
-The MCP server enforces a sentence-count and field-presence shape
-on every persona finding to keep the false-readiness pattern from
-recurring.
+The MCP server enforces a field-presence and non-placeholder shape on every
+persona finding. It rejects missing reasoning without rewarding repetition or
+fixed prose length.
 
 - `finding_submit` returns
   `error: "finding_text_below_prescriptive_mandate"` with a
   `details` list when the payload fails the shape:
-  - `severity` in `{must-change, should-change}` requires at
-    least 3 sentences in each of `Evidence`, `Plan risk`,
-    `Required plan change`, `Verification` (extracted by
-    `<Field>:` prefix substring search);
+  - `severity` in `{must-change, should-change}` requires non-placeholder
+    content in each of `Evidence`, `Plan risk`, `Required plan change`, and
+    `Verification` (extracted by `<Field>:` prefix substring search);
   - `severity = note` requires the literal token `PASS`
-    (case-insensitive) and a total of at least 3 sentences;
-    if the persona deck declares Coverage items, at least one
+    (case-insensitive); if the persona deck declares Coverage items, at least one
     Coverage item must appear by verbatim string in the note
     body.
-- Sentence count splits the field text on the regex
-  `[.!?。][\s]+|[.!?。]$|\n{2,}` (English `.!?` plus CJK `。`)
-  and drops empty segments.
+- Placeholder-only values such as `none`, `n/a`, `tbd`, `unknown`, or `pending`
+  do not satisfy a required field. No fixed sentence quota applies.
 - `finding_submit` also accepts an optional `amend_proposal:
   list[op]` field. Each op is a dict
   `{type, target, content, rationale}` where `type` is one of
@@ -510,13 +635,10 @@ recurring.
   must-change / should-change calls yields a non-blocking
   `amend_proposal_missing_legacy_warning` in the success
   payload while the parameter remains optional.
-- `round_check` aggregates each round's amend ops, calls
-  `detect_op_conflicts`, and on no-conflict batch-applies via
-  `apply_ops_to_plan`, updating `plan_content_hash` on the
-  session row. A conflict (two ops on the same section header
-  from different personas) is returned as `pending_conflicts`
-  and blocks phase advance until
-  `agentlaw_plan_review_resolve_amend_conflict` clears it.
+- `round_check` does not apply independent persona amendment operations.
+  It returns all open substantive findings for one integrated synthesis,
+  which applies a hash-locked plan change atomically and then opens only the
+  targeted review needed for the changed sections.
 - `session_finalize` refuses with
   `error: "self_challenge_required"` unless
   `agentlaw_plan_review_self_challenge_submit` has recorded a
@@ -527,26 +649,35 @@ recurring.
   state) or a no-amend justification (`type="full_justification"`
   whose `entries` cover every persisted must-change /
   should-change finding with a `plan_body_citation` plus a
-  `justification` of at least 3 sentences; use it only when the
+  non-placeholder `justification`; use it only when the
   current plan body already covers the findings and does not need
   an edit). When there are no persisted must-change / should-change
   findings, the no-amend justification must carry
   `all_clear_challenge` with `weakest_review_axis`,
-  `plan_body_citation`, `challenge_question`, and a `justification`
-  of at least 3 sentences, so all-clear sessions still leave a
+  `plan_body_citation`, `challenge_question`, and a non-placeholder
+  `justification`, so all-clear sessions still leave a
   substantive adversarial review artifact. Empty body or the
   literal string `"none"` is rejected with
   `self_challenge_invalid`. A plan-amending challenge whose edit
   cannot be applied blocks finalize with
   `self_challenge_amend_apply_failed`.
+- On successful finalization, the persisted reviewer roster and findings are
+  written into the plan's `Personas applied`, `Revised after review`, and
+  `Separate Persona Review Passes` evidence. The host does not manually copy
+  those results. A session with no findings cannot use this projection to
+  fabricate review evidence and remains subject to the existing preflight.
 - `finding_submit` success payloads carry a `transparency_echo:
   str` field shaped
   `[round R / Persona / severity / first 80 chars / amend_ops=N]`
   so the human watching the conversation sees substance as
   it lands.
+- `batch_findings_submit` calls the same single-finding validation for
+  each item in manifest order. Batch findings also require reviewer
+  provenance: `review_source: subagent` with a reviewer id by default, or
+  an explicit self-review fallback source with a reason. If one item fails,
+  earlier accepted findings remain recorded and the response names the
+  failed index.
 
-The residual gap: a finding whose three sentences are
-syntactically valid but semantically empty still passes the
-sentence-count check. Future semantic-similarity scoring will
-tighten this; for now the gap is pinned by the regression test
-suite as a known limit.
+The remaining semantic-quality judgment belongs to persona review and cited
+evidence. Mechanical validation deliberately checks contract completeness and
+obvious placeholders rather than imposing prose volume as a proxy for quality.

@@ -95,10 +95,21 @@ command/tool friction.
 
 During meaningful work, if a strange delay, repeated correction, tool timeout,
 cleanup failure, route ambiguity, or likely-to-repeat agent mistake appears,
-record a compact friction candidate through MCP memory or the next
-`agentlaw_session_save` log entry. Use a short title plus: trigger evidence,
-affected surface, current workaround, whether user approval may be needed, and
-the smallest pointer to the durable artifact or command output.
+make a failure checkpoint decision immediately: cite an existing covering
+record, record a compact friction candidate through MCP memory or the next
+`agentlaw_session_save` log entry, or state an explicit non-save reason, and do
+not defer high-impact or repeated command/tool/plan-review format friction to final
+closeout. Use a short title plus: trigger evidence, affected surface, current
+workaround, whether user approval may be needed, and the smallest pointer to
+the durable artifact or command output.
+
+Before the final response after plan/review/oracle/archive work, make one
+explicit friction-route decision when any high-friction signal occurred:
+review session invalidate/re-review, archive blocked, oracle rerun, timeout,
+stale/running oracle state, user correction, or repeated tool failure. A
+successful final archive or verifier pass does not erase that route decision;
+classify the signal below unless the covering artifact already controls
+recurrence.
 
 At closeout, classify each candidate into exactly one outcome:
 

@@ -45,7 +45,10 @@ Copy from here downward into a new plan file under `agentlaw_docs/plans/active/`
   the user explicitly asked for draft-only output (see
   `agentlaw_docs/law/PLANNING_AND_REVIEW_RULES.md` § Plan Request Default).
   This label signals the plan is non-executable until reviewed.
-- Date authored: YYYY-MM-DD
+  When the user explicitly authorizes skipping review and proceeding with
+  execution, use `active` and record `Review required: no`, `Plan reviewed:
+  no`, and the authorization in `Review exemption reason`.
+- Date authored: YYYY-MM-DDTHH:MM:SS+HH:MM
 - Author/agent context: [optional, free-form]
 
 ## Bootstrap Transitional Declaration
@@ -148,7 +151,21 @@ lightweight plans, it is the required clarification artifact.
 Every `crit-*` carries an `Oracle:` marker for
 `agentlaw_plan_review_oracle_check`.
 
-- **Runnable Oracle**: the `runnable Oracle` path is required for mechanically
+Use this canonical shape for mechanically checkable code criteria:
+
+```markdown
+- `crit-1`: [observable completion condition]
+  Verification trace: `test:test_name` or `path/to/file.py:line`
+  Oracle: `py -3.11 -m pytest path/to/test_file.py::test_name -q`
+```
+
+`runnable Oracle:` is accepted as an explicit synonym, but it is not required.
+The parser reads the criterion block through the next `crit-*`; explanatory
+lines may appear between the criterion and its Oracle. `Oracle: user_confirms`
+is the canonical human-judgment form.
+
+- **Runnable Oracle**: an `Oracle:` containing an explicit direct-argv command is
+  required for mechanically
   checkable criteria such as
   verifier sub-checks, pytest, grep, diff, byte-equality, exit-code probes, or
   count comparisons. If the test exists, wire the Oracle to it. If the test
@@ -158,24 +175,22 @@ Every `crit-*` carries an `Oracle:` marker for
   semantic accuracy, aesthetic match, taste, or corpus completeness a tool
   cannot scan. Mechanically-checkable criteria using `user_confirms` trigger an
   oracle_check WARN and Acceptance Criteria Reviewer scrutiny.
-- Long-running runnable commands should use oracle-check background mode and
-  poll mode rather than repeating the same command inside a blocking call.
-- Pytest selectors must match at least one test. `pytest` exit code `5`
-  is treated as the oracle-definition error `pytest_no_tests_selected`, not as
-  proof that the implementation failed.
+- `oracle_check` returns a visible `agentlaw verify-run` command. Run it in the
+  project's terminal, then call `oracle_check` again to read the result.
+- Test selectors must match the intended checks. A project command's nonzero
+  exit is recorded without Agentlaw applying tool-specific reinterpretation.
 - Long full-suite oracles should carry an execution plan for timeout handling:
-  use background/poll when host tool-call timeouts are plausible, and treat
-  `timeout_after_*` as archive-blocking until the oracle is narrowed, fixed, or
-  rerun with a justified timeout.
+  choose a justified job timeout, and treat timeout or cleanup failure as
+  archive-blocking until the command is narrowed, fixed, or explicitly retried.
 - Behavior claims must name the execution stratum they depend on when source,
   package, live runtime, external service, or persisted state paths can differ.
   Use the phrase `execution stratum` and one of: `source unit`, `package
   install`, `live installed CLI/MCP`, `external service`, or `persisted runtime
   state`. Source-only tests may satisfy only source-stratum claims unless the
   plan records an explicit `accepted-risk` row for the omitted stratum.
-- For source-tree Python checks in the agentlaw authoring workspace, write the
-  oracle as the normal Python or pytest command. The oracle runner supplies the
-  repository source context for an authoring checkout; do not encode
+- Write the project command that is valid in the project environment. Agentlaw
+  preserves that argv and environment; it does not inject source paths or
+  substitute its own Python. Do not encode
   shell-specific `PYTHONPATH=src` prefixes in the plan body unless the criterion
   is explicitly testing shell invocation behavior.
 - While editing implementation behavior, use focused checks for the changed
@@ -354,6 +369,9 @@ assumptions.]
 | --- | --- | --- | --- | --- |
 | rcm-1 | user intent | covered / not_applicable / needs_user_answer / accepted_risk / out_of_scope | <user quote, file:line, test:name, doc:path, MCP result, or rationale> | crit-N / out_of_scope |
 
+The column names define meaning; their order may change. Escape a literal pipe
+inside a cell as `\|`.
+
 Status rules:
 
 - `covered`: evidence is required, and `Covered by` must name at least one
@@ -510,6 +528,9 @@ tests, dependencies, build, deployment, or generated code.]
   reasons, or N/A for trivial]
 - Personas considered: [list per deck source]
 - Persona deck sources: [paths]
+- Finding dispositions and synthesis evidence: [finding ids,
+  alternatives, changed sections, and targeted reviewer closure]
+- Outcome Sufficiency evidence: [cited causal-chain verdict]
 
 ### Separate Persona Review Passes
 

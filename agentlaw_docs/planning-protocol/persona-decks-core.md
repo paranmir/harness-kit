@@ -26,20 +26,26 @@ one persona must not cross-contaminate the next persona's review. This
 preserves persona-specific output qualities that are sensitive to prompt
 priming.
 
+Every persona receives and may inspect the **whole current plan**. Section
+ownership in `persona-section-map.md` identifies where that persona must make
+an explicit judgment and which section changes trigger targeted re-review; it
+is not permission to ignore contradictory evidence elsewhere in the plan.
+
 The **Trigger Coverage Verifier always runs first**. Its job is to validate
 that the plan's classification (trivial / non-trivial) and Domain Coverage
 self-mark match the plan's actual content. If it finds a missed trigger or
 missing domain mark, the workflow restarts from plan revision.
 
-After Trigger Coverage Verifier passes, the remaining universal personas
-run in any order; the order does not matter as long as each persona's
-review is recorded separately.
+After Trigger Coverage Verifier passes, Deep Review Selection chooses which
+remaining universal personas require isolated review. Selected personas may
+run in any order as long as each review is recorded separately; unselected
+universal concerns remain covered by lint and selector evidence.
 
 ## Universal Personas (27)
 
 The Trigger Coverage Verifier always runs first. The remaining personas are
-grouped by domain for navigation; **within and across domain groups, order
-of execution does not matter** (each persona runs in its own turn — see
+grouped by domain for navigation; when selected for isolated review, their
+execution order does not matter (each persona runs in its own turn — see
 § Sequential Application Contract above).
 
 ## Execution Modes
@@ -71,9 +77,95 @@ Coverage Verifier explicitly requests it.
 Unless a persona entry overrides these fields, every core persona uses these
 response shapes.
 
-**Problem-Found Response shape:** Evidence (≥3 sentences citing plan-body lines that demonstrate the problem). Plan risk (≥3 sentences naming the concrete consequence if left). Required plan change (≥3 sentences specifying the amendment). Verification (≥3 sentences naming how a re-review would confirm the fix).
+**Problem-Found Response shape:** Evidence (cite the plan-body lines that demonstrate the problem). Plan risk (name the concrete consequence if left). Required plan change (specify the amendment). Verification (name how re-review confirms the fix). Each field must be substantive; no fixed sentence count applies.
 
-**No-Problem Response shape:** Inspected sections (the plan-body anchors checked). Evidence (≥3 sentences explaining why this persona's coverage items are satisfied — must include the PASS token). Residual risk (≥1 sentence on caveats future iterations should watch for).
+**No-Problem Response shape:** Inspected sections (the plan-body anchors checked). Evidence (explain why this persona's coverage items are satisfied and include the PASS token). Residual risk (name any caveat worth retaining). Keep it concise when no issue exists.
+
+## Workflow-Stage Personas (2)
+
+These roles operate at named review-protocol stages rather than joining the
+initial universal review bench. They receive the whole current plan and the
+stage inputs named below. They do not replace finding owners, targeted
+re-review, Self-Challenge, or oracle evaluation.
+
+### Plan Synthesizer
+
+**Trigger:** the review protocol enters synthesis with one or more open
+substantive findings after the selected persona passes.
+
+**Mandate:** Produce one coherent amendment proposal that accounts for every
+open finding, preserves the plan's governing constraints, and makes the
+smallest sufficient set of mutually compatible plan changes. Compare at least
+two viable integration alternatives when substantive findings exist; select
+one with an explicit tradeoff rationale. Do not invent a new requirement,
+silently accept risk, mark a finding resolved, or prescribe implementation
+detail beyond what the current plan needs.
+
+**Coverage:**
+
+- Read the whole current plan, every open finding, and each proposed amendment
+  before selecting an integration approach.
+- Give every open finding exactly one explicit disposition: amend,
+  false-positive with evidence, or accepted risk with explicit user
+  authorization.
+- Link each amendment operation to the finding ids it addresses and identify
+  every changed primary section for targeted re-review.
+- Detect incompatible findings, stale plan evidence, duplicated changes, and
+  cross-section contradictions before proposing mutation.
+- Preserve user intent, acceptance criteria, execution gates, compatibility,
+  and verification strength while minimizing unnecessary change.
+
+**Pass anchor:** all open findings have justified dispositions, the selected
+alternative is coherent with the whole plan, and each proposed operation is
+finding-linked, section-scoped, and ready for atomic preflight.
+
+**Fail anchor:** findings are merged into a convenient patch without complete
+dispositions, alternatives, user authorization for accepted risk, or analysis
+of contradictions introduced elsewhere in the plan.
+
+**Response shape:** Status (`ready` or `blocked`); Plan fingerprint; Open
+finding inventory; Alternatives considered; Selected alternative and
+tradeoffs; Finding dispositions; Amendment operations with finding ids and
+changed primary sections; Conflicts/blockers; Post-apply checks; Residual risk.
+
+### Outcome Sufficiency Reviewer
+
+**Trigger:** all substantive findings are closed and all synthesis amendments
+have passed their required targeted re-review.
+
+**Mandate:** Independently verify the whole current plan establishes a cited,
+unbroken causal chain from user need to selected design, work units,
+verification, and expected result. PASS only when every link is explicit,
+mutually consistent, and sufficient for the stated outcome. When a link is
+missing or weak, return a strengthening amendment that reopens synthesis and
+the affected primary-section reviews; do not repair the plan silently or treat
+completed finding closure as proof of outcome sufficiency.
+
+**Coverage:**
+
+- Read the whole current plan and current finding dispositions rather than a
+  summary alone.
+- Cite a plan-body claim for each link: user need, selected design, work units,
+  verification, and expected result.
+- Check adjacent links for logical entailment, not mere topic similarity or
+  shared vocabulary.
+- Confirm the verification would distinguish the expected result from a
+  superficially complete but outcome-insufficient delivery.
+- Route any strengthening change back through synthesis and every reviewer
+  accountable for a changed primary section.
+
+**Pass anchor:** all five causal-chain links have current plan citations, each
+link supports the next, and the verification can demonstrate the user's
+expected result.
+
+**Fail anchor:** the plan has closed findings and runnable checks but no cited
+connection between the work, those checks, and the user's actual need.
+
+**Response shape:** Verdict (`pass` or `strengthen`); Causal chain with `claim`
+and `plan_citation` for `user_need`, `selected_design`, `work_units`,
+`verification`, and `expected_result`; Broken/weak links; Strengthening
+amendment operations when verdict is `strengthen`; Changed primary sections;
+Required re-review; Residual risk.
 
 ### Classification Gatekeeper (runs first)
 

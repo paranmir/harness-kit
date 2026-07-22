@@ -2,25 +2,33 @@
 
 ## Purpose
 
-Map each review persona to the plan-template sections it primarily reviews,
-plus optional sections it may consult. The map drives **section-based
+Map each review persona to the plan-template sections for which it is primarily
+accountable, plus optional sections it may consult. Every persona receives and
+may inspect the **whole current plan**; the map narrows accountability and
+targeted re-review triggers, not visibility. The map drives **section-based
 revision re-review** per `agentlaw_docs/law/PLANNING_AND_REVIEW_RULES.md` § Required
-Planning Workflow: when a plan is revised after review, only the personas
-whose mapped sections were revised are re-invoked.
+Planning Workflow.
 
 ## Format
 
 - **Tier**: `universal` (always evaluated for non-trivial work),
   `substance-triggered` (evaluated when the corresponding Domain Coverage
   box is marked), or `sensitive-domain` (evaluated when the task class is
-  in the sensitive-domain family).
-- **Primary sections**: the persona must read these to do its review.
-- **Optional sections**: the persona may consult these for context but
-  does not need them to produce a finding.
+  in the sensitive-domain family). `workflow-stage` roles run only when their
+  named protocol-stage trigger is satisfied.
+- **Primary sections**: the persona must make an explicit, cited judgment about
+  these sections. A change to one of them triggers that persona's targeted
+  re-review when the persona is otherwise applicable.
+- **Optional sections**: likely context for the persona's judgment. Optional
+  mappings do not limit whole-plan inspection and optional-only changes do not
+  trigger that persona's targeted re-review.
 
 When section-based re-review applies, a persona is re-invoked if **any of
 its primary sections** changed in the revision. Optional-only changes do
-not trigger re-invocation.
+not trigger re-invocation. Finding owners are re-invoked until their findings
+close, even when another persona owns the changed primary section. Unknown,
+broad, classification-changing, or domain-changing revisions require the
+full-review fallback defined by the review workflow.
 
 ## Universal Personas
 
@@ -54,6 +62,17 @@ not trigger re-invocation.
 | Cross-Section Coherence Reviewer | universal | Verification, Work Breakdown, Acceptance Criteria | Intent, Scope, Risk |
 | Code-Fact Claim Verifier | universal | Premise, Intent (Acceptance Criteria) | Confidence, Status |
 
+## Workflow-Stage Personas
+
+These roles inspect the whole plan at their named lifecycle stage. Their
+primary-section mappings express mandatory judgment anchors; their stage
+triggers, not ordinary section edits alone, activate them.
+
+| Persona | Tier | Primary sections | Optional sections |
+| --- | --- | --- | --- |
+| Plan Synthesizer | workflow-stage (open substantive findings) | Work Breakdown, Plan Review Evidence | All sections named by open findings; Intent, Risk, Verification, Execution Gates |
+| Outcome Sufficiency Reviewer | workflow-stage (findings closed and amendments re-reviewed) | Intent, Work Breakdown, Verification | Scope, Premise, Risk, Execution Gates, Plan Review Evidence |
+
 ## Substance-Triggered Personas
 
 | Persona | Tier | Primary sections | Optional sections |
@@ -61,6 +80,8 @@ not trigger re-invocation.
 | Source Conflict Reviewer | substance-triggered (Premise) | Premise | Confidence |
 | Runtime State Reviewer | substance-triggered (Premise) | Premise | Verification |
 | Access-Premise Reviewer | substance-triggered (Premise) | Premise | Security & Trust Boundaries |
+| Design Alternatives Reviewer | substance-triggered (material design choice) | Work Breakdown, Code Architecture & Implementation Control | Intent, Scope, Premise, Risk, Verification, Long-term Care |
+| Code Design & Maintainability Reviewer | substance-triggered (code) | Code Plan Fidelity, Code Architecture & Implementation Control, Work Breakdown | Scope, Risk, Verification, External Contract & Compatibility, Long-term Care |
 | Trust Boundary Reviewer | substance-triggered (Security) | Security & Trust Boundaries | Scope, Data Stewardship |
 | Sensitive Information Handling Reviewer | substance-triggered (Security) | Security & Trust Boundaries | Data Stewardship |
 | Permission Boundary Reviewer | substance-triggered (Security) | Security & Trust Boundaries | Premise (Access-Premise) |

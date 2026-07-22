@@ -1,30 +1,38 @@
 ---
 name: agentlaw-governance
 description: |
-  agentlaw governance procedure reminder. Activate when starting fix /
-  init / upgrade / align / governance work: tracker-policy violation, repeated
-  mistake, rule bypass, new project setup, agentlaw kit upgrade, or any
-  case the user signals with phrases like "fix this", "고치자", "rule
-  was violated", "governance gap", "init project", "set up agentlaw",
-  "upgrade kit", "kit update", "align", "routing drift", "초기화", "업그레이드". Reads and
-  surfaces the matching AGENTLAW_*_TOOL.md procedure before action.
+  agentlaw governance procedure reminder. Activate when starting agentlaw
+  harness fix / init / upgrade / align / governance work: tracker-policy
+  violation, repeated harness mistake, rule bypass, agentlaw setup,
+  agentlaw kit upgrade, local harness routing drift, or agentlaw MCP /
+  memory / hook / planning drift. It is not for ordinary project bug
+  fixes, feature work, dependency updates, or app setup unless the issue
+  affects the agentlaw harness itself. Reads and surfaces the matching
+  AGENTLAW_*_TOOL.md procedure before action.
 ---
 
 # agentlaw Governance Reminder
 
-Activate this skill **before** starting fix / init / upgrade / align class work
-on an agentlaw-bootstrapped project. The skill exists to prevent the
+Activate this skill **before** starting agentlaw harness fix / init / upgrade /
+align class work on an agentlaw-bootstrapped project. The skill exists to prevent the
 recurring pattern where agents jump to plan-spawning / direct action
 without first consulting the matching root-control document.
+
+## Scope boundary
+
+Root control documents are not for ordinary project feature work, bug fixes,
+dependency updates, or app setup. Ordinary project work uses the project's
+normal planning, review, verification, and memory rules unless the issue
+affects the agentlaw harness itself.
 
 ## When to read which document
 
 | You are about to ... | Read first |
 | --- | --- |
-| Diagnose a governance gap, repeated mistake, or rule bypass; spawn a fix-class plan | `AGENTLAW_FIX_TOOL.md` |
-| Set up a new project from the agentlaw kit; bootstrap memory / scaffold / runtime | `AGENTLAW_INIT_TOOL.md` |
-| Upgrade an existing agentlaw target to a new kit version; incorporate upstream changes | `AGENTLAW_UPDATE_TOOL.md` |
-| Reconcile local routing or README surfaces after laws, root controls, directories, or command surfaces changed | `AGENTLAW_ALIGN_TOOL.md` |
+| Diagnose an agentlaw harness governance gap, repeated harness mistake, rule bypass, MCP/memory drift, or hook/planning routing failure | `AGENTLAW_FIX_TOOL.md` |
+| Set up the agentlaw harness in a project; bootstrap memory / scaffold / runtime | `AGENTLAW_INIT_TOOL.md` |
+| Upgrade an existing agentlaw target to a new kit version; incorporate upstream harness changes | `AGENTLAW_UPDATE_TOOL.md` |
+| Reconcile agentlaw routing or README surfaces after laws, root controls, directories, or command surfaces changed | `AGENTLAW_ALIGN_TOOL.md` |
 
 These documents live at the **project root** of an agentlaw-bootstrapped
 target. If you are in a target project that does not have them at the
@@ -57,9 +65,9 @@ This skill is the **persistent reminder channel**:
 
 When activated, the agent must:
 
-1. Identify which root-control document matches the current work
-   (per the table above; use FIX_TOOL if uncertain — fix-class is
-   the most general).
+1. Identify which root-control document matches the current agentlaw harness
+   work (per the table above; use FIX_TOOL if uncertain within harness scope —
+   fix-class is the most general harness repair route).
 2. Read the document in full before any plan-spawning or other
    action.
 3. Apply the document's procedure (e.g., FIX_TOOL Steps 1-10) in
@@ -68,7 +76,7 @@ When activated, the agent must:
 4. Do **not** mark the procedure complete by reading alone — the
    procedure must be applied. "Already read" is not preservation
    across turns; re-activate this skill any time the work crosses
-   into a new fix / init / upgrade / align scope.
+   into a new agentlaw harness fix / init / upgrade / align scope.
 
 ## Skill lifecycle
 

@@ -69,14 +69,24 @@ not executable)`. The label is the parseable signal that the plan
 has not passed Persona Review and must not be acted on as if
 reviewed.
 
+The user may separately authorize an **executable review bypass** by
+explicitly directing the agent to skip Persona Review and proceed with
+execution or implementation. The plan remains an active execution contract,
+must carry `Review required: no`, `Plan reviewed: no`, and a non-empty
+`Review exemption reason` that records the explicit user authorization, and
+must not claim that persona review occurred. A draft-only request does not
+authorize execution; the request must expressly permit both review bypass and
+execution.
+
 Two failure-family obligations attach to plan requests, and they
 share the same surface:
 
 1. **Gate-before-draft**: the Clarification Gate (above) must run
    before plan drafting begins. The agent must not draft a non-
    trivial plan body before the gate's questions are resolved.
-2. **Review-before-execution**: the Persona Review Loop (below)
-   must run before plan execution begins (for non-trivial plans).
+2. **Review-before-execution**: unless the user explicitly authorizes the
+   executable review bypass above, the Persona Review Loop (below) must run
+   before plan execution begins (for non-trivial plans).
    `Plan reviewed: yes` must not be written before the persona
    passes are actually performed.
 
@@ -219,14 +229,30 @@ Required tool sequence:
    and every scored axis are at least 0.995.
 4. `agentlaw_plan_review_finding_submit` records each persona's finding,
    carrying a verbatim mandate quote from the persona deck and exact-byte
-   plan-line citations.
-5. `agentlaw_plan_review_round_check` evaluates round convergence,
-   stagnation, and the round cap. Convergence leaves the session
-   finalize-pending; it does not write the reviewed block.
-6. `agentlaw_plan_review_session_finalize` writes the `Plan reviewed: yes`
-   block to the plan body and sets phase `finalized` once convergence and
-   Self-Challenge requirements are satisfied.
-7. `agentlaw_plan_archive` writes required completed-plan evidence and
+   plan-line citations. Hosts may use
+   `agentlaw_plan_review_batch_manifest` to fan out persona review outside
+   MCP, then `agentlaw_plan_review_batch_findings_submit` to submit the
+   ordered findings through the same validation path. MCP remains the
+   state machine; it does not spawn reviewers.
+5. After Trigger Coverage, `agentlaw_plan_review_deep_review_selection_submit`
+   must record one provenance-backed `selected` or reasoned `not_applicable`
+   decision for every current structured candidate. Candidates are not roster
+   members or scheduled turns before this decision; only selected candidates
+   enter the review queue. The selector subagent returns decisions only; the
+   parent host owns MCP submission and must present the opaque capability
+   returned by the Trigger transition. The host must not place that capability
+   in a subagent prompt, log, lookup response, or review artifact.
+6. `agentlaw_plan_review_round_check` routes open substantive findings into
+   one integrated synthesis. With no open finding, it advances to independent
+   Outcome Sufficiency review.
+7. `agentlaw_plan_review_synthesis_submit` applies the hash-locked integrated
+   amendment and opens targeted review for affected sections. Once finding
+   owners close the changed findings, `agentlaw_plan_review_outcome_sufficiency_submit`
+   checks the cited user-need-to-result chain and improvement-quality evidence.
+8. `agentlaw_plan_review_session_finalize` writes the `Plan reviewed: yes`
+   block and sets phase `finalized` only after Outcome Sufficiency and
+   Self-Challenge succeed. A material Self-Challenge finding reopens synthesis.
+9. `agentlaw_plan_archive` writes required completed-plan evidence and
    moves the plan to `agentlaw_docs/plans/completed/` when the work it governs is
    complete.
 
@@ -371,6 +397,14 @@ whether planning is required and applying the workflow.
 
 ## Review Discipline
 
+Improvement-oriented review must close the causal loop rather than merely
+collect persona prose. Every substantive finding must receive an explicit
+disposition; plan-changing dispositions are synthesized into one atomic
+revision, only affected primary-section responsibilities are re-reviewed, and
+an independent Outcome Sufficiency pass must connect the user need, selected
+design, work units, verification, and expected result with plan citations.
+Self-Challenge changes reopen this loop.
+
 Persona review must produce concrete plan improvements.
 
 Useful findings identify a missing step, wrong sequence, missing verification,
@@ -404,9 +438,11 @@ controls review depth:
   template's required minimum sections), but the full persona review is
   skipped. The Trigger Coverage Verifier persona is the only required pass,
   to confirm trivial classification is correct.
-- **Non-trivial plan-required work**: the full persona review applies, with
-  Trigger Coverage Verifier first, then universal bench, then substance-
-  triggered personas.
+- **Non-trivial plan-required work**: the full review contract applies, with
+  Trigger Coverage Verifier first, then Deep Review Selection, then only the
+  selected universal and applicable substance-triggered personas as isolated
+  passes. Universal concerns not selected for isolation remain covered by
+  plan-lint, review-lint, and selector reasoning.
 
 If a task starts plan-exempt but gains file edits, external effects,
 current-source dependence, high-stakes consequences, or durable process
@@ -451,8 +487,8 @@ behavior, review decisions, verification, and residual risks.
 ## Two-Diamond Verified Delivery (Second Diamond Obligation)
 
 The persona-review loop has two diamonds. The first diamond — interview
-→ self-verify → persona_review → round_check convergence →
-session_finalize → finalized — validates a plan as a document. The second
+→ self-verify → persona review → integrated synthesis → targeted review →
+Outcome Sufficiency → Self-Challenge → finalize — validates a plan as a document. The second
 diamond — finalized → oracle_evaluation → archive — validates that the
 plan's promises are actually realized in the artifacts the plan governs.
 
@@ -460,6 +496,8 @@ Plans whose work is implementable must pass through the second diamond
 before archiving. The MCP tool sequence is
 `agentlaw_plan_review_session_enter_oracle_phase` →
 `agentlaw_plan_review_oracle_check` →
+run each returned `agentlaw verify-run --target ... --job ... -- <argv>`
+command in a visible project terminal → call `oracle_check` again to read results →
 `agentlaw_plan_review_oracle_user_confirm` (for criteria the plan body
 marks `user_confirms`) → `agentlaw_plan_archive`. The archive gate is
 all-or-nothing: every acceptance criterion in
@@ -476,8 +514,8 @@ to `oracle_evaluation` bypass this gate for backward compatibility.
 Acceptance criteria in plans that activate the second diamond must
 adopt the `(criterion id, oracle)` paired shape — each `crit-*`
 identifier carries an `Oracle:` marker that names a runnable command
-from the executable allowlist (pytest, python, mutmut, hypothesis,
-agentlaw) or the explicit `user_confirms` marker.
+as direct argv or the explicit `user_confirms` marker. Agentlaw does not select
+or rewrite the governed project's runtime. Shell composition is not direct argv.
 
 ## Substance-Deck Registration
 

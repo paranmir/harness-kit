@@ -179,14 +179,18 @@ Use agentlaw as an operating loop, not only as a command list:
 2. State the task and let the agent classify whether it is trivial, plan-required, fix/init/update, or release/deploy-adjacent.
 3. For non-trivial work, require a reviewed plan before execution. The plan review selects the right persona review passes, records user gates, and names acceptance oracles.
 4. Execute the reviewed plan, then run the listed oracle checks, `agentlaw verify .`, and any focused tests before archiving the plan.
-5. Save session state with `agentlaw_session_save` at milestones and before context compaction.
+5. When command/tool/MCP workflow friction is high-impact or likely to repeat, search memory and logs before retry and record a compact friction log through MCP memory or the next `agentlaw_session_save`.
+6. Save session state with `agentlaw_session_save` at milestones and before context compaction.
 
 ### When to use init, update, fix, and align
 
-- Use `AGENTLAW_INIT_TOOL.md` when bootstrapping agentlaw into a new project or re-initializing the scaffold.
+These root tools are for agentlaw harness work, not ordinary project feature,
+bug, dependency, or app-setup work.
+
+- Use `AGENTLAW_INIT_TOOL.md` when bootstrapping the agentlaw harness into a new project or re-initializing an agentlaw project scaffold.
 - Use `AGENTLAW_UPDATE_TOOL.md` when the installed kit or scaffold has changed and this project needs those upstream harness updates merged without losing local project facts.
-- Use `AGENTLAW_FIX_TOOL.md` when the harness is drifting, a tracker-policy violation happened, the agent bypassed a rule, MCP/memory state looks inconsistent, or the same governance failure repeats.
-- Use `AGENTLAW_ALIGN_TOOL.md` and `agentlaw align --check --target .` when local laws, root controls, directories, or command surfaces changed and routing/README surfaces may be stale. Use `agentlaw align --write --target .` only for safe routing updates reported as autofixable.
+- Use `AGENTLAW_FIX_TOOL.md` when the agentlaw harness is drifting, a tracker-policy violation happened, the agent bypassed an agentlaw rule, MCP/memory state looks inconsistent, or the same agentlaw governance failure repeats.
+- Use `AGENTLAW_ALIGN_TOOL.md` and `agentlaw align --check --target .` when agentlaw laws, root controls, directories, or command surfaces changed and routing/README surfaces may be stale. Use `agentlaw align --write --target .` only for safe routing updates reported as autofixable.
 
 These four root tools exist because different work needs different safeguards.
 Init creates a first scaffold. Update merges a newer shared kit into an
@@ -197,7 +201,7 @@ move, so agents and humans keep entering through the same path.
 
 ### Plan, persona, and oracle review
 
-The normal non-trivial path is plan first, execution second, oracle last. A plan states the task contract, affected surfaces, user gates, risks, rollback paths, and acceptance criteria. The persona review checks that plan from specific lenses such as trigger coverage, acceptance criteria, affected surfaces, external contracts, user gates, and form-vs-substance. The oracle phase checks whether the completed work satisfies the plan's criteria before the plan is archived.
+The normal non-trivial path is plan first, execution second, oracle last. A plan states the task contract, affected surfaces, user gates, risks, rollback paths, and acceptance criteria. Persona reviewers identify concrete weaknesses; the improvement-oriented review path combines their findings into one atomic plan revision, rechecks only affected sections, and independently verifies that the revised plan still connects the user's need to the expected result. Material Self-Challenge findings reopen that loop instead of landing as unreviewed final edits. The oracle phase checks whether the completed work satisfies the plan's criteria before the plan is archived.
 
 The plan-review gate is intentionally strict. The interview step must be based
 on a real user touchpoint, and persona review starts only when the agent can
@@ -227,7 +231,10 @@ agentlaw memory-runtime-repair --target . --json
 agentlaw verify .
 ```
 
-If the problem is repeated, rule-related, or affects the agent's ability to follow the harness, treat it as fix-class work and tell the agent to start from `AGENTLAW_FIX_TOOL.md`.
+If the problem is repeated, rule-related, or affects the agent's ability to
+follow the agentlaw harness, treat it as fix-class harness work and tell the
+agent to start from `AGENTLAW_FIX_TOOL.md`. Ordinary project bugs still use the
+project's normal planning, review, verification, and memory rules.
 
 ### Host reminder hooks
 
@@ -248,8 +255,9 @@ channel that points the agent back to the governing files in this repository.
 This scaffold includes Agent Skills in both common host locations:
 
 - `.agents/skills/agentlaw-governance/` and
-  `.claude/skills/agentlaw-governance/` route fix/init/update/governance work
-  to the matching root control document.
+  `.claude/skills/agentlaw-governance/` route agentlaw harness
+  fix/init/update/governance work to the matching root control document.
+  They are not ordinary project-work routers.
 - `.agents/skills/agentlaw-plan-authoring/` and
   `.claude/skills/agentlaw-plan-authoring/` route plan creation, review,
   execution, oracle, and archive work to the planning protocol.
@@ -264,11 +272,15 @@ systems. Governing content remains in `AGENTLAW_*`, `agentlaw_docs/law/*`, and
 
 ### Fix/update path
 
-Before consequential governance work, use the matching root control document:
+Before consequential agentlaw harness governance work, use the matching root
+control document. Ordinary project governance work uses this project's own
+planning, review, verification, and memory rules unless the issue affects the
+agentlaw harness itself.
 
-- `AGENTLAW_FIX_TOOL.md` for local drift, tracker-policy violations, or rule
-  bypasses.
-- `AGENTLAW_INIT_TOOL.md` for first-time or re-initialization work.
+- `AGENTLAW_FIX_TOOL.md` for local harness drift, tracker-policy violations,
+  or agentlaw rule bypasses.
+- `AGENTLAW_INIT_TOOL.md` for first-time harness installation or
+  re-initialization work.
 - `AGENTLAW_UPDATE_TOOL.md` for incorporating upstream harness changes.
 - `AGENTLAW_ALIGN_TOOL.md` for local routing/readme reconciliation after
   harness structure or command surfaces change.

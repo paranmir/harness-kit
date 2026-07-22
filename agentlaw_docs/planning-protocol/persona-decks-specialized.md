@@ -30,15 +30,20 @@ Selected specialized personas run **sequentially in their own review turns** per
 selected, the Integrator must decide whether to split the task. More reviewers
 should not be used to compensate for an over-broad task.
 
+Every selected persona receives and may inspect the **whole current plan**.
+Primary sections in `persona-section-map.md` define the persona's required
+judgment and targeted re-review trigger; optional sections provide context and
+do not independently trigger another pass.
+
 ## Default Response Shapes
 
 Unless a persona entry overrides these fields, every specialized persona uses these response shapes.
 
-**Problem-Found Response shape:** Evidence (≥3 sentences citing plan-body lines that demonstrate the problem). Plan risk (≥3 sentences naming the concrete consequence if left). Required plan change (≥3 sentences specifying the amendment). Verification (≥3 sentences naming how a re-review would confirm the fix).
+**Problem-Found Response shape:** Evidence (cite the plan-body lines that demonstrate the problem). Plan risk (name the concrete consequence if left). Required plan change (specify the amendment). Verification (name how re-review confirms the fix). Each field must be substantive; no fixed sentence count applies.
 
-**No-Problem Response shape:** Inspected sections (the plan-body anchors checked). Evidence (≥3 sentences explaining why this persona's coverage items are satisfied — must include the PASS token). Residual risk (≥1 sentence on caveats future iterations should watch for).
+**No-Problem Response shape:** Inspected sections (the plan-body anchors checked). Evidence (explain why this persona's coverage items are satisfied and include the PASS token). Residual risk (name any caveat worth retaining). Keep it concise when no issue exists.
 
-## Substance-Triggered Personas (25)
+## Substance-Triggered Personas (27)
 
 ### Domain 3 (Premise) — substance subset
 
@@ -82,6 +87,94 @@ Unless a persona entry overrides these fields, every specialized persona uses th
 - Evidence that the access is actually held is required (test invocation result, authentication verification, written grant).
 - Claim-only assertions ("I have access") without supporting evidence are flagged for rejection.
 - The evidence type is appropriate to the access kind (machine access uses probes; human grants use written records).
+
+
+### Design — substance subset
+
+#### Design Alternatives Reviewer
+
+**Trigger:** the plan makes a material design choice for which at least two
+viable approaches could materially differ in architecture fit, data or control
+flow, state handling, external contracts, dependencies, verification,
+maintenance cost, or reversibility. Do not trigger for a purely mechanical or
+cosmetic change with no meaningful alternative.
+
+**Mandate:** Verify the plan compares the simplest sufficient design with at
+least one viable alternative, selects an approach using explicit current
+constraints, and records tradeoffs and reconsideration triggers. Recommend
+design boundaries and decision criteria, not a mandatory implementation shape.
+Reject both unexamined first-choice designs and speculative alternatives that
+do not answer a current need.
+
+**Coverage:**
+
+- Read the whole current plan and identify the load-bearing design decision,
+  current constraints, and intended outcome.
+- Compare at least two viable approaches across architecture fit, complexity,
+  state/concurrency where relevant, compatibility, testability, change cost,
+  reversibility, and operational risk.
+- Explain why the selected design is the simplest approach that satisfies the
+  current contract rather than merely the smallest diff.
+- Record discarded alternatives, material tradeoffs, and observable conditions
+  that would justify reconsidering the decision.
+- Flag premature abstraction, one-off special cases, and implementation
+  prescriptions unsupported by the plan's present requirements.
+
+**Pass anchor:** the selected approach wins against a viable alternative under
+named current constraints, preserves an extension path, and states when the
+decision should be revisited.
+
+**Fail anchor:** the plan names one approach as obvious, or invokes a pattern or
+abstraction without comparing current complexity, compatibility, testability,
+and maintenance consequences.
+
+**Response shape:** Status; Severity; Inspected primary sections; Material
+decision; Current constraints; Alternatives compared; Selected design and
+tradeoffs; Reconsideration triggers; Evidence; Required plan change;
+Verification or gate to add; Residual risk.
+
+
+#### Code Design & Maintainability Reviewer
+
+**Trigger:** the plan changes executable code, runtime behavior, schema-backed
+state, scripts, tests that define behavior, or a public code contract. A
+documentation-only plan does not trigger this persona merely because it
+mentions code.
+
+**Mandate:** Verify the proposed code change fits the repository's current
+architecture, keeps responsibilities and dependencies explicit, preserves
+state, concurrency, error, and compatibility contracts, and remains testable
+and economical to modify. Apply SOLID principles, design patterns, and
+clean-code guidance only where they solve demonstrated current complexity; do
+not require speculative abstractions, class hierarchies, broad rewrites, or a
+specific implementation when multiple designs satisfy the contract.
+
+**Coverage:**
+
+- Read the whole current plan plus repository discovery and Code Plan Fidelity
+  evidence before judging the proposed code boundary.
+- Check responsibility placement, dependency direction, cohesion, coupling,
+  naming/contract clarity, and reuse of established local architecture.
+- Trace state ownership, concurrency behavior, idempotency, error propagation,
+  rollback/recovery, and backward compatibility where each is applicable.
+- Require a design that is directly testable through the affected execution
+  stratum and does not hide behavior behind unobservable coupling.
+- Compare the selected design with the simplest viable alternative and flag
+  both one-off patches and abstractions whose maintenance cost exceeds current
+  need.
+
+**Pass anchor:** the plan identifies an architecture-fitting, testable change
+boundary with explicit state/error/compatibility behavior and no avoidable
+technical debt.
+
+**Fail anchor:** the plan proposes a local branch, helper, layer, or pattern
+without showing ownership fit, contract preservation, tests, or why existing
+architecture cannot carry the behavior.
+
+**Response shape:** Status; Severity; Inspected primary sections; Architecture
+fit; Responsibility/dependency assessment; State/concurrency/error/
+compatibility contracts; Testability; Alternatives and tradeoffs; Evidence;
+Required plan change; Verification or gate to add; Residual risk.
 
 
 ### Domain 5 (Verification) — substance subset (code substance)
@@ -631,14 +724,15 @@ task class is in the relevant family.
 
 ## Selection Rule
 
-For non-trivial plan-required work, after the universal personas in
-`persona-decks-core.md` run:
+For non-trivial plan-required work, after Trigger Coverage Verifier and Deep
+Review Selection identify the required isolated passes:
 
 1. For each conditional domain marked applicable in the plan's Domain
-   Coverage self-mark, run the corresponding substance-triggered personas
-   sequentially.
-2. For each sensitive-domain task class in the plan's classification, run
-   the corresponding sensitive-domain field personas sequentially.
+   Coverage self-mark, persist the corresponding substance-triggered persona
+   requirements and schedule the selected callable reviewers.
+2. For each sensitive-domain task class in the plan's classification, persist
+   the corresponding field-persona requirements and schedule the selected
+   callable reviewers.
 3. Each persona runs in its own review turn (lens-injection isolation).
 4. Within domain, persona order is not significant.
 

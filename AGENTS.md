@@ -7,7 +7,7 @@ This repository is governed by the agentlaw kit — a law-first governance harne
 
 ## Governance Reminder
 
-Before starting fix / init / upgrade / align / governance work (tracker-policy violation, repeated mistake, rule bypass, new project setup, kit upgrade, local harness routing drift), read the matching root control document first: `AGENTLAW_FIX_TOOL.md` for fix-class work, `AGENTLAW_INIT_TOOL.md` for init, `AGENTLAW_UPDATE_TOOL.md` for kit upgrades, `AGENTLAW_ALIGN_TOOL.md` for local routing/readme alignment. The `.claude/skills/agentlaw-governance/SKILL.md` and `.agents/skills/agentlaw-governance/SKILL.md` skills (Agent Skills open standard) carry the same reminder for Claude Code and Codex respectively.
+Before starting agentlaw harness fix / init / upgrade / align / governance work (tracker-policy violation, repeated harness mistake, agentlaw rule bypass, agentlaw setup, kit upgrade, local harness routing drift), read the matching root control document first: `AGENTLAW_FIX_TOOL.md` for fix-class harness work, `AGENTLAW_INIT_TOOL.md` for agentlaw init, `AGENTLAW_UPDATE_TOOL.md` for kit upgrades, `AGENTLAW_ALIGN_TOOL.md` for local routing/readme alignment. Ordinary project bug fixes, features, dependency updates, and app setup use the project's normal planning, review, verification, and memory rules unless the issue affects the agentlaw harness itself. The `.claude/skills/agentlaw-governance/SKILL.md` and `.agents/skills/agentlaw-governance/SKILL.md` skills (Agent Skills open standard) carry the same reminder for Claude Code and Codex respectively.
 
 ## Source of Truth
 Document priority is:
@@ -76,4 +76,4 @@ Code architecture and module connections: `agentlaw_docs/references/project-over
 1. Keep this project's law, references, plans, and memory aligned with actual
    practice.
 2. Keep project-specific facts in the approved project artifacts named above.
-3. Run the matching root control document before fix, init, update, or align work.
+3. Run the matching root control document before agentlaw harness fix, init, update, or align work.
